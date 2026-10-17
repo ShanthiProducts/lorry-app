@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="si">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#e51b23">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ලොරි App">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>ලොරි App · Shanthi Food Products</title>
+<style>
+:root{--red:#e51b23;--red2:#ff3434;--yellow:#ffdf45;--ink:#172033;--muted:#64748b;--line:#e5e7eb;--bg:#f4f5f8;--card:#fff;--ok:#059669;--bad:#dc2626;--over:#b45309}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Noto Sans Sinhala","Iskoola Pota",sans-serif;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+button,input,textarea{font:inherit}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(120deg,var(--red),var(--red2));color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 14px #e51b2333}
+header .back{background:#ffffff26;color:#fff;border:0;border-radius:10px;width:40px;height:40px;font-size:20px}
+header h1{margin:0;font-size:18px;line-height:1.2}header p{margin:0;font-size:12px;opacity:.9}
+main{max-width:640px;margin:0 auto;padding:14px 16px}
+.screen{display:none}.screen.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px #0f172a08}
+.card h3{margin:0 0 4px;font-size:16px}
+.hero{text-align:center;padding:26px 18px}.hero .big{font-size:46px}.hero h2{margin:6px 0}
+.hello{margin:2px 2px 12px;font-size:16px}
+.muted{color:var(--muted)}.small{font-size:13px}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;min-height:46px}
+.btn.primary{background:var(--red);color:#fff}.btn.light{background:#fff;border:1.5px solid #d1d5db;color:#334155}.btn.wa{background:#16a34a;color:#fff}.btn.ghost{background:transparent;color:var(--muted)}
+.btn.sm{padding:6px 10px;min-height:34px;font-size:13px}.btn.block{display:block;width:100%;margin-top:8px}
+.btn:disabled{opacity:.45}
+.step{display:flex;align-items:center;gap:12px}.step .num{flex:0 0 38px;height:38px;border-radius:50%;background:#fee2e2;color:var(--red);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:17px}
+.step.done .num{background:#d1fae5;color:var(--ok)}.grow{flex:1;min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;text-align:left;font-weight:800;color:var(--ink);min-height:100px}
+.tile span{display:block;font-size:26px}.tile small{display:block;font-weight:600;color:var(--muted);font-size:12px;margin-top:2px}
+.warnbox{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.infobox{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}
+.okbox{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:12px;padding:12px;font-weight:800;margin-bottom:10px}
+.field{margin-bottom:10px}.field label{display:block;font-weight:700;font-size:14px;margin-bottom:4px}
+input[type=text],input[type=date],input[type=search],input[type=tel],input[type=number],textarea{width:100%;border:1.5px solid #cbd5e1;border-radius:12px;padding:11px 12px;background:#fff;color:var(--ink);font-size:16px}
+input:focus,textarea:focus{outline:3px solid #fecaca;border-color:var(--red)}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+textarea{min-height:150px;font:13px ui-monospace,monospace}
+.tools{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}.tools input[type=search]{flex:1;min-width:150px}
+.check{display:flex;gap:8px;align-items:center;font-weight:700;margin:8px 0}.check input{width:22px;height:22px}
+.fam{background:#fff;border:1px solid var(--line);border-radius:16px;margin-bottom:12px;overflow:hidden}
+.fam-h{background:#fff7d6;padding:9px 14px;font-weight:900;border-bottom:1px solid #fde68a}
+.row{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 14px;border-top:1px solid #f1f5f9}.row:first-of-type{border-top:0}
+.row .lbl{flex:1;font-weight:700}.row.has{background:#fef2f2}.row.has .lbl{color:var(--red)}
+.stepper{display:flex;align-items:center;gap:6px}.stepper input{width:76px;text-align:center;font-weight:800;font-size:18px;padding:9px 4px}
+.sbtn{width:44px;height:44px;border-radius:12px;border:1.5px solid #d1d5db;background:#fff;font-size:22px;font-weight:900;color:#334155}
+.sbtn:active{background:#fee2e2}
+.crow{padding:12px 14px;border-top:1px solid #f1f5f9}.crow:first-of-type{border-top:0}
+.crow.ok{background:#f0fdf4}.crow.bad{background:#fef2f2}.crow.over{background:#fffbeb}
+.ctop{display:flex;justify-content:space-between;align-items:center;gap:8px}.ctop .lbl{font-weight:900;font-size:17px}
+.chip{font-size:12px;font-weight:800;border-radius:999px;padding:3px 9px;background:#f1f5f9;color:var(--muted);white-space:nowrap}
+.chip.ok{background:#d1fae5;color:var(--ok)}.chip.bad{background:#fee2e2;color:var(--bad)}.chip.over{background:#fef3c7;color:var(--over)}
+.cnums{display:flex;gap:10px;margin:8px 0}.cnums>div{flex:1;background:#ffffffb0;border:1px solid var(--line);border-radius:12px;padding:6px 10px}
+.cnums small{display:block;color:var(--muted);font-size:12px}.cnums b{font-size:22px}.cnums .parts{color:var(--ink);font-weight:700}
+.cin{display:flex;gap:8px}.cin input{flex:1;font-size:18px;font-weight:800;text-align:center}
+.dmg{margin-top:8px;font-size:13px;color:var(--muted)}.dmg summary{cursor:pointer}.dmg label{display:block;margin-top:6px}.dmg input{margin-top:4px}
+.filters{display:flex;gap:6px;margin-bottom:10px}.filters button{flex:1;border:1.5px solid #d1d5db;background:#fff;border-radius:999px;padding:8px 6px;font-weight:800;font-size:13px;color:#475569}
+.filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rdrow{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-weight:700}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:#fff;border-top:1px solid var(--line);box-shadow:0 -6px 18px #0f172a14;padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;align-items:center}
+.bar>div{max-width:640px}.tbad{color:var(--bad);font-weight:800}.tover{color:var(--over);font-weight:800}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.hist{display:flex;gap:10px;align-items:center}
+.sheet{position:fixed;inset:0;background:#0f172a80;z-index:50;display:none;align-items:flex-end;justify-content:center}
+.sheet.show{display:flex}.sheet .panel{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:88vh;overflow:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.sheet h3{margin:0 0 10px}
+.preview{white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:13px;max-height:38vh;overflow:auto;margin-bottom:6px}
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#172033;color:#fff;padding:11px 16px;border-radius:12px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;z-index:60;max-width:92vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}.toast.err{background:#b91c1c}.toast.warn{background:#b45309}
+.foot{text-align:center;color:var(--muted);font-size:12px;padding:16px}
+.cloudline{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;border-radius:12px;padding:8px 12px;margin-bottom:10px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.cloudline.wait{background:#fffbeb;color:#92400e;border-color:#fde68a}.cloudline.bad{background:#fef2f2;color:#991b1b;border-color:#fecaca}.cloudline.off{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
+.cloudline .grow{flex:1}.sug{font-size:12px;font-weight:800;color:#065f46;background:#d1fae5;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.sendstate{border-radius:12px;padding:12px;font-weight:800;margin-bottom:10px;background:#eff6ff;color:#1e3a8a;border:1px solid #bfdbfe}.sendstate.ok{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}.sendstate.wait{background:#fffbeb;color:#92400e;border-color:#fde68a}
+</style>
+</head>
+<body>
+<header><button class="back" id="backBtn" onclick="go('home')" aria-label="ආපසු">⌂</button><div><h1>🚛 ලොරි App</h1><p id="hdrSub"></p></div></header>
+<main>
+  <section class="screen" id="s-home"><div id="homeBody"></div>
+    <div class="grid2"><button class="tile" onclick="go('inbox')"><span>📥</span>Report / Code දාන්න<small>WhatsApp එකෙන් ආපු message (Cloud නැති වෙලාවට)</small></button><button class="tile" onclick="go('setup')"><span>⚙️</span>සැකසුම්<small>නම, WhatsApp අංකය</small></button></div>
+    <div class="foot">Shanthi Food Products · ලොරි App v3.4 · Internet නැතුවත් වැඩ කරනවා</div></section>
+
+  <section class="screen" id="s-inbox">
+    <div class="card"><h3>📥 WhatsApp message එක දාන්න</h3><p class="muted small">ලොකු මහත්තයා එවන <strong>Report</strong> එක හෝ <strong>භාණ්ඩ ලැයිස්තුව</strong> — WhatsApp එකේ message එක ඔබාගෙන ඉඳලා <strong>Copy</strong> කරලා මෙතන <strong>Paste</strong> කරන්න.</p>
+      <textarea id="inboxText" placeholder="මෙතන ඔබාගෙන ඉඳලා Paste කරන්න…"></textarea>
+      <button class="btn light block" onclick="pasteClip()">📋 Copy කරපු එක ගන්න</button>
+      <button class="btn primary block" onclick="inboxApply()">✅ දාන්න</button>
+      <p class="small muted" id="inboxInfo"></p></div>
+  </section>
+
+  <section class="screen" id="s-load">
+    <div class="card"><div class="field"><label for="loadDate">📅 පටවන දිනය</label><input type="date" id="loadDate" onchange="loadDraft().d=this.value;save()"></div></div>
+    <div id="loadInfo"></div><div id="loadSug"></div>
+    <div class="tools"><input type="search" id="loadQ" placeholder="🔎 භාණ්ඩය සොයන්න" oninput="loadQ=this.value;renderLoad();this.focus()"><label class="check" style="margin:0"><input type="checkbox" id="loadOnly" onchange="loadOnly=this.checked;renderLoad()"> දාපු ඒවා</label></div>
+    <div id="loadList"></div>
+    <div class="card"><div class="field"><label for="loadNote">සටහන (ඕනේ නම්)</label><input type="text" id="loadNote" maxlength="200" onchange="loadDraft().note=this.value;save()"></div></div>
+    <div class="bar" id="loadBar"></div>
+  </section>
+
+  <section class="screen" id="s-count">
+    <div id="countHead"></div><div id="countRD"></div>
+    <div class="tools"><input type="search" id="countQ" placeholder="🔎 භාණ්ඩය සොයන්න" oninput="countQ=this.value;renderCount();this.focus()"></div>
+    <div class="filters" id="countFilters"><button data-f="all" onclick="countSetFilter('all')">ඔක්කොම</button><button data-f="todo" onclick="countSetFilter('todo')">ගණන් නොකළ</button><button data-f="diff" onclick="countSetFilter('diff')">අඩු / වැඩි</button></div>
+    <p class="small muted" style="margin:0 2px 10px">💡 පපඩම් 70ක් ගණන් කරලා පස්සේ තව 20ක් හම්බුණොත් — 20 type කරලා <strong>＋ එකතු</strong> ඔබන්න. 70 + 20 = 90 ඉබේම හැදෙනවා.</p>
+    <div id="countList"></div>
+    <button class="btn light block" onclick="countAddExtra()">＋ ලැයිස්තුවේ නැති භාණ්ඩයක් හම්බුණා</button>
+    <div class="card" style="margin-top:12px"><div class="field"><label for="countNote">සටහන (ඕනේ නම්)</label><input type="text" id="countNote" maxlength="200" onchange="countDraft().note=this.value;save()"></div></div>
+    <div class="bar" id="countBar"></div>
+  </section>
+
+  <section class="screen" id="s-unload">
+    <div class="card"><h3>🏭 Factory එකට බාපු බඩු</h3><p class="small muted">Delivery නැති දවසට ලොරියේ බඩු ඔක්කොම බානවා නම් “ඔක්කොම බෑවා” ඔබන්න. ටිකක් විතරක් නම් ඒ ප්‍රමාණ විතරක් දාන්න.</p>
+      <div class="field"><label for="unloadDate">📅 දිනය</label><input type="date" id="unloadDate" onchange="unloadDraft().d=this.value;save()"></div>
+      <button class="btn primary block" onclick="unloadAll()">🚛 ලොරියේ ඔක්කොම බෑවා</button></div>
+    <div id="unloadList"></div>
+    <button class="btn light block" onclick="unloadAddItem()">＋ භාණ්ඩයක් එකතු කරන්න</button>
+    <div class="card" style="margin-top:12px"><div class="field"><label for="unloadNote">සටහන</label><input type="text" id="unloadNote" maxlength="200" onchange="unloadDraft().note=this.value;save()"></div></div>
+    <div class="bar" id="unloadBar"></div>
+  </section>
+
+  <section class="screen" id="s-history"><h3 style="margin:4px 2px 10px">📜 යැවූ ඒවා</h3><div id="histList"></div></section>
+
+  <section class="screen" id="s-setup">
+    <div class="card"><h3>⚙️ සැකසුම්</h3>
+      <div class="field"><label for="meName">ඔයාගේ නම *</label><input type="text" id="meName" maxlength="40" placeholder="උදා: නිමල්"></div>
+      <div class="field"><label for="waNum">Message යවන WhatsApp අංකය</label><input type="tel" id="waNum" inputmode="tel" placeholder="Report එකෙන් ඉබේම එනවා"></div>
+      <p class="small muted" id="setupInfo"></p>
+      <button class="btn primary block" onclick="saveSetup()">💾 සුරකින්න</button></div>
+    <div class="card"><h3>☁️ ඉබේම යැවීම (Firebase)</h3><div id="cloudSetup" class="small"></div><button class="btn light block" onclick="cloudSync(true)">🔄 දැන් යවන්න / ගන්න</button></div>
+    <div class="card"><h3>🔄 අලුත් ෆෝන් එකක් / App එක මැකුණොත්</h3><p class="small muted">අන්තිමට ආපු Report message එක ආයෙත් “📥 Report / Code දාන්න” එකට paste කරන්න. භාණ්ඩ ලැයිස්තුවත් එක්කම එනවා.</p></div>
+    <button class="btn ghost block" onclick="resetApp()">🗑 App එකේ දත්ත මකන්න</button>
+  </section>
+</main>
+<div class="sheet" id="sheet" onclick="if(event.target===this)closeSheet()"><div class="panel"><h3 id="sheetTitle"></h3><div id="sheetBody"></div><div id="sheetActions"></div></div></div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+/* ---- SBP1 WhatsApp codes (shared by Smart Bill Pro and the lorry mobile app) ---- */
+const SBP_CODE_RE=/SBP1:([a-z]+):([A-Za-z0-9+\/=\s]+?):([0-9a-f]{8})/g;
+function sbpFnv(str){let h=0x811c9dc5;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h.toString(16).padStart(8,'0');}
+function sbpB64(json){const bytes=new TextEncoder().encode(json);let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(bin);}
+function sbpUnB64(b64){const bin=atob(b64),bytes=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)bytes[i]=bin.charCodeAt(i);return new TextDecoder().decode(bytes);}
+function sbpEncode(type,obj){const b=sbpB64(JSON.stringify(obj));return `SBP1:${type}:${b}:${sbpFnv(type+':'+b)}`;}
+/* returns [{type,data}] for every valid code, and [{type,error}] for damaged ones */
+function sbpDecodeAll(text){
+  const out=[];const src=String(text||'');SBP_CODE_RE.lastIndex=0;let m;
+  while((m=SBP_CODE_RE.exec(src))){const type=m[1],b=m[2].replace(/\s+/g,'');
+    if(sbpFnv(type+':'+b)!==m[3]){out.push({type,error:'checksum'});continue;}
+    try{out.push({type,data:JSON.parse(sbpUnB64(b))});}catch(e){out.push({type,error:'decode'});}}
+  if(!out.length&&/SBP1:/.test(src))out.push({type:'?',error:'cut'});
+  return out;
+}
+function sbpWaNumber(n){let d=String(n||'').replace(/\D/g,'');if(d.startsWith('00'))d=d.slice(2);if(d.length===10&&d.startsWith('0'))d='94'+d.slice(1);if(d.length===9)d='94'+d;return d;}
+function sbpCopy(text){
+  if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(text).then(()=>true,()=>sbpCopyOld(text));
+  return Promise.resolve(sbpCopyOld(text));
+}
+function sbpCopyOld(text){const t=document.createElement('textarea');t.value=text;t.setAttribute('readonly','');t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();t.setSelectionRange(0,text.length);let ok=false;try{ok=document.execCommand('copy');}catch(e){}t.remove();return ok;}
+
+'use strict';
+/* Shanthi Food Products — Lorry app (works offline; talks to Smart Bill Pro only through WhatsApp codes) */
+const KEY='sbpLorryApp_v1',TZ='Asia/Colombo',SIZE_RE=/^(\d+(?:\.\d+)?(?:g|kg|ml|l|P)|Card|Packet)$/i;
+let S=load();
+function blankState(){return {cfg:null,rep:null,reps:[],me:'',drafts:{load:null,count:null,unload:null},sent:[],cloud:null,outbox:[],seen:{},sug:null,cloudErr:'',cloudOk:''};}
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object'){const b=blankState();return {...b,...x,drafts:{...b.drafts,...(x.drafts||{})},sent:Array.isArray(x.sent)?x.sent:[],reps:Array.isArray(x.reps)?x.reps:[],outbox:Array.isArray(x.outbox)?x.outbox:[],seen:x.seen&&typeof x.seen==='object'?x.seen:{}};}}catch(e){}return blankState();}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));return true;}catch(e){toast('ෆෝන් එකේ save කරන්න බැරි වුණා! (ඉඩ මදිද?)','err');return false;}}
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function today(){try{const p={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);return `${p.year}-${p.month}-${p.day}`;}catch(e){return new Date().toISOString().slice(0,10);}}
+function nowTxt(){try{return new Date().toLocaleString('en-GB',{timeZone:TZ,hour12:true,day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return new Date().toLocaleString();}}
+function uid(){return (Date.now().toString(36)+Math.random().toString(36).slice(2,8)).toUpperCase();}
+function split(name){const n=String(name||'').trim().replace(/\s+/g,' '),parts=n.split(' '),last=parts[parts.length-1];return parts.length>1&&SIZE_RE.test(last)?{fam:parts.slice(0,-1).join(' '),size:last}:{fam:n,size:''};}
+function products(){return S.cfg&&Array.isArray(S.cfg.p)?S.cfg.p:[];}
+function pname(id,fb){const p=products().find(x=>x[0]===id);return p?p[1]:String(fb||id);}
+function porder(id){const i=products().findIndex(x=>x[0]===id);return i<0?1e6:i;}
+function toast(msg,type){const t=$('toast');t.textContent=msg;t.className='toast show '+(type||'ok');clearTimeout(toast.t);toast.t=setTimeout(()=>t.className='toast',3200);}
+function vibrate(){try{navigator.vibrate&&navigator.vibrate(15);}catch(e){}}
+function norm(s){return String(s||'').toLocaleLowerCase().replace(/\s+/g,'');}
+
+/* ---------------- navigation ---------------- */
+let screen='home';
+const TITLES={home:'🚛 ලොරි App',load:'📦 ලොරියට පටවන්න',count:'🔢 ලොරිය ගණන් කරන්න',unload:'🏭 Factory එකට බෑවා',inbox:'📥 Report / Code දාන්න',history:'📜 යැවූ ඒවා',setup:'⚙️ සැකසුම්'};
+function go(name){screen=name;document.querySelector('header h1').textContent=TITLES[name]||TITLES.home;$('backBtn').style.visibility=name==='home'?'hidden':'visible';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+name));window.scrollTo(0,0);render();try{history.replaceState(null,'','#'+name);}catch(e){}}
+function render(){
+  $('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'පළමු වතාවට සකසන්න';
+  ({home:renderHome,load:renderLoad,count:renderCount,unload:renderUnload,inbox:renderInbox,history:renderHistory,setup:renderSetup})[screen]();
+}
+
+/* ---------------- home ---------------- */
+function lastSent(t,d){return S.sent.filter(x=>x.t===t&&(!d||x.d===d)).slice(-1)[0]||null;}
+function renderHome(){
+  const r=S.rep,cd=S.drafts.count,ld=S.drafts.load,c=S.cfg;
+  if(!c){$('homeBody').innerHTML=S.cloud?`<div class="card hero"><div class="big">☁️</div><h2>ආයුබෝවන්!</h2><p>භාණ්ඩ ලැයිස්තුව ඉබේම ගන්නවා… (Internet ඕනේ)</p><button class="btn primary block" onclick="cloudSync(true)">🔄 දැන් ගන්න</button><p class="small muted">වැඩ නොකළොත් WhatsApp එකෙන් ආපු “📲 භාණ්ඩ ලැයිස්තුව” message එක දාන්න.</p><button class="btn light block" onclick="go('inbox')">📥 Message එක දාන්න</button></div>`:`<div class="card hero"><div class="big">👋</div><h2>ආයුබෝවන්!</h2><p>මුලින්ම ඔයාට WhatsApp එකෙන් ආපු <strong>“📲 භාණ්ඩ ලැයිස්තුව”</strong> message එක සම්පූර්ණයෙන්ම copy කරලා මෙතන දාන්න.</p><button class="btn primary block" onclick="go('inbox')">📥 Message එක දාන්න</button></div>`;return;}
+  if(!S.me){go('setup');toast('මුලින්ම ඔයාගේ නම දාන්න','warn');return;}
+  const counted=r&&lastSent('count',r.d),loadToday=lastSent('load',today());
+  const step=(n,done,title,sub,act,btn,cls)=>`<div class="card step ${done?'done':''}"><div class="num">${done?'✓':n}</div><div class="grow"><h3>${title}</h3><div class="muted">${sub}</div></div><button class="btn ${cls||'primary'}" onclick="${act}">${btn}</button></div>`;
+  $('homeBody').innerHTML=`<div class="hello">ආයුබෝවන් <strong>${esc(S.me)}</strong> 👋 <span class="muted">· ${today()}</span></div>${cloudLine()}
+   ${step(1,!!r&&r.d>=(lastSent('load')||{d:''}).d,'📥 Report එක දාන්න',r?`අන්තිම Report: <strong>${esc(r.d)}</strong>`:'තවම Report එකක් නැහැ','go(\'inbox\')','දාන්න','light')}
+   ${step(2,!!counted,'🔢 ලොරිය ගණන් කරන්න',r?(counted?`${esc(r.d)} — යැව්වා (සංශෝධනය ${counted.rev})`:(cd&&cd.d===r.d&&Object.keys(cd.c||{}).length?`${esc(r.d)} — ගණන් කරමින්… (${Object.keys(cd.c).length}ක්)`:`${esc(r.d)} Report එකට`)):'Report එක ආවට පස්සේ','go(\'count\')',counted?'බලන්න':'ගණන් කරන්න')}
+   ${step(3,!!loadToday,'📦 ලොරියට පටවන්න',loadToday?`අද යැව්වා (සංශෝධනය ${loadToday.rev}) · පැකට් ${loadToday.total}`:(ld&&!ld.sentRev&&Object.keys(ld.i||{}).length?'දාමින්… (තවම යැව්වේ නැහැ)':'අද පටවන බඩු'),'go(\'load\')',loadToday?'බලන්න':'පටවන්න')}
+   <div class="grid2">
+    <button class="tile" onclick="go('unload')"><span>🏭</span>Factory එකට බෑවා<small>Delivery නැති දවසට / ඉතුරු බඩු බානකොට</small></button>
+    <button class="tile" onclick="go('history')"><span>📜</span>යැවූ ඒවා<small>${S.sent.length} ක්</small></button>
+   </div>
+   ${r&&r.rd&&r.rd.length&&!counted?`<div class="card warnbox">↩ <strong>Factory එකට භාර දෙන්න ඕනේ Return / Damage</strong> තියෙනවා (${esc(r.d)}). ගණන් කරන screen එකේ බලන්න.</div>`:''}`;
+}
+
+/* ---------------- product list UI (grouped by product family) ---------------- */
+function groupHtml(ids,rowFn){
+  ids=ids.slice().sort((a,b)=>porder(a)-porder(b)||pname(a).localeCompare(pname(b),'si'));let html='',fam=null;
+  ids.forEach(id=>{const sp=split(pname(id));if(sp.fam!==fam){if(fam!==null)html+='</div>';fam=sp.fam;html+=`<div class="fam"><div class="fam-h">${esc(fam)}</div>`;}html+=rowFn(id,sp.size||sp.fam);});
+  if(fam!==null)html+='</div>';return html;
+}
+function searchHit(id,q){if(!q)return true;return norm(pname(id)).includes(norm(q));}
+
+/* ---------------- LOAD ---------------- */
+let loadQ='',loadOnly=false;
+function loadDraft(){let d=S.drafts.load;if(!d||d.sentRev&&d.d<today()){d=S.drafts.load={uid:uid(),d:today(),rev:0,sentRev:0,by:S.me,i:{},note:''};save();}return d;}
+function newLoad(){const d=S.drafts.load;if(d&&!d.sentRev&&Object.keys(d.i).length&&!confirm('දැනට දාපු (තවම නොයැවූ) පැටවීම මකලා අලුතින් පටන් ගන්නද?'))return;S.drafts.load={uid:uid(),d:today(),rev:0,sentRev:0,by:S.me,i:{},note:''};save();renderLoad();}
+function loadSet(id,v){const d=loadDraft();const n=Math.max(0,Math.floor(Number(v)||0));if(n)d.i[id]=n;else delete d.i[id];save();loadTotals();const el=document.querySelector(`[data-lrow="${CSS.escape(id)}"]`);if(el)el.classList.toggle('has',!!n);}
+function loadStep(id,dx){const d=loadDraft();const n=Math.max(0,(d.i[id]||0)+dx);loadSet(id,n);const inp=document.querySelector(`[data-lin="${CSS.escape(id)}"]`);if(inp)inp.value=n||'';vibrate();}
+function loadTotals(){const d=loadDraft(),v=Object.values(d.i),changed=d.sentRev&&JSON.stringify(sortObj(d.i))!==JSON.stringify(sortObj((lastSentUid(d.uid)||{}).i||{}));
+  $('loadBar').innerHTML=`<div class="grow"><strong>${v.length}</strong> වර්ග · <strong>${v.reduce((a,b)=>a+b,0)}</strong> පැකට්${d.sentRev?`<div class="small">${changed?'✏️ වෙනස් කළා — ආයෙත් යවන්න':'✅ යැව්වා (සංශෝධනය '+d.sentRev+')'}</div>`:''}</div><button class="btn primary" onclick="sendLoad()" ${v.length?'':'disabled'}>${d.sentRev?(changed?'සංශෝධනය යවන්න ➜':'ආයෙත් යවන්න ➜'):'WhatsApp යවන්න ➜'}</button>`;}
+function sortObj(o){return Object.keys(o).sort().reduce((r,k)=>(r[k]=o[k],r),{});}
+function lastSentUid(u){return S.sent.filter(x=>x.uid===u).slice(-1)[0]||null;}
+function renderLoad(){
+  if(!S.cfg){go('inbox');return;}const d=loadDraft();
+  $('loadDate').value=d.d;$('loadNote').value=d.note||'';$('loadQ').value=loadQ;$('loadOnly').checked=loadOnly;
+  $('loadInfo').innerHTML=d.sentRev?`<div class="card infobox">✅ මේ පැටවීම යැව්වා (සංශෝධනය ${d.sentRev}). වැරැද්දක් නම් හදලා ආයෙත් යවන්න — main system එකේ පරණ එක වෙනුවට යනවා. <button class="btn light sm" onclick="newLoad()">🆕 අලුත් පැටවීමක්</button></div>`:'';
+  const sg=sugFor(d.d);$('loadSug').innerHTML=sg?`<div class="card infobox">💡 <strong>ලොකු මහත්තයාගේ යෝජනාව</strong> — ${esc(sg.d)}${sg.route?' · '+esc(sg.route):''} · පැකට් ${Object.values(sg.i).reduce((a,b)=>a+b,0)}<div class="small">එක එක භාණ්ඩය ළඟ 💡 ගණන පෙන්නනවා. ඇත්තටම පටවන ගණන දාන්න.</div><button class="btn light sm" style="margin-top:6px" onclick="sugFill()">💡 යෝජනාව ඔක්කොම දාන්න</button></div>`:'';
+  const ids=products().map(p=>p[0]).filter(id=>searchHit(id,loadQ)&&(!loadOnly||d.i[id]));
+  $('loadList').innerHTML=ids.length?groupHtml(ids,(id,label)=>`<div class="row ${d.i[id]?'has':''}" data-lrow="${esc(id)}"><div class="lbl">${esc(label)}${sg&&sg.i[id]?` <span class="sug">💡 ${sg.i[id]}</span>`:''}</div><div class="stepper"><button class="sbtn" onclick="loadStep('${esc(id)}',-1)">−</button><input type="number" inputmode="numeric" min="0" data-lin="${esc(id)}" value="${d.i[id]||''}" placeholder="0" onfocus="this.select()" oninput="loadSet('${esc(id)}',this.value)"><button class="sbtn" onclick="loadStep('${esc(id)}',1)">＋</button></div></div>`):'<div class="empty">භාණ්ඩ හම්බ වුණේ නැහැ</div>';
+  loadTotals();
+}
+function sendLoad(){
+  const d=loadDraft();d.d=$('loadDate').value||today();d.note=$('loadNote').value.trim();const ids=Object.keys(d.i);if(!ids.length)return;
+  const rev=(d.sentRev||0)+1,items=ids.sort((a,b)=>porder(a)-porder(b)).map(id=>[id,d.i[id],pname(id)]),total=items.reduce((t,x)=>t+x[1],0);
+  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,i:items};
+  const text=`📦 *ලොරියට පැටවීම* — ${d.d}\n${rev>1?'✏️ සංශෝධනය '+rev+' (කලින් එක වෙනුවට)':'සංශෝධනය 1'} · පැටවූයේ: ${S.me}\n\n`+items.map(x=>`• ${x[2]} — ${x[1]}`).join('\n')+`\n\nඑකතුව: ${items.length} වර්ග · ${total} පැකට්${d.note?'\nසටහන: '+d.note:''}\n━━━━━━━━━━\n${sbpEncode('load',payload)}`;
+  sendOut('📦 පැටවීම යවන්න',text,'load',payload,()=>{d.sentRev=rev;S.sent.push({t:'load',uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text});trimSent();save();renderLoad();});
+}
+
+/* ---------------- COUNT ---------------- */
+let countQ='',countFilter='all';
+function repRows(){const r=S.rep;const m={};if(r)(r.rows||[]).forEach(x=>{m[x[0]]={id:x[0],opening:x[1],loaded:x[2],sold:x[3],free:x[4],unloaded:x[5],expected:x[6]};});return m;}
+function countDraft(){
+  const r=S.rep,d=r?r.d:today();let c=S.drafts.count;
+  if(!c||c.d!==d){if(c&&!c.sentRev&&Object.keys(c.c||{}).length&&c.d!==d){/* keep the unfinished one in history so nothing is lost */S.sent.push({t:'count-draft',uid:c.uid,rev:0,d:c.d,at:new Date().toISOString(),total:0,c:c.c,text:''});}
+    c=S.drafts.count={uid:uid(),d,rev:0,sentRev:0,by:S.me,c:{},extra:[],rd:false,note:''};save();}
+  c.extra=c.extra||[];return c;
+}
+function cTotal(e){return e&&Array.isArray(e.parts)?e.parts.reduce((a,b)=>a+b,0):null;}
+function countIds(){const c=countDraft(),m=repRows();return [...new Set([...Object.keys(m).filter(id=>m[id].expected||m[id].loaded||m[id].opening),...c.extra,...Object.keys(c.c)])];}
+function cState(id){const c=countDraft(),m=repRows(),e=c.c[id],t=cTotal(e),exp=m[id]?m[id].expected:0;if(t===null)return {t,exp,diff:null};return {t,exp,diff:exp-t};}
+function countAdd(id,mode){
+  const inp=document.querySelector(`[data-cin="${CSS.escape(id)}"]`);const v=Math.floor(Number(inp&&inp.value));
+  if(!(v>=0)||inp.value===''){toast('ප්‍රමාණය type කරන්න','warn');inp&&inp.focus();return;}
+  const c=countDraft();const e=c.c[id]||(c.c[id]={parts:[],dmg:0});
+  if(mode==='set'){if(e.parts.length&&!confirm(`දැනට ${cTotal(e)} තියෙනවා. ඒක මකලා ${v} කරන්නද?`))return;e.parts=[v];}else e.parts.push(v);
+  inp.value='';save();vibrate();redrawCountRow(id);countBar();
+}
+function countUndo(id){const c=countDraft(),e=c.c[id];if(!e||!e.parts.length)return;e.parts.pop();if(!e.parts.length&&!e.dmg)delete c.c[id];save();redrawCountRow(id);countBar();}
+function countDmg(id,v){const c=countDraft();const e=c.c[id]||(c.c[id]={parts:[],dmg:0});e.dmg=Math.max(0,Math.floor(Number(v)||0));if(!e.parts.length&&!e.dmg)delete c.c[id];save();countBar();}
+function countRowHtml(id,label){
+  const c=countDraft(),e=c.c[id],st=cState(id),blind=S.rep&&S.rep.cfg&&S.rep.cfg.blind,show=!blind||st.t!==null;
+  const chip=st.t===null?'<span class="chip">ගණන් කළේ නැහැ</span>':st.diff===0?'<span class="chip ok">✅ හරි</span>':st.diff>0?`<span class="chip bad">🔴 අඩුයි ${st.diff}</span>`:`<span class="chip over">🟡 වැඩියි ${-st.diff}</span>`;
+  return `<div class="crow ${st.t===null?'':st.diff===0?'ok':st.diff>0?'bad':'over'}" data-crow="${esc(id)}"><div class="ctop"><div class="lbl">${esc(label)}</div>${chip}</div>
+   <div class="cnums"><div><small>තියෙන්න ඕනේ</small><b>${show?st.exp:'🙈'}</b></div><div><small>ගණන් කළ</small><b>${st.t===null?'—':st.t}</b>${e&&e.parts.length>1?`<small class="parts">${e.parts.join(' + ')}</small>`:''}</div></div>
+   <div class="cin"><input type="number" inputmode="numeric" min="0" placeholder="ගණන" data-cin="${esc(id)}" onkeydown="if(event.key==='Enter')countAdd('${esc(id)}','add')"><button class="btn primary" onclick="countAdd('${esc(id)}','add')">＋ එකතු</button>${e&&e.parts.length?`<button class="btn light" onclick="countUndo('${esc(id)}')" title="අන්තිම එක අයින් කරන්න">↶</button>`:''}</div>
+   <details class="dmg"${e&&e.dmg?' open':''}><summary>ලොරියේදී damage වුණාද?</summary><label>ලොරියේ Damage පැකට්<input type="number" inputmode="numeric" min="0" value="${e&&e.dmg?e.dmg:''}" placeholder="0" oninput="countDmg('${esc(id)}',this.value)"></label></details></div>`;
+}
+function redrawCountRow(id){const el=document.querySelector(`[data-crow="${CSS.escape(id)}"]`);if(!el)return renderCount();const sp=split(pname(id));el.outerHTML=countRowHtml(id,sp.size||sp.fam);}
+function countBar(){const ids=countIds(),c=countDraft();let done=0,bad=0,over=0;ids.forEach(id=>{const s=cState(id);if(s.t===null)return;done++;if(s.diff>0)bad++;if(s.diff<0)over++;});
+  $('countBar').innerHTML=`<div class="grow"><strong>${done}/${ids.length}</strong> ගණන් කළා${bad?` · <span class="tbad">අඩු ${bad}</span>`:''}${over?` · <span class="tover">වැඩි ${over}</span>`:''}${c.sentRev?`<div class="small">✅ යැව්වා (සංශෝධනය ${c.sentRev}) — වෙනස් කළොත් ආයෙත් යවන්න</div>`:''}</div><button class="btn primary" onclick="reviewCount()" ${done?'':'disabled'}>යවන්න ➜</button>`;}
+function renderCount(){
+  if(!S.cfg){go('inbox');return;}const r=S.rep,c=countDraft();
+  $('countHead').innerHTML=r?`<div class="card infobox"><strong>📅 ${esc(r.d)}</strong> Report එකට ගණන් කරනවා${r.route?' · '+esc(r.route):''}<div class="small">Report ආවේ: ${esc(String(r.at||'').slice(0,16).replace('T',' '))}</div></div>`:`<div class="card warnbox">⚠️ තවම Report එකක් නැහැ. Report එක නැතුව ගණන් කළොත් “තියෙන්න ඕනේ” ප්‍රමාණ පේන්නේ නැහැ. <button class="btn light sm" onclick="go('inbox')">📥 Report දාන්න</button></div>`;
+  const rd=(r&&r.rd)||[];
+  $('countRD').innerHTML=rd.length?`<div class="card"><h3>↩ Factory එකට භාර දෙන්න (Return / Damage)</h3>${rd.map(x=>`<div class="rdrow"><span>${esc(pname(x[0]))}</span><span>${x[1]?'Return '+x[1]:''}${x[1]&&x[2]?' · ':''}${x[2]?'Damage '+x[2]:''}</span></div>`).join('')}<label class="check"><input type="checkbox" ${c.rd?'checked':''} onchange="countDraft().rd=this.checked;save()"> මේවා Factory එකට භාර දුන්නා</label></div>`:'';
+  $('countQ').value=countQ;document.querySelectorAll('#countFilters button').forEach(b=>b.classList.toggle('on',b.dataset.f===countFilter));
+  let ids=countIds().filter(id=>searchHit(id,countQ));
+  if(countFilter==='todo')ids=ids.filter(id=>cState(id).t===null);if(countFilter==='diff')ids=ids.filter(id=>{const s=cState(id);return s.diff!==null&&s.diff!==0;});
+  $('countList').innerHTML=ids.length?groupHtml(ids,countRowHtml):`<div class="empty">${countFilter==='diff'?'🎉 අඩු / වැඩි ඒවා නැහැ':countFilter==='todo'?'🎉 ඔක්කොම ගණන් කළා':'භාණ්ඩ නැහැ'}</div>`;
+  $('countNote').value=c.note||'';
+  countBar();
+}
+function countSetFilter(f){countFilter=f;renderCount();}
+function countAddExtra(){const q=prompt('ලොරියේ හම්බුණ, ලැයිස්තුවේ නැති භාණ්ඩයේ නම type කරන්න (කොටසක් ඇති):');if(!q)return;const hits=products().filter(p=>norm(p[1]).includes(norm(q)));if(!hits.length){toast('හම්බ වුණේ නැහැ','warn');return;}
+  let pick=hits[0];if(hits.length>1){const n=prompt(hits.slice(0,15).map((p,i)=>`${i+1}. ${p[1]}`).join('\n')+'\n\nඅංකය type කරන්න:','1');const k=Number(n)-1;if(!(k>=0&&k<hits.length))return;pick=hits[k];}
+  const c=countDraft();if(!c.extra.includes(pick[0]))c.extra.push(pick[0]);save();countFilter='all';countQ='';renderCount();setTimeout(()=>{const el=document.querySelector(`[data-cin="${CSS.escape(pick[0])}"]`);if(el){el.scrollIntoView({block:'center'});el.focus();}},60);}
+function reviewCount(){
+  const c=countDraft();c.note=$('countNote').value.trim();save();const ids=countIds(),todo=ids.filter(id=>cState(id).t===null&&repRows()[id]&&repRows()[id].expected>0),diff=ids.filter(id=>{const s=cState(id);return s.diff!==null&&s.diff!==0;});
+  let h='';
+  if(todo.length)h+=`<div class="warnbox">⚠️ ගණන් නොකළ භාණ්ඩ <strong>${todo.length}</strong>ක් තියෙනවා:<div class="small">${todo.slice(0,12).map(id=>esc(pname(id))).join(', ')}${todo.length>12?' …':''}</div></div>`;
+  if(diff.length)h+=`<div class="warnbox">🔍 අඩු / වැඩි <strong>${diff.length}</strong>ක් තියෙනවා. යවන්න කලින් ආයෙත් හොයලා බලන්න:<div class="small">${diff.slice(0,12).map(id=>{const s=cState(id);return `${esc(pname(id))} (${s.diff>0?'අඩු '+s.diff:'වැඩි '+(-s.diff)})`;}).join(', ')}</div></div>`;
+  if(!todo.length&&!diff.length)h+='<div class="okbox">🎉 ඔක්කොම හරි! යවන්න පුළුවන්.</div>';
+  if(S.rep&&S.rep.rd&&S.rep.rd.length&&!c.rd)h+='<div class="warnbox">↩ Return / Damage Factory එකට භාර දුන්නා කියලා tick කරලා නැහැ.</div>';
+  sheet('🔢 යවන්න කලින් බලන්න',h,[diff.length?{t:'🔍 ආයෙත් බලන්න',c:'light',f:()=>{countFilter='diff';closeSheet();renderCount();}}:null,todo.length?{t:'ගණන් නොකළ ඒවා 0 ලෙස යවන්න',c:'light',f:()=>sendCount(true)}:null,{t:todo.length?'ගණන් කළ ඒවා විතරක් යවන්න':'✅ හරි, යවන්න',c:'primary',f:()=>sendCount(false)}].filter(Boolean));
+}
+function sendCount(zeroTodo){
+  const c=countDraft(),m=repRows(),ids=countIds(),rev=(c.sentRev||0)+1,items=[];
+  ids.sort((a,b)=>porder(a)-porder(b)).forEach(id=>{const e=c.c[id],t=cTotal(e);if(t===null&&!(zeroTodo&&m[id]&&m[id].expected>0))return;items.push([id,t===null?0:t,pname(id),e&&e.dmg||0,e&&e.parts.length>1?e.parts.join(' + '):'']);});
+  const payload={v:1,d:c.d,rev,uid:c.uid,by:S.me,at:new Date().toISOString(),note:c.note,rd:!!c.rd,sig:S.rep?S.rep.sig:'',i:items};
+  const bad=items.filter(x=>m[x[0]]&&m[x[0]].expected-x[1]!==0);
+  const text=`🔢 *ලොරිය ගණන් කිරීම* — ${c.d}\n${rev>1?'✏️ සංශෝධනය '+rev+' (කලින් එක වෙනුවට)':'සංශෝධනය 1'} · ගණන් කළේ: ${S.me}\n\n`+items.map(x=>{const e=m[x[0]];const df=e?e.expected-x[1]:null;return `• ${x[2]} — ${x[1]}${x[4]?' ('+x[4]+')':''}${x[3]?' · damage '+x[3]:''}${df?(df>0?' 🔴 අඩු '+df:' 🟡 වැඩි '+(-df)):''}`;}).join('\n')+`\n\n${bad.length?'අඩු / වැඩි: '+bad.length:'✅ ඔක්කොම හරි'}${S.rep&&S.rep.rd&&S.rep.rd.length?'\nReturn/Damage Factory එකට: '+(c.rd?'✅ දුන්නා':'❌ නැහැ'):''}${c.note?'\nසටහන: '+c.note:''}\n━━━━━━━━━━\n${sbpEncode('count',payload)}`;
+  closeSheet();
+  sendOut('🔢 ගණන් කිරීම යවන්න',text,'count',payload,()=>{c.sentRev=rev;S.sent.push({t:'count',uid:c.uid,rev,d:c.d,at:new Date().toISOString(),total:items.reduce((t,x)=>t+x[1],0),i:Object.fromEntries(items.map(x=>[x[0],x[1]])),text});trimSent();save();renderCount();});
+}
+
+/* ---------------- UNLOAD (to factory) ---------------- */
+function lorryNow(){
+  /* best estimate of what is on the lorry now: last report → count (if sent) → later loads − later unloads */
+  const r=S.rep,est={};if(r)(r.rows||[]).forEach(x=>{if(x[6]>0)est[x[0]]=x[6];});
+  const cnt=r&&lastSent('count',r.d);if(cnt){Object.keys(est).forEach(k=>delete est[k]);Object.entries(cnt.i||{}).forEach(([k,v])=>{if(v)est[k]=v;});}
+  const after=d=>!r||d>r.d,latest={};S.sent.filter(x=>(x.t==='load'||x.t==='unload')&&after(x.d)).forEach(x=>{latest[x.uid]=x;});
+  Object.values(latest).forEach(x=>Object.entries(x.i||{}).forEach(([k,v])=>{est[k]=(est[k]||0)+(x.t==='load'?v:-v);if(est[k]<=0)delete est[k];}));
+  return est;
+}
+function unloadDraft(){let d=S.drafts.unload;if(!d||d.sentRev&&d.d!==today()){d=S.drafts.unload={uid:uid(),d:today(),rev:0,sentRev:0,by:S.me,i:{},all:false,note:''};save();}return d;}
+function unloadAll(){const d=unloadDraft(),est=lorryNow();if(!Object.keys(est).length){toast('ලොරියේ බඩු තියෙනවා කියලා දන්නේ නැහැ. අතින් දාන්න.','warn');return;}d.i={...est};d.all=true;save();renderUnload();toast('ලොරියේ තියෙන්න ඕනේ ඔක්කොම දැම්මා. බාපු ප්‍රමාණ හරියට බලන්න.');}
+function unloadSet(id,v){const d=unloadDraft();const n=Math.max(0,Math.floor(Number(v)||0));if(n)d.i[id]=n;else delete d.i[id];d.all=false;save();unloadBar();}
+function unloadBar(){const d=unloadDraft(),v=Object.values(d.i);$('unloadBar').innerHTML=`<div class="grow"><strong>${v.length}</strong> වර්ග · <strong>${v.reduce((a,b)=>a+b,0)}</strong> පැකට්${d.sentRev?'<div class="small">✅ යැව්වා (සංශෝධනය '+d.sentRev+')</div>':''}</div><button class="btn primary" onclick="sendUnload()" ${v.length?'':'disabled'}>යවන්න ➜</button>`;}
+function renderUnload(){
+  if(!S.cfg){go('inbox');return;}const d=unloadDraft(),est=lorryNow();$('unloadDate').value=d.d;$('unloadNote').value=d.note||'';
+  const ids=[...new Set([...Object.keys(est),...Object.keys(d.i)])];
+  $('unloadList').innerHTML=(ids.length?groupHtml(ids,(id,label)=>`<div class="row ${d.i[id]?'has':''}"><div class="lbl">${esc(label)}<small class="muted"> · ලොරියේ ${est[id]||0}</small></div><div class="stepper"><input type="number" inputmode="numeric" min="0" value="${d.i[id]||''}" placeholder="0" onfocus="this.select()" oninput="unloadSet('${esc(id)}',this.value)"></div></div>`):'<div class="empty">ලොරියේ බඩු ගැන දත්ත නැහැ. පහළින් භාණ්ඩයක් එකතු කරන්න.</div>');
+  unloadBar();
+}
+function unloadAddItem(){const q=prompt('බාපු භාණ්ඩයේ නම type කරන්න:');if(!q)return;const hits=products().filter(p=>norm(p[1]).includes(norm(q)));if(!hits.length){toast('හම්බ වුණේ නැහැ','warn');return;}let pick=hits[0];if(hits.length>1){const n=prompt(hits.slice(0,15).map((p,i)=>`${i+1}. ${p[1]}`).join('\n')+'\n\nඅංකය:','1');const k=Number(n)-1;if(!(k>=0&&k<hits.length))return;pick=hits[k];}const v=prompt(pick[1]+' — බාපු පැකට් ගණන:');if(v===null)return;unloadSet(pick[0],v);renderUnload();}
+function sendUnload(){
+  const d=unloadDraft();d.d=$('unloadDate').value||today();d.note=$('unloadNote').value.trim();const ids=Object.keys(d.i);if(!ids.length)return;
+  const rev=(d.sentRev||0)+1,items=ids.sort((a,b)=>porder(a)-porder(b)).map(id=>[id,d.i[id],pname(id)]),total=items.reduce((t,x)=>t+x[1],0);
+  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,all:!!d.all,i:items};
+  const text=`🏭 *Factory එකට බෑවා* — ${d.d}\n${rev>1?'✏️ සංශෝධනය '+rev:'සංශෝධනය 1'} · ${S.me}${d.all?'\n🚛 ලොරිය සම්පූර්ණයෙන් හිස් කළා':''}\n\n`+items.map(x=>`• ${x[2]} — ${x[1]}`).join('\n')+`\n\nඑකතුව: ${total} පැකට්${d.note?'\nසටහන: '+d.note:''}\n━━━━━━━━━━\n${sbpEncode('unload',payload)}`;
+  sendOut('🏭 බාපු බඩු යවන්න',text,'unload',payload,()=>{d.sentRev=rev;S.sent.push({t:'unload',uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text});trimSent();save();renderUnload();});
+}
+
+/* ---------------- INBOX: paste report / items code ---------------- */
+function renderInbox(){$('inboxInfo').innerHTML=S.cfg?`භාණ්ඩ <strong>${products().length}</strong>ක් · ${S.rep?`අන්තිම Report: <strong>${esc(S.rep.d)}</strong>`:'Report එකක් තවම නැහැ'}`:'තවම භාණ්ඩ ලැයිස්තුවක් නැහැ';}
+async function pasteClip(){try{const t=await navigator.clipboard.readText();$('inboxText').value=t;inboxApply();}catch(e){toast('Clipboard කියවන්න බැහැ. Text box එක ඇතුළේ ඔබාගෙන ඉඳලා “Paste” කරන්න.','warn');$('inboxText').focus();}}
+function inboxApply(){
+  const codes=sbpDecodeAll($('inboxText').value);
+  if(!codes.length){toast('Message එකේ code එකක් (SBP1:…) නැහැ. සම්පූර්ණ message එකම copy කරන්න.','err');return;}
+  const bad=codes.find(c=>c.error);if(bad){toast('Message එක කැපිලා / වෙනස් වෙලා. WhatsApp එකෙන් ආයෙත් සම්පූර්ණයෙන් copy කරන්න.','err');return;}
+  if(codes.some(c=>['load','count','unload'].includes(c.type))){toast('මේක ඔයා main system එකට යවන message එකක්. මෙතන දාන්න ඕනේ නැහැ.','warn');return;}
+  const r=applyCodes(codes,false);if(!r)return;
+  $('inboxText').value='';toast('✅ '+(r.msg.join(' · ')||'දැම්මා'));
+  if(!S.me)go('setup');else go(S.rep&&codes.some(c=>c.type==='rep')?'count':'home');
+}
+/* apply cfg / rep / sug codes. silent=true when they arrive by themselves from the cloud */
+function applyCodes(codes,silent){
+  const msg=[];
+  for(const c of codes){
+    if(c.type==='cfg'||c.type==='rep'){const cfg=c.type==='cfg'?c.data:c.data.cfg;if(!cfg||!Array.isArray(cfg.p)){if(!silent)toast('වලංගු නැති message එකක්','err');return null;}
+      const old=S.cfg;S.cfg={biz:String(cfg.biz||''),wa:String(cfg.wa||''),blind:!!cfg.blind,p:cfg.p.filter(x=>Array.isArray(x)&&x[0]&&x[1]).map(x=>[String(x[0]),String(x[1])]),at:cfg.at||'',driver:cfg.driver||'',vehicle:cfg.vehicle||''};
+      if(S.cfg.wa&&!S.waOverride)S.wa=S.cfg.wa;
+      if(cfg.cloud&&cfg.cloud.p&&cfg.cloud.b)cloudSetCfg(cfg.cloud.p,cfg.cloud.b);
+      if(c.type==='cfg')msg.push(`📲 භාණ්ඩ ${S.cfg.p.length}ක්${old?' (අලුත් කළා)':''}`);}
+    if(c.type==='rep'){const r=c.data;if(!/^\d{4}-\d{2}-\d{2}$/.test(String(r.d||''))||!Array.isArray(r.rows)){if(!silent)toast('වලංගු නැති Report එකක්','err');return null;}
+      if(S.rep&&S.rep.d>r.d){if(silent)continue;if(!confirm(`මේ Report එක (${r.d}) දැනට තියෙන එකට (${S.rep.d}) වඩා පරණයි. ඒත් දාන්නද?`))return null;}
+      if(S.rep&&S.rep.d===r.d&&S.rep.at===r.at){if(!silent)msg.push(`📤 ${r.d} Report එක දැනටමත් දාලා`);continue;}
+      const same=S.rep&&S.rep.d===r.d;S.rep={d:r.d,at:r.at,route:r.route||'',sig:r.sig||'',rows:r.rows,rd:Array.isArray(r.rd)?r.rd:[],cfg:{blind:!!(r.cfg&&r.cfg.blind)}};
+      S.reps=[S.rep,...S.reps.filter(x=>x.d!==r.d)].slice(0,10);msg.push(`📤 ${r.d} Report එක${same?' (අලුත් කළා)':''}`);}
+    if(c.type==='sug'){const g=c.data;if(!g||!/^\d{4}-\d{2}-\d{2}$/.test(String(g.d||''))||!Array.isArray(g.i))continue;
+      if(S.sug&&S.sug.at===g.at)continue;
+      S.sug={d:g.d,route:String(g.route||''),at:String(g.at||''),i:Object.fromEntries(g.i.filter(x=>Array.isArray(x)&&x[0]&&Number(x[1])>0).map(x=>[String(x[0]),Math.floor(Number(x[1]))]))};
+      msg.push(`💡 ${g.d} පටවන්න යෝජනාව`);}
+  }
+  save();return {msg};
+}
+
+/* ---------------- LOAD SUGGESTION ---------------- */
+function sugFor(d){const g=S.sug;if(!g||!g.i||!Object.keys(g.i).length)return null;if(g.d<today())return null;if(d&&g.d!==d&&g.d>d)return null;return g;}
+function sugFill(){const d=loadDraft(),g=sugFor(d.d);if(!g)return;if(Object.keys(d.i).length&&!confirm('දැනට දාපු ප්‍රමාණ යෝජනාවෙන් මාරු කරන්නද? (යෝජනාවේ නැති ඒවා එහෙමම තියෙනවා)'))return;Object.entries(g.i).forEach(([k,v])=>{if(products().some(p=>p[0]===k))d.i[k]=v;});save();renderLoad();toast('💡 යෝජනාව දැම්මා — ඇත්තටම පටවන ගණන් හරියට බලන්න');}
+
+/* ---------------- CLOUD (Firebase mailbox) ----------------
+   Sends go to boxes/<box>/in/<type_uid_rev>. The PC reads and clears that folder.
+   Reports / item list / suggestion come from boxes/<box>/out/{rep,cfg,sug}. Nothing is lost when offline:
+   messages wait in S.outbox and go when the phone is back online. WhatsApp always works as a fallback. */
+const FS='https://firestore.googleapis.com/v1/projects/';
+function cloudSetCfg(p,b){p=String(p||'').toLowerCase();b=String(b||'');if(!/^[a-z][a-z0-9-]{4,29}$/.test(p)||!/^[A-Za-z0-9_-]{20,64}$/.test(b))return false;if(!S.cloud||S.cloud.p!==p||S.cloud.b!==b){S.cloud={p,b};S.seen={};save();}return true;}
+function fsBase(){return `${FS}${S.cloud.p}/databases/(default)/documents/boxes/${S.cloud.b}`;}
+function cloudErrText(st,j){const s=(j&&j.error&&j.error.status)||'';if(st===429||s==='RESOURCE_EXHAUSTED')return 'Firebase අද සීමාව ඉවරයි — WhatsApp එකෙන් යවන්න';if(st===403||s==='PERMISSION_DENIED')return 'Firebase අවසර නැහැ (Rules)';if(st===404)return 'Firebase සැකසුම් වැරදියි';return 'Firebase දෝෂය '+st;}
+let cloudBusy=false;
+async function cloudFlush(){
+  if(!S.cloud||!S.outbox.length)return true;
+  for(const m of S.outbox.slice()){
+    let r;try{r=await fetch(`${fsBase()}/in?documentId=${encodeURIComponent(m.id)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:m.code},at:{stringValue:m.at}}})});}
+    catch(e){S.cloudErr='Internet නැහැ — signal ආපු ගමන් ඉබේම යනවා';save();return false;}
+    if(r.ok||r.status===409){S.outbox=S.outbox.filter(x=>x.id!==m.id);const h=S.sent.find(x=>x.cloudId===m.id);if(h)h.cloudAt=new Date().toISOString();S.cloudErr='';S.cloudOk=new Date().toISOString();save();}
+    else{let j={};try{j=await r.json();}catch(e){}S.cloudErr=cloudErrText(r.status,j);save();return false;}
+  }
+  return true;
+}
+async function cloudPull(){
+  if(!S.cloud)return;const got=[];
+  for(const k of ['cfg','rep','sug']){
+    let r;try{r=await fetch(`${fsBase()}/out/${k}`,{cache:'no-store'});}catch(e){S.cloudErr='Internet නැහැ';return;}
+    if(r.status===404)continue;if(!r.ok){let j={};try{j=await r.json();}catch(e){}S.cloudErr=cloudErrText(r.status,j);return;}
+    let j;try{j=await r.json();}catch(e){continue;}const f=j.fields||{},at=(f.at||{}).stringValue||'',code=(f.code||{}).stringValue||'';
+    if(!code||S.seen[k]===at)continue;
+    const codes=sbpDecodeAll(code).filter(c=>!c.error&&c.type===k);
+    if(codes.length){const res=applyCodes(codes,true);if(res)got.push(...res.msg);}
+    S.seen[k]=at;
+  }
+  S.cloudErr='';S.cloudOk=new Date().toISOString();save();
+  if(got.length){toast('☁️ '+got.join(' · '));const typing=document.activeElement&&document.activeElement.tagName==='INPUT';if(!(screen==='count'||(screen==='load'&&typing)))render();}
+}
+async function cloudSync(manual){
+  if(!S.cloud){if(manual)toast('Cloud සකසලා නැහැ. ලොකු මහත්තයාගෙන් app link එක ආයෙත් ගන්න.','warn');return;}
+  if(cloudBusy)return;cloudBusy=true;
+  try{await cloudFlush();await cloudPull();}finally{cloudBusy=false;}
+  if(manual)toast(S.cloudErr?'⚠️ '+S.cloudErr:'☁️ ඔක්කොම යැව්වා / ගත්තා ✅',S.cloudErr?'warn':'ok');
+  if(screen==='home'||screen==='setup')render();
+}
+function cloudLine(){
+  if(!S.cloud)return '<div class="cloudline off"><span>📴</span><span class="grow">Cloud නැහැ — WhatsApp එකෙන් යවනවා</span></div>';
+  const n=S.outbox.length;
+  if(n)return `<div class="cloudline ${S.cloudErr?'bad':'wait'}"><span>⏳</span><span class="grow">යවන්න බලාගෙන ${n}ක්${S.cloudErr?' — '+esc(S.cloudErr):''}</span><button class="btn light sm" onclick="cloudSync(true)">🔄</button></div>`;
+  if(S.cloudErr)return `<div class="cloudline bad"><span>⚠️</span><span class="grow">${esc(S.cloudErr)}</span><button class="btn light sm" onclick="cloudSync(true)">🔄</button></div>`;
+  return `<div class="cloudline"><span>☁️</span><span class="grow">ඉබේම යවනවා / ගන්නවා${S.cloudOk?' · '+esc(new Date(S.cloudOk).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})):''}</span><button class="btn light sm" onclick="cloudSync(true)">🔄</button></div>`;
+}
+/* send one message: cloud first (queued, survives offline), WhatsApp / Share / Copy as fallback */
+function sendOut(title,text,type,payload,onSent){
+  if(!S.cloud){shareSheet(title,text,onSent);return;}
+  const id=`${type}_${payload.uid}_${payload.rev}`,code=sbpEncode(type,payload);
+  if(!S.outbox.some(x=>x.id===id))S.outbox.push({id,code,at:new Date().toISOString()});
+  if(onSent)onSent();const h=S.sent[S.sent.length-1];if(h&&h.uid===payload.uid&&h.rev===payload.rev)h.cloudId=id;save();
+  shareSheet(title,text,null,id);
+  cloudFlush().then(()=>{const el=$('sendState');if(!el)return;const ok=!S.outbox.some(x=>x.id===id);el.className='sendstate '+(ok?'ok':'wait');el.innerHTML=ok?'✅ ලොකු මහත්තයාට ඉබේම ගියා. WhatsApp එකෙන් යවන්න ඕනේ නැහැ.':`⏳ ${esc(S.cloudErr||'තවම ගියේ නැහැ')}.<br>Signal ආපු ගමන් ඉබේම යනවා. හදිසි නම් පහළ WhatsApp බොත්තමෙන් යවන්න.`;if(screen==='home')render();});
+}
+
+/* ---------------- HISTORY ---------------- */
+const TT={load:'📦 පැටවීම',count:'🔢 ගණන් කිරීම',unload:'🏭 Factory එකට','count-draft':'📝 නොයැවූ ගණන් කිරීම'};
+function trimSent(){if(S.sent.length>80)S.sent=S.sent.slice(-80);}
+function renderHistory(){const list=S.sent.slice().reverse();$('histList').innerHTML=list.length?list.map((x,i)=>`<div class="card hist"><div class="grow"><strong>${TT[x.t]||x.t}</strong> · ${esc(x.d)}${x.rev?' · සංශෝධනය '+x.rev:''}<div class="small muted">${esc(String(x.at).slice(0,16).replace('T',' '))}${x.total?' · පැකට් '+x.total:''}${x.cloudId?(x.cloudAt?' · ☁️ ගියා':' · ⏳ යවන්න බලාගෙන'):''}</div></div>${x.text?`<button class="btn light sm" onclick="resend(${S.sent.length-1-i})">ආයෙත් යවන්න</button>`:''}</div>`).join(''):'<div class="empty">තවම කිසිවක් යැව්වේ නැහැ</div>';}
+function resend(i){const x=S.sent[i];if(x&&x.text)shareSheet('ආයෙත් යවන්න',x.text,null);}
+
+/* ---------------- SETUP ---------------- */
+function renderSetup(){$('cloudSetup').innerHTML=S.cloud?`${cloudLine()}<div class="muted">Project: ${esc(S.cloud.p)} · යවන්න බලාගෙන: ${S.outbox.length}</div>`:'<div class="muted">සකසලා නැහැ. ලොකු මහත්තයා එවන “📱 ලොරි app link” එකෙන් open කළාම ඉබේම සැකසෙනවා. ඒ වෙනකම් WhatsApp ක්‍රමය වැඩ කරනවා.</div>';$('meName').value=S.me||'';$('waNum').value=S.wa||(S.cfg&&S.cfg.wa)||'';$('setupInfo').innerHTML=S.cfg?`භාණ්ඩ ${products().length}ක් · ලැයිස්තුව ආවේ ${esc(String(S.cfg.at||'').slice(0,10))}`:'භාණ්ඩ ලැයිස්තුව තවම නැහැ';}
+function saveSetup(){const n=$('meName').value.trim();if(n.length<2){toast('නම අකුරු 2කට වැඩි වෙන්න ඕනේ','err');return;}S.me=n.slice(0,40);const w=$('waNum').value.trim();S.wa=w;S.waOverride=!!w&&(!S.cfg||sbpWaNumber(w)!==S.cfg.wa);['load','count','unload'].forEach(k=>{if(S.drafts[k]&&!S.drafts[k].sentRev)S.drafts[k].by=S.me;});save();toast('✅ සුරැකුවා');go('home');}
+function resetApp(){if(!confirm('App එකේ ඔක්කොම දත්ත මකන්නද? (යැවූ message WhatsApp එකේ තියෙනවා)'))return;if(prompt('තහවුරු කරන්න DELETE කියලා type කරන්න')!=='DELETE')return;S=blankState();save();go('home');}
+
+/* ---------------- share sheet ---------------- */
+function sheet(title,html,buttons){$('sheetTitle').textContent=title;$('sheetBody').innerHTML=html;const a=$('sheetActions');a.innerHTML='';(buttons||[]).forEach(b=>{const el=document.createElement('button');el.className='btn block '+(b.c||'light');el.textContent=b.t;el.onclick=b.f;a.appendChild(el);});const x=document.createElement('button');x.className='btn block ghost';x.textContent='වසන්න';x.onclick=closeSheet;a.appendChild(x);$('sheet').classList.add('show');}
+function closeSheet(){$('sheet').classList.remove('show');}
+function shareSheet(title,text,onSent,cloudId){
+  const n=sbpWaNumber(S.wa||(S.cfg&&S.cfg.wa));const done=()=>{if(onSent){onSent();onSent=null;}};
+  sheet(title,`${cloudId?'<div class="sendstate" id="sendState">☁️ ඉබේම යවමින්…</div><div class="small muted" style="margin:-4px 0 8px">Cloud වැඩ නොකළොත් පමණක් පහළ බොත්තමකින් යවන්න:</div>':''}<div class="preview">${esc(text.replace(/\n━━━━━━━━━━\nSBP1:[\s\S]*$/,'\n━━━━━━━━━━\n🔒 (code එක)'))}</div>${n||cloudId?'':'<div class="warnbox small">ලොකු මහත්තයාගේ WhatsApp අංකය සැකසුම් වල නැහැ — “Share” හෝ “Copy” පාවිච්චි කරන්න.</div>'}`,[
+    n?{t:'💬 WhatsApp එකෙන් යවන්න',c:'wa',f:()=>{done();location.href=`https://wa.me/${n}?text=${encodeURIComponent(text)}`;}}:null,
+    navigator.share?{t:'📤 Share (WhatsApp තෝරන්න)',c:n?'light':'wa',f:()=>{navigator.share({text}).then(()=>{done();closeSheet();toast('✅ යැව්වා');},()=>{});}}:null,
+    {t:'📋 Copy කරන්න',c:'light',f:()=>{sbpCopy(text).then(ok=>{if(ok){done();toast('Copy කළා ✅ — WhatsApp එකට paste කරන්න');}else toast('Copy කරන්න බැරි වුණා','err');});}}
+  ].filter(Boolean));
+}
+
+/* ---------------- boot ---------------- */
+window.addEventListener('load',()=>{
+  let h=(location.hash||'').slice(1);
+  const cm=h.match(/^c=([a-z0-9-]+)~([A-Za-z0-9_-]+)$/);if(cm){if(cloudSetCfg(cm[1],cm[2]))toast('☁️ ඉබේම යැවීම සකස් කළා ✅');h='home';try{history.replaceState(null,'','#home');}catch(e){}}
+  go(['load','count','unload','inbox','history','setup'].includes(h)?h:'home');
+  cloudSync(false);setInterval(()=>{if(!document.hidden)cloudSync(false);},60000);
+  window.addEventListener('online',()=>cloudSync(false));document.addEventListener('visibilitychange',()=>{if(!document.hidden)cloudSync(false);});
+  if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+});
+
+</script>
+</body>
+</html>
