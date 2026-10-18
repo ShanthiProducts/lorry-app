@@ -81,6 +81,7 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 .cloudline.wait{background:#fffbeb;color:#92400e;border-color:#fde68a}.cloudline.bad{background:#fef2f2;color:#991b1b;border-color:#fecaca}.cloudline.off{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
 .cloudline .grow{flex:1}.sug{font-size:12px;font-weight:800;color:#065f46;background:#d1fae5;border-radius:999px;padding:2px 8px;white-space:nowrap}
 .sendstate{border-radius:12px;padding:12px;font-weight:800;margin-bottom:10px;background:#eff6ff;color:#1e3a8a;border:1px solid #bfdbfe}.sendstate.ok{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}.sendstate.wait{background:#fffbeb;color:#92400e;border-color:#fde68a}
+.lockbox{border:2px solid #86efac;background:#f0fdf4}
 </style>
 </head>
 <body>
@@ -88,7 +89,7 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
     <div class="grid2"><button class="tile" onclick="go('inbox')"><span>📥</span>Report / Code දාන්න<small>WhatsApp එකෙන් ආපු message (Cloud නැති වෙලාවට)</small></button><button class="tile" onclick="go('setup')"><span>⚙️</span>සැකසුම්<small>නම, WhatsApp අංකය</small></button></div>
-    <div class="foot">Shanthi Food Products · ලොරි App v3.4 · Internet නැතුවත් වැඩ කරනවා</div></section>
+    <div class="foot">Shanthi Food Products · ලොරි App v4.1 · Internet නැතුවත් වැඩ කරනවා</div></section>
 
   <section class="screen" id="s-inbox">
     <div class="card"><h3>📥 WhatsApp message එක දාන්න</h3><p class="muted small">ලොකු මහත්තයා එවන <strong>Report</strong> එක හෝ <strong>භාණ්ඩ ලැයිස්තුව</strong> — WhatsApp එකේ message එක ඔබාගෙන ඉඳලා <strong>Copy</strong> කරලා මෙතන <strong>Paste</strong> කරන්න.</p>
@@ -197,6 +198,26 @@ function render(){
 }
 
 /* ---------------- home ---------------- */
+/* v4.1 · this phone's id, lock after sending, correction reason, place */
+function ensureDev(){if(!S.dev||!/^[A-Za-z0-9_-]{6,40}$/.test(S.dev)){S.dev=uid()+uid();save();}return S.dev;}
+function isLocked(d){return !!(d&&d.sentRev&&!d.unlock);}
+function draftOf(k){return k==='count'?countDraft():k==='load'?loadDraft():unloadDraft();}
+function lockHtml(k,rows){const d=draftOf(k);return `<div class="card lockbox">🔒 <strong>යැව්වා</strong> — ${esc(d.d)} · සංශෝධනය ${d.sentRev}<div class="small">ලොකු මහත්තයාට ගියා. දැන් වෙනස් කරන්න බැහැ. වැරැද්දක් නම් පමණක් පහළ බොත්තම ඔබලා, හේතුව කියලා නිවැරදි කරන්න.</div><button class="btn light sm" style="margin-top:8px" onclick="askFix('${k}')">✏️ නිවැරදි කිරීමක් කරන්න</button></div>${rows?`<div class="card">${rows}</div>`:''}`;}
+function lockRows(map){const ids=Object.keys(map).filter(id=>map[id]);return ids.length?ids.sort((a,b)=>porder(a)-porder(b)).map(id=>`<div class="rdrow"><span>${esc(pname(id))}</span><strong>${map[id]}</strong></div>`).join(''):'';}
+function askFix(k){sheet('✏️ නිවැරදි කිරීම',`<p>මොකක්ද වැරදුණේ? (උදා: “මිරිස් 100g 5ක් අඩුවෙන් ගැහුවා”)</p><textarea id="fixWhy" rows="3" style="width:100%;font:inherit;padding:8px;border-radius:10px;border:1px solid #cbd5e1"></textarea><p class="small">මේ හේතුව ලොකු මහත්තයාට පේනවා. ඔහු අනුමත කරනකම් කිසිවක් වෙනස් වෙන්නේ නැහැ.</p>`,[{t:'✏️ වෙනස් කරන්න පටන් ගන්න',c:'primary',f:()=>{const w=($('fixWhy').value||'').trim();if(w.length<3){toast('හේතුව ලියන්න (අකුරු 3කට වැඩි)','err');return;}const d=draftOf(k);d.unlock=true;d.why=w.slice(0,200);save();closeSheet();(k==='count'?renderCount:k==='load'?renderLoad:renderUnload)();}}]);}
+function hmNow(){try{const p={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);return p.hour+':'+p.minute;}catch(e){return '';}}
+/* checks before sending, then (if asked) the place, then send */
+function beforeSend(type,payload,text,go){
+  const h=S.cfg&&S.cfg.hours,hm=hmNow();
+  if(h&&hm&&(hm<h.from||hm>h.to)&&!confirm(`දැන් වෙලාව ${hm} — වැඩ කරන වෙලාවෙන් (${h.from}–${h.to}) පිට. මේක ලොකු මහත්තයාට විශේෂයෙන් පෙන්වනවා. ඒත් යවන්නද?`))return;
+  if(type!=='count'&&payload.d!==today()&&!confirm(`දිනය ${payload.d} — අද (${today()}) නෙවෙයි. හරිද?`))return;
+  payload.dev=ensureDev();
+  const done=()=>{const old=text.split('\n').pop();go(text.slice(0,text.length-old.length)+sbpEncode(type,payload));};
+  if(!(S.cfg&&S.cfg.gps)||!navigator.geolocation){done();return;}
+  toast('📍 ස්ථානය ගන්නවා…');let fin=false;const end=()=>{if(!fin){fin=true;done();}};
+  setTimeout(()=>{if(!fin){payload.locErr='ලැබුණේ නැහැ';end();}},9000);
+  try{navigator.geolocation.getCurrentPosition(p=>{payload.loc=[Math.round(p.coords.latitude*1e6)/1e6,Math.round(p.coords.longitude*1e6)/1e6,Math.round(p.coords.accuracy||0)];end();},e=>{payload.locErr=e&&e.code===1?'අවසර නැහැ':'ලැබුණේ නැහැ';end();},{enableHighAccuracy:true,timeout:8000,maximumAge:300000});}catch(e){payload.locErr='ලැබුණේ නැහැ';end();}
+}
 function lastSent(t,d){return S.sent.filter(x=>x.t===t&&(!d||x.d===d)).slice(-1)[0]||null;}
 function renderHome(){
   const r=S.rep,cd=S.drafts.count,ld=S.drafts.load,c=S.cfg;
@@ -230,6 +251,7 @@ function newLoad(){const d=S.drafts.load;if(d&&!d.sentRev&&Object.keys(d.i).leng
 function loadSet(id,v){const d=loadDraft();const n=Math.max(0,Math.floor(Number(v)||0));if(n)d.i[id]=n;else delete d.i[id];save();loadTotals();const el=document.querySelector(`[data-lrow="${CSS.escape(id)}"]`);if(el)el.classList.toggle('has',!!n);}
 function loadStep(id,dx){const d=loadDraft();const n=Math.max(0,(d.i[id]||0)+dx);loadSet(id,n);const inp=document.querySelector(`[data-lin="${CSS.escape(id)}"]`);if(inp)inp.value=n||'';vibrate();}
 function loadTotals(){const d=loadDraft(),v=Object.values(d.i),changed=d.sentRev&&JSON.stringify(sortObj(d.i))!==JSON.stringify(sortObj((lastSentUid(d.uid)||{}).i||{}));
+  if(isLocked(d)){$('loadBar').innerHTML=`<div class="grow"><strong>${v.length}</strong> වර්ග · <strong>${v.reduce((a,b)=>a+b,0)}</strong> පැකට්<div class="small">🔒 යැව්වා (සංශෝධනය ${d.sentRev})</div></div>`;return;}
   $('loadBar').innerHTML=`<div class="grow"><strong>${v.length}</strong> වර්ග · <strong>${v.reduce((a,b)=>a+b,0)}</strong> පැකට්${d.sentRev?`<div class="small">${changed?'✏️ වෙනස් කළා — ආයෙත් යවන්න':'✅ යැව්වා (සංශෝධනය '+d.sentRev+')'}</div>`:''}</div><button class="btn primary" onclick="sendLoad()" ${v.length?'':'disabled'}>${d.sentRev?(changed?'සංශෝධනය යවන්න ➜':'ආයෙත් යවන්න ➜'):'WhatsApp යවන්න ➜'}</button>`;}
 function sortObj(o){return Object.keys(o).sort().reduce((r,k)=>(r[k]=o[k],r),{});}
 function lastSentUid(u){return S.sent.filter(x=>x.uid===u).slice(-1)[0]||null;}
@@ -238,6 +260,8 @@ function renderLoad(){
   $('loadDate').value=d.d;$('loadNote').value=d.note||'';$('loadQ').value=loadQ;$('loadOnly').checked=loadOnly;
   $('loadInfo').innerHTML=d.sentRev?`<div class="card infobox">✅ මේ පැටවීම යැව්වා (සංශෝධනය ${d.sentRev}). වැරැද්දක් නම් හදලා ආයෙත් යවන්න — main system එකේ පරණ එක වෙනුවට යනවා. <button class="btn light sm" onclick="newLoad()">🆕 අලුත් පැටවීමක්</button></div>`:'';
   const sg=sugFor(d.d);$('loadSug').innerHTML=sg?`<div class="card infobox">💡 <strong>ලොකු මහත්තයාගේ යෝජනාව</strong> — ${esc(sg.d)}${sg.route?' · '+esc(sg.route):''} · පැකට් ${Object.values(sg.i).reduce((a,b)=>a+b,0)}<div class="small">එක එක භාණ්ඩය ළඟ 💡 ගණන පෙන්නනවා. ඇත්තටම පටවන ගණන දාන්න.</div><button class="btn light sm" style="margin-top:6px" onclick="sugFill()">💡 යෝජනාව ඔක්කොම දාන්න</button></div>`:'';
+  if(isLocked(d)){$('loadList').innerHTML=lockHtml('load',lockRows(d.i));loadTotals();return;}
+  if(d.sentRev&&d.unlock)$('loadInfo').innerHTML=`<div class="card warnbox">✏️ නිවැරදි කරනවා — හේතුව: “${esc(d.why||'')}”. හදලා “සංශෝධනය යවන්න” ඔබන්න.</div>`;
   const ids=products().map(p=>p[0]).filter(id=>searchHit(id,loadQ)&&(!loadOnly||d.i[id]));
   $('loadList').innerHTML=ids.length?groupHtml(ids,(id,label)=>`<div class="row ${d.i[id]?'has':''}" data-lrow="${esc(id)}"><div class="lbl">${esc(label)}${sg&&sg.i[id]?` <span class="sug">💡 ${sg.i[id]}</span>`:''}</div><div class="stepper"><button class="sbtn" onclick="loadStep('${esc(id)}',-1)">−</button><input type="number" inputmode="numeric" min="0" data-lin="${esc(id)}" value="${d.i[id]||''}" placeholder="0" onfocus="this.select()" oninput="loadSet('${esc(id)}',this.value)"><button class="sbtn" onclick="loadStep('${esc(id)}',1)">＋</button></div></div>`):'<div class="empty">භාණ්ඩ හම්බ වුණේ නැහැ</div>';
   loadTotals();
@@ -245,9 +269,10 @@ function renderLoad(){
 function sendLoad(){
   const d=loadDraft();d.d=$('loadDate').value||today();d.note=$('loadNote').value.trim();const ids=Object.keys(d.i);if(!ids.length)return;
   const rev=(d.sentRev||0)+1,items=ids.sort((a,b)=>porder(a)-porder(b)).map(id=>[id,d.i[id],pname(id)]),total=items.reduce((t,x)=>t+x[1],0);
-  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,i:items};
+  if(d.sentRev&&!d.unlock){toast('🔒 යැව්වා — නිවැරදි කරන්න නම් “✏️ නිවැරදි කිරීමක්”','warn');return;}
+  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,i:items,why:rev>1?(d.why||''):''};
   const text=`📦 *ලොරියට පැටවීම* — ${d.d}\n${rev>1?'✏️ සංශෝධනය '+rev+' (කලින් එක වෙනුවට)':'සංශෝධනය 1'} · පැටවූයේ: ${S.me}\n\n`+items.map(x=>`• ${x[2]} — ${x[1]}`).join('\n')+`\n\nඑකතුව: ${items.length} වර්ග · ${total} පැකට්${d.note?'\nසටහන: '+d.note:''}\n━━━━━━━━━━\n${sbpEncode('load',payload)}`;
-  sendOut('📦 පැටවීම යවන්න',text,'load',payload,()=>{d.sentRev=rev;S.sent.push({t:'load',uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text});trimSent();save();renderLoad();});
+  beforeSend('load',payload,text,t2=>sendOut('📦 පැටවීම යවන්න',t2,'load',payload,()=>{d.sentRev=rev;d.unlock=false;d.why='';S.sent.push({t:'load',uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text:t2,why:payload.why});trimSent();save();renderLoad();}));
 }
 
 /* ---------------- COUNT ---------------- */
@@ -280,7 +305,7 @@ function countRowHtml(id,label){
    <details class="dmg"${e&&e.dmg?' open':''}><summary>ලොරියේදී damage වුණාද?</summary><label>ලොරියේ Damage පැකට්<input type="number" inputmode="numeric" min="0" value="${e&&e.dmg?e.dmg:''}" placeholder="0" oninput="countDmg('${esc(id)}',this.value)"></label></details></div>`;
 }
 function redrawCountRow(id){const el=document.querySelector(`[data-crow="${CSS.escape(id)}"]`);if(!el)return renderCount();const sp=split(pname(id));el.outerHTML=countRowHtml(id,sp.size||sp.fam);}
-function countBar(){const ids=countIds(),c=countDraft();let done=0,bad=0,over=0;ids.forEach(id=>{const s=cState(id);if(s.t===null)return;done++;if(s.diff>0)bad++;if(s.diff<0)over++;});
+function countBar(){const ids=countIds(),c=countDraft();let done=0,bad=0,over=0;if(isLocked(c)){$('countBar').innerHTML=`<div class="grow"><div class="small">🔒 යැව්වා (සංශෝධනය ${c.sentRev})</div></div>`;return;}ids.forEach(id=>{const s=cState(id);if(s.t===null)return;done++;if(s.diff>0)bad++;if(s.diff<0)over++;});
   $('countBar').innerHTML=`<div class="grow"><strong>${done}/${ids.length}</strong> ගණන් කළා${bad?` · <span class="tbad">අඩු ${bad}</span>`:''}${over?` · <span class="tover">වැඩි ${over}</span>`:''}${c.sentRev?`<div class="small">✅ යැව්වා (සංශෝධනය ${c.sentRev}) — වෙනස් කළොත් ආයෙත් යවන්න</div>`:''}</div><button class="btn primary" onclick="reviewCount()" ${done?'':'disabled'}>යවන්න ➜</button>`;}
 function renderCount(){
   if(!S.cfg){go('inbox');return;}const r=S.rep,c=countDraft();
@@ -290,6 +315,8 @@ function renderCount(){
   $('countQ').value=countQ;document.querySelectorAll('#countFilters button').forEach(b=>b.classList.toggle('on',b.dataset.f===countFilter));
   let ids=countIds().filter(id=>searchHit(id,countQ));
   if(countFilter==='todo')ids=ids.filter(id=>cState(id).t===null);if(countFilter==='diff')ids=ids.filter(id=>{const s=cState(id);return s.diff!==null&&s.diff!==0;});
+  if(isLocked(c)){$('countList').innerHTML=lockHtml('count',lockRows(Object.fromEntries(Object.entries(c.c).map(([k,e])=>[k,cTotal(e)||0]))));countBar();return;}
+  if(c.sentRev&&c.unlock)$('countHead').innerHTML+=`<div class="card warnbox">✏️ නිවැරදි කරනවා — හේතුව: “${esc(c.why||'')}”</div>`;
   $('countList').innerHTML=ids.length?groupHtml(ids,countRowHtml):`<div class="empty">${countFilter==='diff'?'🎉 අඩු / වැඩි ඒවා නැහැ':countFilter==='todo'?'🎉 ඔක්කොම ගණන් කළා':'භාණ්ඩ නැහැ'}</div>`;
   $('countNote').value=c.note||'';
   countBar();
@@ -310,11 +337,12 @@ function reviewCount(){
 function sendCount(zeroTodo){
   const c=countDraft(),m=repRows(),ids=countIds(),rev=(c.sentRev||0)+1,items=[];
   ids.sort((a,b)=>porder(a)-porder(b)).forEach(id=>{const e=c.c[id],t=cTotal(e);if(t===null&&!(zeroTodo&&m[id]&&m[id].expected>0))return;items.push([id,t===null?0:t,pname(id),e&&e.dmg||0,e&&e.parts.length>1?e.parts.join(' + '):'']);});
-  const payload={v:1,d:c.d,rev,uid:c.uid,by:S.me,at:new Date().toISOString(),note:c.note,rd:!!c.rd,sig:S.rep?S.rep.sig:'',i:items};
+  if(c.sentRev&&!c.unlock){closeSheet();toast('🔒 යැව්වා — නිවැරදි කරන්න නම් “✏️ නිවැරදි කිරීමක්”','warn');return;}
+  const payload={v:1,d:c.d,rev,uid:c.uid,by:S.me,at:new Date().toISOString(),note:c.note,rd:!!c.rd,sig:S.rep?S.rep.sig:'',i:items,why:rev>1?(c.why||''):''};
   const bad=items.filter(x=>m[x[0]]&&m[x[0]].expected-x[1]!==0);
   const text=`🔢 *ලොරිය ගණන් කිරීම* — ${c.d}\n${rev>1?'✏️ සංශෝධනය '+rev+' (කලින් එක වෙනුවට)':'සංශෝධනය 1'} · ගණන් කළේ: ${S.me}\n\n`+items.map(x=>{const e=m[x[0]];const df=e?e.expected-x[1]:null;return `• ${x[2]} — ${x[1]}${x[4]?' ('+x[4]+')':''}${x[3]?' · damage '+x[3]:''}${df?(df>0?' 🔴 අඩු '+df:' 🟡 වැඩි '+(-df)):''}`;}).join('\n')+`\n\n${bad.length?'අඩු / වැඩි: '+bad.length:'✅ ඔක්කොම හරි'}${S.rep&&S.rep.rd&&S.rep.rd.length?'\nReturn/Damage Factory එකට: '+(c.rd?'✅ දුන්නා':'❌ නැහැ'):''}${c.note?'\nසටහන: '+c.note:''}\n━━━━━━━━━━\n${sbpEncode('count',payload)}`;
   closeSheet();
-  sendOut('🔢 ගණන් කිරීම යවන්න',text,'count',payload,()=>{c.sentRev=rev;S.sent.push({t:'count',uid:c.uid,rev,d:c.d,at:new Date().toISOString(),total:items.reduce((t,x)=>t+x[1],0),i:Object.fromEntries(items.map(x=>[x[0],x[1]])),text});trimSent();save();renderCount();});
+  beforeSend('count',payload,text,t2=>sendOut('🔢 ගණන් කිරීම යවන්න',t2,'count',payload,()=>{c.sentRev=rev;c.unlock=false;c.why='';S.sent.push({t:'count',uid:c.uid,rev,d:c.d,at:new Date().toISOString(),total:items.reduce((t,x)=>t+x[1],0),i:Object.fromEntries(items.map(x=>[x[0],x[1]])),text:t2,why:payload.why});trimSent();save();renderCount();}));
 }
 
 /* ---------------- UNLOAD (to factory) ---------------- */
@@ -327,22 +355,24 @@ function lorryNow(){
   return est;
 }
 function unloadDraft(){let d=S.drafts.unload;if(!d||d.sentRev&&d.d!==today()){d=S.drafts.unload={uid:uid(),d:today(),rev:0,sentRev:0,by:S.me,i:{},all:false,note:''};save();}return d;}
-function unloadAll(){const d=unloadDraft(),est=lorryNow();if(!Object.keys(est).length){toast('ලොරියේ බඩු තියෙනවා කියලා දන්නේ නැහැ. අතින් දාන්න.','warn');return;}d.i={...est};d.all=true;save();renderUnload();toast('ලොරියේ තියෙන්න ඕනේ ඔක්කොම දැම්මා. බාපු ප්‍රමාණ හරියට බලන්න.');}
+function unloadAll(){const d=unloadDraft(),est=lorryNow();if(isLocked(d)){toast('🔒 යැව්වා — වෙනස් කරන්න බැහැ','warn');return;}if(!Object.keys(est).length){toast('ලොරියේ බඩු තියෙනවා කියලා දන්නේ නැහැ. අතින් දාන්න.','warn');return;}d.i={...est};d.all=true;save();renderUnload();toast('ලොරියේ තියෙන්න ඕනේ ඔක්කොම දැම්මා. බාපු ප්‍රමාණ හරියට බලන්න.');}
 function unloadSet(id,v){const d=unloadDraft();const n=Math.max(0,Math.floor(Number(v)||0));if(n)d.i[id]=n;else delete d.i[id];d.all=false;save();unloadBar();}
-function unloadBar(){const d=unloadDraft(),v=Object.values(d.i);$('unloadBar').innerHTML=`<div class="grow"><strong>${v.length}</strong> වර්ග · <strong>${v.reduce((a,b)=>a+b,0)}</strong> පැකට්${d.sentRev?'<div class="small">✅ යැව්වා (සංශෝධනය '+d.sentRev+')</div>':''}</div><button class="btn primary" onclick="sendUnload()" ${v.length?'':'disabled'}>යවන්න ➜</button>`;}
+function unloadBar(){const d=unloadDraft(),v=Object.values(d.i);if(isLocked(d)){$('unloadBar').innerHTML=`<div class="grow"><strong>${v.reduce((a,b)=>a+b,0)}</strong> පැකට්<div class="small">🔒 යැව්වා (සංශෝධනය ${d.sentRev})</div></div>`;return;}$('unloadBar').innerHTML=`<div class="grow"><strong>${v.length}</strong> වර්ග · <strong>${v.reduce((a,b)=>a+b,0)}</strong> පැකට්${d.sentRev?'<div class="small">✅ යැව්වා (සංශෝධනය '+d.sentRev+')</div>':''}</div><button class="btn primary" onclick="sendUnload()" ${v.length?'':'disabled'}>යවන්න ➜</button>`;}
 function renderUnload(){
   if(!S.cfg){go('inbox');return;}const d=unloadDraft(),est=lorryNow();$('unloadDate').value=d.d;$('unloadNote').value=d.note||'';
+  if(isLocked(d)){$('unloadList').innerHTML=lockHtml('unload',lockRows(d.i));unloadBar();return;}
   const ids=[...new Set([...Object.keys(est),...Object.keys(d.i)])];
-  $('unloadList').innerHTML=(ids.length?groupHtml(ids,(id,label)=>`<div class="row ${d.i[id]?'has':''}"><div class="lbl">${esc(label)}<small class="muted"> · ලොරියේ ${est[id]||0}</small></div><div class="stepper"><input type="number" inputmode="numeric" min="0" value="${d.i[id]||''}" placeholder="0" onfocus="this.select()" oninput="unloadSet('${esc(id)}',this.value)"></div></div>`):'<div class="empty">ලොරියේ බඩු ගැන දත්ත නැහැ. පහළින් භාණ්ඩයක් එකතු කරන්න.</div>');
+  $('unloadList').innerHTML=(d.sentRev&&d.unlock?`<div class="card warnbox">✏️ නිවැරදි කරනවා — හේතුව: “${esc(d.why||'')}”</div>`:'')+(ids.length?groupHtml(ids,(id,label)=>`<div class="row ${d.i[id]?'has':''}"><div class="lbl">${esc(label)}<small class="muted"> · ලොරියේ ${est[id]||0}</small></div><div class="stepper"><input type="number" inputmode="numeric" min="0" value="${d.i[id]||''}" placeholder="0" onfocus="this.select()" oninput="unloadSet('${esc(id)}',this.value)"></div></div>`):'<div class="empty">ලොරියේ බඩු ගැන දත්ත නැහැ. පහළින් භාණ්ඩයක් එකතු කරන්න.</div>');
   unloadBar();
 }
 function unloadAddItem(){const q=prompt('බාපු භාණ්ඩයේ නම type කරන්න:');if(!q)return;const hits=products().filter(p=>norm(p[1]).includes(norm(q)));if(!hits.length){toast('හම්බ වුණේ නැහැ','warn');return;}let pick=hits[0];if(hits.length>1){const n=prompt(hits.slice(0,15).map((p,i)=>`${i+1}. ${p[1]}`).join('\n')+'\n\nඅංකය:','1');const k=Number(n)-1;if(!(k>=0&&k<hits.length))return;pick=hits[k];}const v=prompt(pick[1]+' — බාපු පැකට් ගණන:');if(v===null)return;unloadSet(pick[0],v);renderUnload();}
 function sendUnload(){
   const d=unloadDraft();d.d=$('unloadDate').value||today();d.note=$('unloadNote').value.trim();const ids=Object.keys(d.i);if(!ids.length)return;
   const rev=(d.sentRev||0)+1,items=ids.sort((a,b)=>porder(a)-porder(b)).map(id=>[id,d.i[id],pname(id)]),total=items.reduce((t,x)=>t+x[1],0);
-  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,all:!!d.all,i:items};
+  if(d.sentRev&&!d.unlock){toast('🔒 යැව්වා — නිවැරදි කරන්න නම් “✏️ නිවැරදි කිරීමක්”','warn');return;}
+  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,all:!!d.all,i:items,why:rev>1?(d.why||''):''};
   const text=`🏭 *Factory එකට බෑවා* — ${d.d}\n${rev>1?'✏️ සංශෝධනය '+rev:'සංශෝධනය 1'} · ${S.me}${d.all?'\n🚛 ලොරිය සම්පූර්ණයෙන් හිස් කළා':''}\n\n`+items.map(x=>`• ${x[2]} — ${x[1]}`).join('\n')+`\n\nඑකතුව: ${total} පැකට්${d.note?'\nසටහන: '+d.note:''}\n━━━━━━━━━━\n${sbpEncode('unload',payload)}`;
-  sendOut('🏭 බාපු බඩු යවන්න',text,'unload',payload,()=>{d.sentRev=rev;S.sent.push({t:'unload',uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text});trimSent();save();renderUnload();});
+  beforeSend('unload',payload,text,t2=>sendOut('🏭 බාපු බඩු යවන්න',t2,'unload',payload,()=>{d.sentRev=rev;d.unlock=false;d.why='';S.sent.push({t:'unload',uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text:t2,why:payload.why});trimSent();save();renderUnload();}));
 }
 
 /* ---------------- INBOX: paste report / items code ---------------- */
@@ -362,7 +392,7 @@ function applyCodes(codes,silent){
   const msg=[];
   for(const c of codes){
     if(c.type==='cfg'||c.type==='rep'){const cfg=c.type==='cfg'?c.data:c.data.cfg;if(!cfg||!Array.isArray(cfg.p)){if(!silent)toast('වලංගු නැති message එකක්','err');return null;}
-      const old=S.cfg;S.cfg={biz:String(cfg.biz||''),wa:String(cfg.wa||''),blind:!!cfg.blind,p:cfg.p.filter(x=>Array.isArray(x)&&x[0]&&x[1]).map(x=>[String(x[0]),String(x[1])]),at:cfg.at||'',driver:cfg.driver||'',vehicle:cfg.vehicle||''};
+      const old=S.cfg;S.cfg={biz:String(cfg.biz||''),wa:String(cfg.wa||''),blind:!!cfg.blind,p:cfg.p.filter(x=>Array.isArray(x)&&x[0]&&x[1]).map(x=>[String(x[0]),String(x[1])]),at:cfg.at||'',driver:cfg.driver||'',vehicle:cfg.vehicle||'',gps:!!cfg.gps,hours:cfg.hours&&cfg.hours.from&&cfg.hours.to?{from:String(cfg.hours.from),to:String(cfg.hours.to)}:null};
       if(S.cfg.wa&&!S.waOverride)S.wa=S.cfg.wa;
       if(cfg.cloud&&cfg.cloud.p&&cfg.cloud.b)cloudSetCfg(cfg.cloud.p,cfg.cloud.b);
       if(c.type==='cfg')msg.push(`📲 භාණ්ඩ ${S.cfg.p.length}ක්${old?' (අලුත් කළා)':''}`);}
@@ -381,7 +411,7 @@ function applyCodes(codes,silent){
 
 /* ---------------- LOAD SUGGESTION ---------------- */
 function sugFor(d){const g=S.sug;if(!g||!g.i||!Object.keys(g.i).length)return null;if(g.d<today())return null;if(d&&g.d!==d&&g.d>d)return null;return g;}
-function sugFill(){const d=loadDraft(),g=sugFor(d.d);if(!g)return;if(Object.keys(d.i).length&&!confirm('දැනට දාපු ප්‍රමාණ යෝජනාවෙන් මාරු කරන්නද? (යෝජනාවේ නැති ඒවා එහෙමම තියෙනවා)'))return;Object.entries(g.i).forEach(([k,v])=>{if(products().some(p=>p[0]===k))d.i[k]=v;});save();renderLoad();toast('💡 යෝජනාව දැම්මා — ඇත්තටම පටවන ගණන් හරියට බලන්න');}
+function sugFill(){const d=loadDraft(),g=sugFor(d.d);if(!g)return;if(isLocked(d)){toast('🔒 යැව්වා — වෙනස් කරන්න බැහැ','warn');return;}if(Object.keys(d.i).length&&!confirm('දැනට දාපු ප්‍රමාණ යෝජනාවෙන් මාරු කරන්නද? (යෝජනාවේ නැති ඒවා එහෙමම තියෙනවා)'))return;Object.entries(g.i).forEach(([k,v])=>{if(products().some(p=>p[0]===k))d.i[k]=v;});save();renderLoad();toast('💡 යෝජනාව දැම්මා — ඇත්තටම පටවන ගණන් හරියට බලන්න');}
 
 /* ---------------- CLOUD (Firebase mailbox) ----------------
    Sends go to boxes/<box>/in/<type_uid_rev>. The PC reads and clears that folder.
