@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="si">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="කම්හල් App">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>කම්හල් App · Shanthi Food Products</title>
+<style>
+:root{--red:#e51b23;--red2:#ff3434;--yellow:#ffdf45;--ink:#172033;--muted:#64748b;--line:#e5e7eb;--bg:#f4f5f8;--card:#fff;--ok:#059669;--bad:#dc2626;--over:#b45309}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Noto Sans Sinhala","Iskoola Pota",sans-serif;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+button,input,textarea{font:inherit}
+header{position:sticky;top:0;z-index:20;background:linear-gradient(120deg,var(--red),var(--red2));color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 14px #e51b2333}
+header .back{background:#ffffff26;color:#fff;border:0;border-radius:10px;width:40px;height:40px;font-size:20px}
+header h1{margin:0;font-size:18px;line-height:1.2}header p{margin:0;font-size:12px;opacity:.9}
+main{max-width:640px;margin:0 auto;padding:14px 16px}
+.screen{display:none}.screen.on{display:block}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px #0f172a08}
+.card h3{margin:0 0 4px;font-size:16px}
+.hero{text-align:center;padding:26px 18px}.hero .big{font-size:46px}.hero h2{margin:6px 0}
+.hello{margin:2px 2px 12px;font-size:16px}
+.muted{color:var(--muted)}.small{font-size:13px}
+.btn{border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer;min-height:46px}
+.btn.primary{background:var(--red);color:#fff}.btn.light{background:#fff;border:1.5px solid #d1d5db;color:#334155}.btn.wa{background:#16a34a;color:#fff}.btn.ghost{background:transparent;color:var(--muted)}
+.btn.sm{padding:6px 10px;min-height:34px;font-size:13px}.btn.block{display:block;width:100%;margin-top:8px}
+.btn:disabled{opacity:.45}
+.step{display:flex;align-items:center;gap:12px}.step .num{flex:0 0 38px;height:38px;border-radius:50%;background:#fee2e2;color:var(--red);font-weight:900;display:flex;align-items:center;justify-content:center;font-size:17px}
+.step.done .num{background:#d1fae5;color:var(--ok)}.grow{flex:1;min-width:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.tile{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;text-align:left;font-weight:800;color:var(--ink);min-height:100px}
+.tile span{display:block;font-size:26px}.tile small{display:block;font-weight:600;color:var(--muted);font-size:12px;margin-top:2px}
+.warnbox{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.infobox{background:#eff6ff;border-color:#bfdbfe;color:#1e3a8a}
+.okbox{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:12px;padding:12px;font-weight:800;margin-bottom:10px}
+.field{margin-bottom:10px}.field label{display:block;font-weight:700;font-size:14px;margin-bottom:4px}
+input[type=text],input[type=date],input[type=search],input[type=tel],input[type=number],textarea{width:100%;border:1.5px solid #cbd5e1;border-radius:12px;padding:11px 12px;background:#fff;color:var(--ink);font-size:16px}
+input:focus,textarea:focus{outline:3px solid #fecaca;border-color:var(--red)}
+input[type=number]{-moz-appearance:textfield;appearance:textfield}input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+textarea{min-height:150px;font:13px ui-monospace,monospace}
+.tools{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}.tools input[type=search]{flex:1;min-width:150px}
+.check{display:flex;gap:8px;align-items:center;font-weight:700;margin:8px 0}.check input{width:22px;height:22px}
+.fam{background:#fff;border:1px solid var(--line);border-radius:16px;margin-bottom:12px;overflow:hidden}
+.fam-h{background:#fff7d6;padding:9px 14px;font-weight:900;border-bottom:1px solid #fde68a}
+.row{display:flex;align-items:center;gap:10px;padding:8px 10px 8px 14px;border-top:1px solid #f1f5f9}.row:first-of-type{border-top:0}
+.row .lbl{flex:1;font-weight:700}.row.has{background:#fef2f2}.row.has .lbl{color:var(--red)}
+.stepper{display:flex;align-items:center;gap:6px}.stepper input{width:76px;text-align:center;font-weight:800;font-size:18px;padding:9px 4px}
+.sbtn{width:44px;height:44px;border-radius:12px;border:1.5px solid #d1d5db;background:#fff;font-size:22px;font-weight:900;color:#334155}
+.sbtn:active{background:#fee2e2}
+.crow{padding:12px 14px;border-top:1px solid #f1f5f9}.crow:first-of-type{border-top:0}
+.crow.ok{background:#f0fdf4}.crow.bad{background:#fef2f2}.crow.over{background:#fffbeb}
+.ctop{display:flex;justify-content:space-between;align-items:center;gap:8px}.ctop .lbl{font-weight:900;font-size:17px}
+.chip{font-size:12px;font-weight:800;border-radius:999px;padding:3px 9px;background:#f1f5f9;color:var(--muted);white-space:nowrap}
+.chip.ok{background:#d1fae5;color:var(--ok)}.chip.bad{background:#fee2e2;color:var(--bad)}.chip.over{background:#fef3c7;color:var(--over)}
+.cnums{display:flex;gap:10px;margin:8px 0}.cnums>div{flex:1;background:#ffffffb0;border:1px solid var(--line);border-radius:12px;padding:6px 10px}
+.cnums small{display:block;color:var(--muted);font-size:12px}.cnums b{font-size:22px}.cnums .parts{color:var(--ink);font-weight:700}
+.cin{display:flex;gap:8px}.cin input{flex:1;font-size:18px;font-weight:800;text-align:center}
+.dmg{margin-top:8px;font-size:13px;color:var(--muted)}.dmg summary{cursor:pointer}.dmg label{display:block;margin-top:6px}.dmg input{margin-top:4px}
+.filters{display:flex;gap:6px;margin-bottom:10px}.filters button{flex:1;border:1.5px solid #d1d5db;background:#fff;border-radius:999px;padding:8px 6px;font-weight:800;font-size:13px;color:#475569}
+.filters button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.rdrow{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line);font-weight:700}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:#fff;border-top:1px solid var(--line);box-shadow:0 -6px 18px #0f172a14;padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:flex;gap:10px;align-items:center}
+.bar>div{max-width:640px}.tbad{color:var(--bad);font-weight:800}.tover{color:var(--over);font-weight:800}
+.empty{text-align:center;color:var(--muted);padding:26px 10px}
+.hist{display:flex;gap:10px;align-items:center}
+.sheet{position:fixed;inset:0;background:#0f172a80;z-index:50;display:none;align-items:flex-end;justify-content:center}
+.sheet.show{display:flex}.sheet .panel{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:640px;max-height:88vh;overflow:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.sheet h3{margin:0 0 10px}
+.preview{white-space:pre-wrap;background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:13px;max-height:38vh;overflow:auto;margin-bottom:6px}
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#172033;color:#fff;padding:11px 16px;border-radius:12px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;z-index:60;max-width:92vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}.toast.err{background:#b91c1c}.toast.warn{background:#b45309}
+.foot{text-align:center;color:var(--muted);font-size:12px;padding:16px}
+.cloudline{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;border-radius:12px;padding:8px 12px;margin-bottom:10px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.cloudline.wait{background:#fffbeb;color:#92400e;border-color:#fde68a}.cloudline.bad{background:#fef2f2;color:#991b1b;border-color:#fecaca}.cloudline.off{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
+.cloudline .grow{flex:1}.sug{font-size:12px;font-weight:800;color:#065f46;background:#d1fae5;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.sendstate{border-radius:12px;padding:12px;font-weight:800;margin-bottom:10px;background:#eff6ff;color:#1e3a8a;border:1px solid #bfdbfe}.sendstate.ok{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}.sendstate.wait{background:#fffbeb;color:#92400e;border-color:#fde68a}
+.lockbox{border:2px solid #86efac;background:#f0fdf4}
+
+.pick{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:11px 12px;margin:0 0 6px;font:inherit;font-weight:700;color:#0f172a}
+.pick small{display:block;font-weight:500;color:#64748b;font-size:12px}.pick b{color:#b91c1c;white-space:nowrap}.pick em{font-style:normal;background:#eef2ff;border-radius:6px;padding:1px 6px;font-size:12px}.pick.new{border-style:dashed;color:#1d4ed8}
+.irow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px;padding:9px 0;border-bottom:1px solid #f1f5f9}.irow .iname{flex:1 1 100%;font-weight:700}
+.irow label{display:flex;flex-direction:column;font-size:11px;color:#64748b;gap:2px}.irow input,.irow select{width:76px;padding:9px;font-size:17px;border:1px solid #cbd5e1;border-radius:10px}
+.irow .x{margin-left:auto;background:#fee2e2;color:#b91c1c;border:0;border-radius:10px;padding:10px 14px;font-size:16px}
+.seg{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.seg button{flex:1 1 40%;padding:12px 8px;border-radius:12px;border:1px solid #cbd5e1;background:#fff;font:inherit;font-weight:700}.seg button.on{background:#e51b23;color:#fff;border-color:#e51b23}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.totbox{background:#0f172a;color:#fff;border-radius:14px;padding:12px 14px;margin:10px 0;font-size:16px}
+.btn.big{padding:16px;font-size:18px}.card.late{border:2px solid #f59e0b}.warn{color:#b45309}.bad{color:#b91c1c}
+details.card summary{cursor:pointer;padding:4px 0}
+.field select,.field input:not([type=checkbox]):not([type=file]){width:100%;box-sizing:border-box;padding:12px;font-size:17px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;font-family:inherit}
+.cloudline{display:flex;align-items:center;gap:10px}.cloudline .grow{flex:1}
+</style>
+</head>
+<body>
+<header><button class="back" id="backBtn" onclick="go('home')" aria-label="ආපසු">⌂</button><div><h1>🏭 කම්හල් App</h1><p id="hdrSub"></p></div></header>
+<main>
+  <section class="screen" id="s-home"><div id="homeBody"></div>
+    <div class="foot">Shanthi Food Products · කම්හල් App v4.3.3 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
+  <section class="screen" id="s-bill"><div id="billBody"></div></section>
+  <section class="screen" id="s-pay"><div id="payBody"></div></section>
+  <section class="screen" id="s-ret"><div id="retBody"></div></section>
+  <section class="screen" id="s-move"><div id="moveBody"></div></section>
+  <section class="screen" id="s-take"><div id="takeBody"></div></section>
+  <section class="screen" id="s-order"><div id="orderBody"></div></section>
+  <section class="screen" id="s-orders"><div id="ordersBody"></div></section>
+  <section class="screen" id="s-history"><div id="historyBody"></div></section>
+  <section class="screen" id="s-setup"><div id="setupBody"></div></section>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+const $=id=>document.getElementById(id),KEY='sbpFactoryApp1',FS='https://firestore.googleapis.com/v1/projects/';
+let S=load(),screen='home',cloudBusy=false,ckey=null;
+function blank(){return {me:'',cloud:null,cfg:null,outbox:[],sent:[],seq:0,dev:'',bookLast:{},drafts:{},cloudErr:'',cloudOk:'',pulledAt:''};}
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return x&&typeof x==='object'?{...blank(),...x}:blank();}catch(e){return blank();}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('⚠️ Phone එකේ ඉඩ නැහැ — සුරකින්න බැරි වුණා!','err');}}
+function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function today(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function money(n){return 'රු. '+(Math.round((Number(n)||0)*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function r2(n){return Math.round((Number(n)||0)*100)/100;}
+function num(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+function toast(t,c){const el=$('toast');el.textContent=t;el.className='toast show '+(c||'');clearTimeout(toast.t);toast.t=setTimeout(()=>el.className='toast',c==='err'?5000:2600);}
+function ensureDev(){if(!S.dev){S.dev='F'+uid();save();}return S.dev;}
+/* ---------- code format (same as the lorry app) + AES-GCM encryption with this phone's own key ---------- */
+function fnv(str){let h=0x811c9dc5;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}return h.toString(16).padStart(8,'0');}
+function b64(bytes){let bin='';for(let i=0;i<bytes.length;i+=0x8000)bin+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(bin);}
+function unb64(s){const bin=atob(s);const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u;}
+function urlKey(k){k=String(k).replace(/-/g,'+').replace(/_/g,'/');while(k.length%4)k+='=';return unb64(k);}
+async function getKey(){if(ckey)return ckey;if(!S.cloud||!S.cloud.k)throw new Error('no key');ckey=await crypto.subtle.importKey('raw',urlKey(S.cloud.k),'AES-GCM',false,['encrypt','decrypt']);return ckey;}
+async function seal(type,obj){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},await getKey(),new TextEncoder().encode(JSON.stringify(obj))));const b=b64(new TextEncoder().encode(JSON.stringify({v:1,iv:b64(iv),ct:b64(ct)})));return `SBP1:${type}:${b}:${fnv(type+':'+b)}`;}
+async function unseal(code,type){const m=/SBP1:([a-z]+):([A-Za-z0-9+/=\s]+):([0-9a-f]{8})/.exec(code||'');if(!m||m[1]!==type)throw new Error('bad');const b=m[2].replace(/\s+/g,'');if(fnv(type+':'+b)!==m[3])throw new Error('checksum');const box=JSON.parse(new TextDecoder().decode(unb64(b)));const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(box.iv)},await getKey(),unb64(box.ct));return JSON.parse(new TextDecoder().decode(pt));}
+/* ---------- link: #f=project~box~key ---------- */
+(function(){const m=/[#&]f=([a-z][a-z0-9-]{4,29})~([A-Za-z0-9_-]{20,64})~([A-Za-z0-9_-]{40,60})/.exec(location.hash||'');if(m){const c={p:m[1],b:m[2],k:m[3]};if(!S.cloud||S.cloud.b!==c.b||S.cloud.k!==c.k){if(S.outbox.length&&S.cloud&&!confirm('⚠️ තවම PC එකට නොගිය දේවල් '+S.outbox.length+'ක් තියෙනවා. අලුත් link එකට මාරු වුණොත් ඒවා අලුත් යතුරෙන් යනවා. හරිද?')){}S.cloud=c;S.cfg=null;ckey=null;save();}try{history.replaceState(null,'','#home');}catch(e){}}})();
+function fsBase(){return `${FS}${S.cloud.p}/databases/(default)/documents/boxes/${S.cloud.b}`;}
+function cloudErrText(st,j){const s=((j||{}).error||{}).status||'';if(st===429||s==='RESOURCE_EXHAUSTED')return 'Firebase අද සීමාව ඉවරයි — හෙට ඉබේම යනවා (බිල් phone එකේ ආරක්ෂිතයි)';if(st===403||s==='PERMISSION_DENIED')return 'Firebase Rules හරි නැහැ';if(st===404)return 'Firebase project / mailbox හමු වුණේ නැහැ';return 'Firebase දෝෂය '+st;}
+async function flush(){
+  if(!S.cloud||!S.outbox.length)return true;
+  for(const m of S.outbox.slice()){
+    let r;try{r=await fetch(`${fsBase()}/in?documentId=${encodeURIComponent(m.id)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:m.code},at:{stringValue:m.at}}})});}
+    catch(e){S.cloudErr='Internet නැහැ — signal ආපු ගමන් ඉබේම යනවා';save();return false;}
+    if(r.ok||r.status===409){S.outbox=S.outbox.filter(x=>x.id!==m.id);const h=S.sent.find(x=>x.uid===m.uid);if(h)h.up=new Date().toISOString();S.cloudErr='';S.cloudOk=new Date().toISOString();save();}
+    else{let j={};try{j=await r.json();}catch(e){}S.cloudErr=cloudErrText(r.status,j);save();return false;}
+  }
+  return true;
+}
+async function pull(){
+  if(!S.cloud)return;let r;try{r=await fetch(`${fsBase()}/out/fcfg`,{cache:'no-store'});}catch(e){S.cloudErr='Internet නැහැ';save();return;}
+  if(r.status===404){S.cloudErr='PC එකෙන් තවම ලැයිස්තුව ආවේ නැහැ (PC එකේ “🏭 කම්හල් App” පිටුව එක පාරක් open කරන්න)';save();return;}
+  if(!r.ok){let j={};try{j=await r.json();}catch(e){}S.cloudErr=cloudErrText(r.status,j);save();return;}
+  const j=await r.json(),f=j.fields||{},at=(f.at||{}).stringValue||'',code=(f.code||{}).stringValue||'';
+  if(code&&(!S.cfg||S.cfg.pushAt!==at)){try{const c=await unseal(code,'fcfg');c.pushAt=at;S.cfg=c;Object.entries(c.bl||{}).forEach(([k,v])=>{if(!S.bookLast[k]||S.bookLast[k].d<v.d||(S.bookLast[k].d===v.d&&S.bookLast[k].n<v.n))S.bookLast[k]=v;});}catch(e){S.cloudErr='PC එකෙන් ආපු ලැයිස්තුව කියවන්න බැහැ — link එක පරණද? (PC එකෙන් අලුත් link එක ගන්න)';save();return;}}
+  S.cloudErr='';S.cloudOk=new Date().toISOString();S.pulledAt=new Date().toISOString();save();
+}
+async function sync(manual){if(!S.cloud){if(manual)toast('Link එකෙන් open කරලා නැහැ. PC එකෙන් “🏭 කම්හල් app link” එක ගන්න.','warn');return;}if(cloudBusy)return;cloudBusy=true;try{await flush();await pull();}finally{cloudBusy=false;}if(manual)toast(S.cloudErr?'⚠️ '+S.cloudErr:'☁️ යැව්වා / ගත්තා ✅',S.cloudErr?'warn':'ok');if(['home','history','setup'].includes(screen))render();}
+async function send(k,body,label){
+  if(!S.cloud||!S.cfg){toast('PC එකෙන් ලැයිස්තුව තවම ආවේ නැහැ.','err');return false;}
+  const rec={uid:ensureDev()+'-'+(++S.seq),rev:1,k,d:body.d||today(),at:new Date().toISOString(),by:S.me||'',pv:S.cfg.pv||'',...body};
+  let code;try{code=await seal('fx',rec);}catch(e){toast('Encrypt කරන්න බැරි වුණා: '+e.message,'err');return false;}
+  S.outbox.push({id:'fx_'+rec.uid.replace(/[^A-Za-z0-9_-]/g,'_'),uid:rec.uid,code,at:rec.at});
+  const keep=JSON.parse(JSON.stringify(rec));if(keep.ph)keep.ph=1;if(keep.pay&&keep.pay.ph)keep.pay.ph=1;S.sent.unshift({uid:rec.uid,k,d:rec.d,at:rec.at,label,rec:keep});S.sent=S.sent.slice(0,400);save();
+  flush().then(()=>{if(['home','history'].includes(screen))render();});return true;
+}
+/* ---------- lists from the PC ---------- */
+const P=()=>S.cfg?S.cfg.p:[],C=()=>S.cfg?S.cfg.c:[];
+const prod=id=>P().find(p=>p[0]===id),cust=id=>C().find(c=>c[0]===id);
+function custPrice(c,p){if(c&&c[5]&&c[5][p[0]]!==undefined)return c[5][p[0]];return p[3];}
+function freeFor(p,q){return p&&p[5]>0?Math.floor(q/p[5])*p[6]:0;}
+function okSet(){return new Set((S.cfg&&S.cfg.ok)||[]);}
+function norm(s){return String(s||'').toLowerCase().replace(/\s+/g,' ').trim();}
+/* ---------- screens ---------- */
+const TITLES={home:'🏭 කම්හල් App',bill:'🧾 බිලක් දාන්න',pay:'💰 ණය ගෙවීමක්',ret:'↩️ Return / Damage',move:'📦 විකුණුමක් නැතුව බඩු',take:'💸 ලාච්චුවෙන් ගත්තා',order:'📋 අලුත් ඇණවුමක්',orders:'🚚 ඇණවුම් දුන්නා ✓',history:'📜 යැව්ව ඒවා',setup:'⚙️ සැකසුම්'};
+function go(n){if(n!=='home'&&n!=='setup'&&n!=='history'&&!S.cfg){toast('මුලින්ම PC එකෙන් ලැයිස්තුව ගන්න (Internet ඕනේ)','warn');n='home';}if(n!=='home'&&n!=='setup'&&!S.me){toast('මුලින්ම ඔයාගේ නම දාන්න','warn');n='setup';}screen=n;document.querySelector('header h1').textContent=TITLES[n];$('backBtn').style.visibility=n==='home'?'hidden':'visible';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+n));window.scrollTo(0,0);render();try{history.replaceState(null,'','#'+n);}catch(e){}}
+function render(){$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'පළමු වතාවට සකසන්න';({home:renderHome,bill:renderBill,pay:renderPay,ret:renderRet,move:renderMove,take:renderTake,order:renderOrder,orders:renderOrders,history:renderHistory,setup:renderSetup})[screen]();}
+function cloudLine(){if(!S.cloud)return '<div class="cloudline off">☁️ Link එකෙන් open කරලා නැහැ</div>';const w=S.outbox.length;return `<div class="cloudline ${S.cloudErr?'bad':w?'wait':''}"><div class="grow">${w?`📤 තවම PC එකට නොගිය: <strong>${w}</strong>`:'☁️ ඔක්කොම PC එකට ගියා ✅'}${S.cloudErr?`<div class="small">${esc(S.cloudErr)}</div>`:''}</div><button class="btn sm light" onclick="sync(true)">🔄</button></div>`;}
+function renderHome(){
+  if(!S.cloud){$('homeBody').innerHTML=`<div class="card hero"><div class="big">🔑</div><h2>සකසලා නැහැ</h2><p>PC එකේ <strong>“🏭 කම්හල් App”</strong> පිටුවෙන් එවන link එකෙන් මේ app එක open කරන්න.</p></div>`;return;}
+  if(!S.cfg){$('homeBody').innerHTML=`${cloudLine()}<div class="card hero"><div class="big">☁️</div><h2>ආයුබෝවන්!</h2><p>PC එකෙන් භාණ්ඩ / කඩ ලැයිස්තුව ගන්නවා… (Internet ඕනේ)</p><button class="btn primary block" onclick="sync(true)">🔄 දැන් ගන්න</button></div>`;return;}
+  const ok=okSet(),wait=S.sent.filter(x=>!ok.has(x.uid)&&Date.now()-new Date(x.at)<14*864e5).length,old=S.pulledAt?Math.round((Date.now()-new Date(S.pulledAt))/36e5):999;
+  const od=(S.cfg.o||[]).length;
+  $('homeBody').innerHTML=`<div class="hello">ආයුබෝවන් <strong>${esc(S.me||'')}</strong> 👋 <span class="muted">· ${today()}</span></div>${cloudLine()}
+   ${S.outbox.length?'<div class="warnbox">⚠️ PC එකට නොගිය බිල් තියෙද්දී app එකේ <strong>data clear කරන්න / app එක මකන්න එපා</strong>.</div>':''}
+   <div class="grid2"><button class="tile" onclick="newDraft('bill');go('bill')"><span>🧾</span>බිලක් දාන්න<small>පොතේ අංකය එක්ක</small></button>
+   <button class="tile" onclick="newDraft('pay');go('pay')"><span>💰</span>ණය ගෙවීමක්<small>පරණ ණයට සල්ලි / චෙක්</small></button>
+   <button class="tile" onclick="newDraft('ret');go('ret')"><span>↩️</span>Return / Damage<small>කඩෙන් ආපහු</small></button>
+   <button class="tile" onclick="go('orders')"><span>🚚</span>ඇණවුම් දුන්නා<small>${od?`දෙන්න තියෙන ${od}ක්`:'දැනට නැහැ'}</small></button>
+   <button class="tile" onclick="newDraft('order');go('order')"><span>📋</span>අලුත් ඇණවුමක්<small>පස්සේ දෙන බඩු / advance</small></button>
+   <button class="tile" onclick="newDraft('move');go('move')"><span>📦</span>විකුණුමක් නැතුව<small>මාරු කර දීම · ගෙදරට · නියැදි · සේවක · Damage</small></button>
+   <button class="tile" onclick="newDraft('take');go('take')"><span>💸</span>ලාච්චුවෙන් ගත්තා<small>අමු ද්‍රව්‍ය · පඩි · මම ගත්තා</small></button>
+   <button class="tile" onclick="go('history')"><span>📜</span>යැව්ව ඒවා<small>PC අනුමත නොකළ: ${wait}</small></button></div>
+   <div class="infobox small">ණය ශේෂ PC එකේ <strong>${esc(String(S.cfg.at||'').slice(0,16).replace('T',' '))}</strong> ට තිබුණ විදිහට${S.pulledAt?(old>24?' — ⚠️ පැය '+old+'කට කලින් ලැබුණේ (Internet එකට සම්බන්ධ කරලා 🔄 ඔබන්න)':''):' — ⚠️ තවම PC එකෙන් අලුත් කරලා නැහැ'}. භාණ්ඩ ${P().length} · කඩ ${C().length}</div>
+   <button class="btn ghost block" onclick="go('setup')">⚙️ සැකසුම්</button>`;
+}
+/* ---------- drafts ---------- */
+function newDraft(k){S.drafts[k]={d:today(),c:'',cn:'',it:[],later:[],pay:{m:'cash',amt:''},book:'',no:'',note:'',kind:'',back:[],staff:'',amt:'',prom:'',adv:'',advm:'cash'};save();}
+function D(k){if(!S.drafts[k])newDraft(k);return S.drafts[k];}
+function custPicker(k,allowNew){
+  const d=D(k),c=cust(d.c);
+  if(c||d.cn)return `<div class="card"><div class="row"><div class="grow"><strong>${esc(custName(d))}</strong>${c?`<div class="small muted">${esc(c[2]||'')} · ණය ${money(c[3])}${c[4]>0&&c[3]>c[4]?' <span class="bad">⚠️ සීමාව '+money(c[4])+' පැනලා</span>':''}</div>`:'<div class="small warn">🆕 අලුත් නමක් — PC එකේදී බලනවා</div>'}</div><button class="btn sm light" onclick="D('${k}').c='';D('${k}').cn='';save();render()">වෙනස් කරන්න</button></div></div>`;
+  return `<div class="card"><div class="field"><label>👤 කඩය / පාරිභෝගිකයා</label><input type="search" id="cq" placeholder="නම / කොටසක් ටයිප් කරන්න" oninput="custList('${k}',${allowNew?1:0})" autocomplete="off"></div><div id="cl"></div>${k==='bill'?`<button class="btn light block" onclick="D('bill').c='';D('bill').cn='__walk';save();render()">🚶 නම නැති කෙනෙක් (Cash විතරයි)</button>`:''}</div>`;
+}
+function custList(k,allowNew){const q=norm($('cq').value);let l=C().filter(c=>!q||norm(c[1]).includes(q)).slice(0,30);
+  $('cl').innerHTML=l.map(c=>`<button class="pick" onclick="D('${k}').c='${esc(c[0])}';D('${k}').cn='';save();render()"><span>${esc(c[1])}<small>${esc(c[2]||'')}</small></span>${c[3]>0?`<b>${money(c[3])}</b>`:''}</button>`).join('')+(allowNew&&q.length>=2&&!C().some(c=>norm(c[1])===q)?`<button class="pick new" onclick="D('${k}').cn=$('cq').value.trim().slice(0,60);save();render()">🆕 “${esc($('cq').value.trim())}” අලුත් නමක් විදිහට</button>`:'');}
+function custName(d){return d.cn==='__walk'?'🚶 නම නැති කෙනෙක්':(cust(d.c)||[0,d.cn])[1];}
+function itemPicker(k,field){return `<div class="field"><input type="search" id="pq_${field}" placeholder="🔎 භාණ්ඩය (නම / කේතය)" oninput="prodList('${k}','${field}')" autocomplete="off"></div><div id="pl_${field}"></div>`;}
+function prodList(k,field){const q=norm($('pq_'+field).value),l=q?P().filter(p=>norm(p[1]).includes(q)||(p[2]&&norm(p[2])===q)).slice(0,20):[];$('pl_'+field).innerHTML=l.map(p=>`<button class="pick" onclick="addItem('${k}','${field}','${esc(p[0])}')"><span>${p[2]?`<em>${esc(p[2])}</em> `:''}${esc(p[1])}</span><b>${money(custPrice(cust(D(k).c),p))}</b></button>`).join('');}
+function addItem(k,field,pid){const d=D(k),p=prod(pid);if(!p)return;const list=d[field];let x=list.find(i=>i[0]===pid);if(!x){x=[pid,0,0,custPrice(cust(d.c),p)];list.push(x);}x[1]+=1;if(field==='it'&&k==='bill')x[2]=freeFor(p,x[1]);save();render();setTimeout(()=>{const el=$('q_'+field+'_'+pid);if(el){el.focus();el.select();}},30);}
+function setItem(k,field,pid,i,v){const d=D(k),x=d[field].find(r=>r[0]===pid);if(!x)return;x[i]=i===3?r2(num(v)):Math.max(0,Math.floor(num(v)));if(i===1&&field==='it'&&k==='bill'&&!x.fm)x[2]=freeFor(prod(pid),x[1]);if(i===2)x.fm=1;save();totals(k);}
+function rmItem(k,field,pid){const d=D(k);d[field]=d[field].filter(r=>r[0]!==pid);save();render();}
+function itemRows(k,field,opt){opt=opt||{};const d=D(k);return d[field].map(x=>{const p=prod(x[0])||[x[0],'?'];return `<div class="irow"><div class="iname">${esc(p[1])}${opt.price&&p[3]&&x[3]<custPrice(cust(d.c),p)-0.004?' <span class="bad small">⬇️ සාමාන්‍ය '+money(custPrice(cust(d.c),p))+'</span>':''}</div><label>ගණන<input type="number" inputmode="numeric" min="0" id="q_${field}_${esc(x[0])}" value="${x[1]}" onchange="setItem('${k}','${field}','${esc(x[0])}',1,this.value)"></label>${opt.free?`<label>🎁<input type="number" inputmode="numeric" min="0" value="${x[2]||0}" onchange="setItem('${k}','${field}','${esc(x[0])}',2,this.value)"></label>`:''}${opt.price?`<label>මිල<input type="number" inputmode="decimal" min="0" step="0.01" value="${x[3]}" onchange="setItem('${k}','${field}','${esc(x[0])}',3,this.value)"></label>`:''}${opt.kind?`<label>තත්ත්වය<select onchange="D('${k}').${field}.find(r=>r[0]==='${esc(x[0])}')[2]=this.value;save()"><option value="good" ${x[2]!=='damage'?'selected':''}>✅ හොඳයි</option><option value="damage" ${x[2]==='damage'?'selected':''}>⚠️ Damage</option></select></label>`:''}<button class="x" onclick="rmItem('${k}','${field}','${esc(x[0])}')">✕</button></div>`;}).join('')||'<div class="empty small">තවම භාණ්ඩ නැහැ</div>';}
+function billCalc(d){const c=cust(d.c),pct=c?num(c[6]):0;let g=0,base=0;d.it.forEach(x=>{const v=r2(x[1]*x[3]);g+=v;const p=prod(x[0]);if(!(p&&p[4]))base+=v;});const disc=r2(base*pct/100);const later=d.later.reduce((s,x)=>s+r2(x[1]*x[3]),0);return {g:r2(g),disc,net:r2(g-disc),later:r2(later),pct};}
+function totals(k){const el=$('tot_'+k);if(!el)return;const d=D(k);if(k==='bill'){const t=billCalc(d);el.innerHTML=`එකතුව ${money(t.g)}${t.disc?` · Discount ${t.pct}% -${money(t.disc)}`:''} · <strong>බිල ${money(t.net)}</strong>${t.later?`<br>⏳ පස්සේ දෙන බඩු ${money(t.later)}`:''}`;}if(k==='order'){const s=d.it.reduce((a,x)=>a+x[1]*x[3],0);el.innerHTML=`ඇණවුම ${money(s)}`;}}
+function bookPicker(d){const bt=(S.cfg.bt||[]);if(!bt.length)return '';const last=d.book&&S.bookLast[d.book];return `<div class="card"><div class="row2"><div class="field"><label>📒 පොත</label><select onchange="D(screen).book=this.value;save();render()"><option value="">— පොතක් නැහැ —</option>${bt.map(b=>`<option value="${esc(b[0])}" ${d.book===b[0]?'selected':''}>${esc(b[1])}${b[2]?' (සිල්ලර)':''}</option>`).join('')}</select></div><div class="field"><label>පොතේ බිල් අංකය</label><input type="number" inputmode="numeric" min="1" value="${esc(d.no)}" onchange="D(screen).no=this.value;save()" id="bookNo"></div></div>${d.book?`<button class="btn sm light" onclick="nextNo()">▶ ඊළඟ අංකය${last?' ('+(last.n+1)+')':''}</button> <span class="small muted">${last?'අන්තිම: #'+last.n+' ('+esc(last.d)+')':''}</span>`:''}</div>`;}
+function nextNo(){const d=D(screen),l=S.bookLast[d.book];d.no=String(l?l.n+1:1);save();render();}
+function dateField(k){return `<div class="field"><label>📅 දිනය</label><input type="date" max="${today()}" value="${esc(D(k).d)}" onchange="D('${k}').d=this.value||today();save()"></div>`;}
+function payBox(k,t){const d=D(k),m=d.pay.m,walk=d.cn==='__walk';const seg=(v,l)=>`<button class="${m===v?'on':''}" onclick="D('${k}').pay.m='${v}';save();render()">${l}</button>`;
+  return `<div class="card"><h3>💰 ගෙවීම</h3><div class="seg">${seg('cash','💵 සම්පූර්ණ Cash')}${walk?'':seg('credit','📒 ණයට')+seg('part','➗ කොටසක්')+seg('cheque','🏦 චෙක්')}</div>
+   ${m==='part'||m==='cheque'?`<div class="field"><label>ලැබුණු මුදල (රු.)</label><input type="number" inputmode="decimal" min="0" value="${esc(d.pay.amt)}" onchange="D('${k}').pay.amt=this.value;save()"></div>`:''}
+   ${m==='cheque'?`<div class="row2"><div class="field"><label>චෙක් අංකය</label><input value="${esc(d.pay.no||'')}" onchange="D('${k}').pay.no=this.value;save()"></div><div class="field"><label>බැංකුව</label><input value="${esc(d.pay.bank||'')}" onchange="D('${k}').pay.bank=this.value;save()"></div></div><div class="field"><label>චෙක් දිනය</label><input type="date" value="${esc(d.pay.cd||'')}" onchange="D('${k}').pay.cd=this.value;save()"></div>${photoField(k)}`:''}</div>`;}
+/* cheque photo (optional): made small on the phone before it is sent */
+function photoField(k){const ph=D(k).pay.ph;return `<div class="field"><label>📷 චෙක් ෆොටෝ (ඕනේ නම්)</label><input type="file" accept="image/*" capture="environment" onchange="takePhoto('${k}',this)">${ph?`<img src="${ph}" style="max-height:90px;border-radius:8px;margin-top:6px"> <button class="btn sm light" onclick="delete D('${k}').pay.ph;save();render()">✕</button>`:''}</div>`;}
+function takePhoto(k,input){const f=input.files&&input.files[0];if(!f)return;const img=new Image(),url=URL.createObjectURL(f);img.onload=()=>{const m=640,sc=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);c.getContext('2d').drawImage(img,0,0,c.width,c.height);let q=0.6,d=c.toDataURL('image/jpeg',q);while(d.length>90000&&q>0.25){q-=0.1;d=c.toDataURL('image/jpeg',q);}URL.revokeObjectURL(url);D(k).pay.ph=d;save();render();};img.onerror=()=>toast('ෆොටෝ එක කියවන්න බැහැ','err');img.src=url;}
+/* ---------- bill ---------- */
+function renderBill(){const d=D('bill');
+  $('billBody').innerHTML=`<div class="card">${dateField('bill')}</div>${bookPicker(d)}${custPicker('bill',true)}
+   <div class="card"><h3>📦 බඩු</h3>${itemPicker('bill','it')}${itemRows('bill','it',{free:1,price:1})}</div>
+   ${d.cn==='__walk'?'':`<details class="card" ${d.later.length?'open':''}><summary><strong>⏳ නැති බඩු — පස්සේ දෙනවා (ඇණවුමක්)</strong></summary>${itemPicker('bill','later')}${itemRows('bill','later',{price:1})}<div class="field"><label>දෙන්න පොරොන්දු වුණ දිනය</label><input type="date" value="${esc(d.prom)}" onchange="D('bill').prom=this.value;save()"></div></details>`}
+   <div class="totbox" id="tot_bill"></div>${payBox('bill')}
+   <div class="field card"><label>සටහන</label><input maxlength="200" value="${esc(d.note)}" onchange="D('bill').note=this.value;save()"></div>
+   <button class="btn primary block big" onclick="sendBill()">📤 බිල PC එකට යවන්න</button>`;totals('bill');}
+async function sendBill(){const d=D('bill');
+  if(!d.c&&!d.cn){toast('කඩය තෝරන්න (නම නැත්නම් “🚶 නම නැති කෙනෙක්”)','err');return;}
+  if(!d.it.some(x=>x[1]>0)&&!d.later.some(x=>x[1]>0)){toast('භාණ්ඩ දාන්න','err');return;}
+  if(d.it.some(x=>x[1]>0&&!(x[3]>0))){toast('මිල නැති භාණ්ඩයක් තියෙනවා','err');return;}
+  if(d.book&&!(num(d.no)>0)){toast('📒 පොතේ අංකය දාන්න (නැත්නම් “පොතක් නැහැ”)','err');$('bookNo')&&$('bookNo').focus();return;}
+  const t=billCalc(d),m=d.pay.m,amt=m==='cash'?t.net:m==='credit'?0:r2(num(d.pay.amt));
+  if((m==='part'||m==='cheque')&&!(amt>0)){toast('ලැබුණු මුදල දාන්න','err');return;}
+  if(m==='cheque'&&(!d.pay.no||!d.pay.cd)){toast('චෙක් අංකය සහ දිනය දාන්න','err');return;}
+  if(d.book){const dup=S.sent.find(x=>x.k==='bill'&&x.rec.book===d.book&&String(x.rec.no)===String(num(d.no))&&x.d===d.d);if(dup&&!confirm(`⚠️ ${d.d} දින මේ පොතේ #${num(d.no)} දැනටමත් යැව්වා. ආයෙත් යවනවාද?`))return;}
+  const c=cust(d.c);if(c&&c[4]>0&&m!=='cash'&&c[3]+t.net-amt>c[4]&&!confirm(`⚠️ ${c[1]} ණය සීමාව (${money(c[4])}) පනිනවා. ඒත් යවන්නද? (PC එකේ රතු ලකුණක් පේනවා)`))return;
+  const body={d:d.d,book:d.book,no:d.book?Math.floor(num(d.no)):0,c:d.cn==='__walk'?'':d.c,cn:d.cn==='__walk'?'':d.cn,it:d.it.filter(x=>x[1]>0).map(x=>[x[0],x[1],x[2]||0,x[3]]),later:d.later.filter(x=>x[1]>0).map(x=>[x[0],x[1],x[3]]),prom:d.prom,pay:{m,amt,no:d.pay.no||'',bank:d.pay.bank||'',cd:d.pay.cd||'',...(m==='cheque'&&d.pay.ph?{ph:d.pay.ph}:{})},note:d.note,est:t.net};
+  if(await send('bill',body,`🧾 ${custName(d)} ${money(t.net)}${d.book?' · #'+body.no:''}`)){if(d.book){S.bookLast[d.book]={d:d.d,n:body.no};}newDraft('bill');save();toast('✅ බිල යැව්වා');go('home');}}
+/* ---------- payment ---------- */
+function renderPay(){const d=D('pay'),c=cust(d.c);$('payBody').innerHTML=`<div class="card">${dateField('pay')}</div>${custPicker('pay',false)}
+  <div class="card"><div class="field"><label>ලැබුණු මුදල (රු.)</label><input type="number" inputmode="decimal" min="0" value="${esc(d.amt)}" onchange="D('pay').amt=this.value;save()"></div>
+  <div class="seg"><button class="${d.pay.m!=='cheque'?'on':''}" onclick="D('pay').pay.m='cash';save();render()">💵 Cash</button><button class="${d.pay.m==='cheque'?'on':''}" onclick="D('pay').pay.m='cheque';save();render()">🏦 චෙක්</button></div>
+  ${d.pay.m==='cheque'?`<div class="row2"><div class="field"><label>චෙක් අංකය</label><input value="${esc(d.pay.no||'')}" onchange="D('pay').pay.no=this.value;save()"></div><div class="field"><label>බැංකුව</label><input value="${esc(d.pay.bank||'')}" onchange="D('pay').pay.bank=this.value;save()"></div></div><div class="field"><label>චෙක් දිනය</label><input type="date" value="${esc(d.pay.cd||'')}" onchange="D('pay').pay.cd=this.value;save()"></div>${photoField('pay')}`:''}</div>
+  <button class="btn primary block big" onclick="sendPay()">📤 PC එකට යවන්න</button>`;}
+async function sendPay(){const d=D('pay'),c=cust(d.c),amt=r2(num(d.amt));if(!c){toast('කඩය තෝරන්න','err');return;}if(!(amt>0)){toast('මුදල දාන්න','err');return;}if(d.pay.m==='cheque'&&(!d.pay.no||!d.pay.cd)){toast('චෙක් අංකය සහ දිනය දාන්න','err');return;}
+  if(amt>c[3]+0.004&&!confirm(`${c[1]} ගේ ණය ${money(c[3])} — ඊට වඩා වැඩියි. ඉතිරිය advance විදිහට PC එකේ බලනවා. යවන්නද?`))return;
+  if(await send('pay',{d:d.d,c:c[0],amt,m:d.pay.m==='cheque'?'cheque':'cash',no:d.pay.no||'',bank:d.pay.bank||'',cd:d.pay.cd||'',...(d.pay.m==='cheque'&&d.pay.ph?{ph:d.pay.ph}:{})},`💰 ${c[1]} ${money(amt)}`)){newDraft('pay');toast('✅ යැව්වා');go('home');}}
+/* ---------- return ---------- */
+function renderRet(){const d=D('ret');$('retBody').innerHTML=`<div class="card">${dateField('ret')}</div>${custPicker('ret',false)}
+  <div class="card"><h3>↩️ ආපහු ගත්ත බඩු</h3>${itemPicker('ret','it')}${itemRows('ret','it',{kind:1})}</div>
+  <div class="card"><label class="check"><input type="checkbox" ${d.cash?'checked':''} onchange="D('ret').cash=this.checked;save()"> 💵 සල්ලි ආපහු දුන්නා (නැත්නම් ණයෙන් අඩු කරනවා)</label><div class="field"><label>සටහන</label><input value="${esc(d.note)}" onchange="D('ret').note=this.value;save()"></div></div>
+  <button class="btn primary block big" onclick="sendRet()">📤 PC එකට යවන්න</button>`;}
+async function sendRet(){const d=D('ret'),c=cust(d.c);if(!c){toast('කඩය තෝරන්න','err');return;}const it=d.it.filter(x=>x[1]>0);if(!it.length){toast('භාණ්ඩ දාන්න','err');return;}
+  if(await send('ret',{d:d.d,c:c[0],it:it.map(x=>[x[0],x[1],x[2]==='damage'?'damage':'good']),cash:!!d.cash,note:d.note},`↩️ ${c[1]} — ${it.length}ක්`)){newDraft('ret');toast('✅ යැව්වා');go('home');}}
+/* ---------- non-sale moves ---------- */
+const MK={exchange:'🔄 මාරු කර දුන්නා (Damage → අලුත්)',home:'🏠 ගෙදරට',sample:'🎁 නියැදි / තෑගි / ප්‍රවර්ධන',staff:'👷 සේවකයෙක් ගත්තා (පඩියෙන් අඩු)',fdamage:'⚠️ කම්හල ඇතුළේ Damage / කල් ඉකුත්'};
+function renderMove(){const d=D('move');$('moveBody').innerHTML=`<div class="card">${dateField('move')}<div class="field"><label>මොකක්ද?</label><select onchange="D('move').kind=this.value;save();render()"><option value="">— තෝරන්න —</option>${Object.entries(MK).map(([k,v])=>`<option value="${k}" ${d.kind===k?'selected':''}>${v}</option>`).join('')}</select></div>
+  ${d.kind==='staff'?`<div class="field"><label>සේවකයාගේ නම</label><input value="${esc(d.staff)}" list="staffL" onchange="D('move').staff=this.value;save()"><datalist id="staffL">${((S.cfg&&S.cfg.st)||[]).map(n=>`<option value="${esc(n)}">`).join('')}</datalist></div>`:''}</div>
+  ${d.kind==='exchange'?custPicker('move',false):''}
+  <div class="card"><h3>${d.kind==='exchange'?'📤 දුන්න අලුත් බඩු':'📦 බඩු'}</h3>${itemPicker('move','it')}${itemRows('move','it',{})}</div>
+  ${d.kind==='exchange'?`<div class="card"><h3>📥 ආපහු ගත්ත Damage බඩු</h3>${itemPicker('move','back')}${itemRows('move','back',{})}</div>`:''}
+  <div class="card field"><label>සටහන / හේතුව</label><input maxlength="200" value="${esc(d.note)}" onchange="D('move').note=this.value;save()"></div>
+  <button class="btn primary block big" onclick="sendMove()">📤 PC එකට යවන්න</button>`;}
+async function sendMove(){const d=D('move');if(!d.kind){toast('මොකක්ද කියලා තෝරන්න','err');return;}const it=d.it.filter(x=>x[1]>0);if(!it.length){toast('බඩු දාන්න','err');return;}if(d.kind==='staff'&&d.staff.trim().length<2){toast('සේවකයාගේ නම දාන්න','err');return;}if(d.kind==='exchange'&&!d.c){toast('කඩය තෝරන්න','err');return;}
+  if(await send('move',{d:d.d,kind:d.kind,c:d.c||'',staff:d.staff.trim(),it:it.map(x=>[x[0],x[1]]),back:d.back.filter(x=>x[1]>0).map(x=>[x[0],x[1]]),note:d.note},`📦 ${MK[d.kind]}`)){newDraft('move');toast('✅ යැව්වා');go('home');}}
+/* ---------- drawer take ---------- */
+const TK={raw:'🧂 අමු ද්‍රව්‍ය',supplier:'🏪 සැපයුම්කරුට',wage:'👷 පඩි / අත්තිකාරම්',owner:'👤 මම ගත්තා (ගෙදරට)',other:'📝 වෙනත්'};
+function renderTake(){const d=D('take');$('takeBody').innerHTML=`<div class="card">${dateField('take')}<div class="field"><label>ගත්ත මුදල (රු.)</label><input type="number" inputmode="decimal" min="0" value="${esc(d.amt)}" onchange="D('take').amt=this.value;save()"></div>
+  <div class="field"><label>මොකටද?</label><select onchange="D('take').kind=this.value;save()"><option value="">— තෝරන්න —</option>${Object.entries(TK).map(([k,v])=>`<option value="${k}" ${d.kind===k?'selected':''}>${v}</option>`).join('')}</select></div>
+  <div class="field"><label>කවුද ගත්තේ / කාටද</label><input value="${esc(d.staff)}" onchange="D('take').staff=this.value;save()"></div><div class="field"><label>හේතුව</label><input maxlength="200" value="${esc(d.note)}" onchange="D('take').note=this.value;save()"></div></div>
+  <button class="btn primary block big" onclick="sendTake()">📤 PC එකට යවන්න</button>`;}
+async function sendTake(){const d=D('take'),amt=r2(num(d.amt));if(!(amt>0)){toast('මුදල දාන්න','err');return;}if(!d.kind){toast('මොකටද කියලා තෝරන්න','err');return;}
+  if(await send('take',{d:d.d,amt,kind:d.kind,who:d.staff.trim(),reason:d.note},`💸 ${TK[d.kind]} ${money(amt)}`)){newDraft('take');toast('✅ යැව්වා');go('home');}}
+/* ---------- orders ---------- */
+function renderOrder(){const d=D('order');$('orderBody').innerHTML=`<div class="card">${dateField('order')}</div>${custPicker('order',false)}
+  <div class="card"><h3>📋 ඇණවුම් බඩු</h3>${itemPicker('order','it')}${itemRows('order','it',{price:1})}<div class="totbox" id="tot_order"></div>
+  <div class="field"><label>දෙන්න පොරොන්දු වුණ දිනය</label><input type="date" value="${esc(d.prom)}" onchange="D('order').prom=this.value;save()"></div></div>
+  <div class="card"><h3>💵 කලින් ගෙව්වා (advance)</h3><div class="field"><input type="number" inputmode="decimal" min="0" placeholder="0 = බඩු ලැබුණාම" value="${esc(d.adv)}" onchange="D('order').adv=this.value;save()"></div></div>
+  <button class="btn primary block big" onclick="sendOrder()">📤 PC එකට යවන්න</button>`;totals('order');}
+async function sendOrder(){const d=D('order'),c=cust(d.c);if(!c){toast('කඩය තෝරන්න','err');return;}const it=d.it.filter(x=>x[1]>0);if(!it.length){toast('බඩු දාන්න','err');return;}
+  if(await send('order',{d:d.d,c:c[0],it:it.map(x=>[x[0],x[1],x[3]]),prom:d.prom,adv:r2(num(d.adv))},`📋 ${c[1]} ඇණවුම`)){newDraft('order');toast('✅ යැව්වා');go('home');}}
+function renderOrders(){const o=(S.cfg.o||[]),sent=new Set(S.sent.filter(x=>x.k==='odel').map(x=>x.rec.o+'|'+x.rec.at.slice(0,10)));
+  $('ordersBody').innerHTML=o.length?o.map(x=>{const late=x[4]&&x[4]<today();return `<div class="card ${late?'late':''}"><div class="row"><div class="grow"><strong>${esc(x[2])}</strong><div class="small muted">${esc(x[6]||'')} · ගත්තේ ${esc(x[7]||'')}${x[4]?' · පොරොන්දුව '+esc(x[4]):''}${late?' <span class="bad">⏰ පරක්කුයි</span>':''}${x[5]>0?' · advance '+money(x[5]):''}</div></div></div>
+   ${x[3].map(i=>`<div class="irow"><div class="iname">${esc(i[1])} <span class="muted small">(${i[2]}ක්)</span></div><label>දුන්නේ<input type="number" inputmode="numeric" min="0" max="${i[2]}" value="${i[2]}" id="od_${esc(x[0])}_${esc(i[0])}"></label></div>`).join('')}
+   <button class="btn primary block" onclick="sendDeliver('${esc(x[0])}')">✓ දුන්නා — PC එකට යවන්න</button></div>`;}).join(''):'<div class="card empty">දෙන්න තියෙන ඇණවුම් නැහැ ✅</div>';}
+async function sendDeliver(id){const x=(S.cfg.o||[]).find(o=>o[0]===id);if(!x)return;const it=x[3].map(i=>[i[0],Math.max(0,Math.min(i[2],Math.floor(num(($('od_'+id+'_'+i[0])||{}).value))))]).filter(i=>i[1]>0);if(!it.length){toast('ගණන් දාන්න','err');return;}
+  if(S.sent.some(s=>s.k==='odel'&&s.rec.o===id&&!okSet().has(s.uid))&&!confirm('මේ ඇණවුම දුන්නා කියලා දැනටමත් යැව්වා (PC එක තවම අනුමත කළේ නැහැ). ආයෙත් යවනවාද?'))return;
+  if(await send('odel',{d:today(),o:id,c:x[1],it},`🚚 ${x[2]} ඇණවුම දුන්නා`)){toast('✅ යැව්වා');go('home');}}
+/* ---------- history / setup ---------- */
+function renderHistory(){const ok=okSet(),out=new Set(S.outbox.map(x=>x.uid));
+  $('historyBody').innerHTML=cloudLine()+(S.sent.length?S.sent.slice(0,120).map(x=>`<div class="hist"><div class="grow"><strong>${esc(x.label)}</strong><div class="small muted">${esc(x.d)} · ${esc(x.at.slice(11,16))}</div></div><span class="${ok.has(x.uid)?'ok':out.has(x.uid)?'bad':'wait'}">${ok.has(x.uid)?'✅ PC එකේ':out.has(x.uid)?'📱 phone එකේ':'☁️ ගියා'}</span></div>`).join(''):'<div class="card empty">තවම නැහැ</div>');}
+function renderSetup(){$('setupBody').innerHTML=`<div class="card"><div class="field"><label>ඔයාගේ නම</label><input id="meName" maxlength="40" value="${esc(S.me)}"></div><button class="btn primary block" onclick="const n=$('meName').value.trim();if(n.length<2){toast('නම දාන්න','err');return;}S.me=n;save();toast('✅ සුරැකුවා');go('home')">💾 සුරකින්න</button></div>
+  <div class="card">${cloudLine()}<div class="small muted">${S.cloud?'Project: '+esc(S.cloud.p):'සකසලා නැහැ'} · Phone ID: ${esc(ensureDev())}</div><button class="btn light block" onclick="askPersist()">🔒 Phone එකේ ස්ථිරව තියාගන්න ඉල්ලන්න</button><p class="small muted">⚠️ Chrome → “Clear data” / app එක මකන්න එපා — PC එකට නොගිය බිල් නැති වෙනවා. Phone එක මාරු කරනවා නම් PC එකෙන් අලුත් link එකක් ගන්න (පරණ එක ඉබේම නවතිනවා).</p></div>`;}
+async function askPersist(){try{const ok=navigator.storage&&navigator.storage.persist?await navigator.storage.persist():false;toast(ok?'✅ ස්ථිර ගබඩාව ලැබුණා':'Phone එක ඉඩ දුන්නේ නැහැ — app එක Home screen එකට දාලා පාවිච්චි කරන්න',ok?'ok':'warn');}catch(e){toast('බැහැ','warn');}}
+/* ---------- start ---------- */
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync(false);});
+window.addEventListener('online',()=>sync(false));
+setInterval(()=>{if(!document.hidden)sync(false);},5*60*1000);
+go(S.me||!S.cloud?'home':'setup');sync(false).then(()=>{if(screen==='home')render();});
+</script>
+</body>
+</html>
