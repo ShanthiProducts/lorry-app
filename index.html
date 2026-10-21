@@ -138,6 +138,7 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
       <p class="small muted" id="setupInfo"></p>
       <button class="btn primary block" onclick="saveSetup()">💾 සුරකින්න</button></div>
     <div class="card"><h3>☁️ ඉබේම යැවීම (Firebase)</h3><div id="cloudSetup" class="small"></div><button class="btn light block" onclick="cloudSync(true)">🔄 දැන් යවන්න / ගන්න</button></div>
+    <div id="linkBoxL"></div>
     <div class="card"><h3>🔄 අලුත් ෆෝන් එකක් / App එක මැකුණොත්</h3><p class="small muted">අන්තිමට ආපු Report message එක ආයෙත් “📥 Report / Code දාන්න” එකට paste කරන්න. භාණ්ඩ ලැයිස්තුවත් එක්කම එනවා.</p></div>
     <button class="btn ghost block" onclick="resetApp()">🗑 App එකේ දත්ත මකන්න</button>
   </section>
@@ -221,7 +222,15 @@ function beforeSend(type,payload,text,go){
   try{navigator.geolocation.getCurrentPosition(p=>{payload.loc=[Math.round(p.coords.latitude*1e6)/1e6,Math.round(p.coords.longitude*1e6)/1e6,Math.round(p.coords.accuracy||0)];end();},e=>{payload.locErr=e&&e.code===1?'අවසර නැහැ':'ලැබුණේ නැහැ';end();},{enableHighAccuracy:true,timeout:8000,maximumAge:300000});}catch(e){payload.locErr='ලැබුණේ නැහැ';end();}
 }
 function lastSent(t,d){return S.sent.filter(x=>x.t===t&&(!d||x.d===d)).slice(-1)[0]||null;}
-function renderHome(){
+
+/* v4.3.6 · iPhone: Safari and the Home-screen icon keep separate data */
+const IOS_TAB=/iP(hone|ad|od)/.test(navigator.userAgent)&&navigator.standalone===false;
+function iosHint(){return IOS_TAB?`<div class="warnbox">📱 <strong>iPhone:</strong> මේ open වෙලා තියෙන්නේ <strong>Safari</strong> එකේ. Safari එකේ දාන දේ Home screen icon එකේ app එකට <strong>එන්නේ නැහැ</strong> (iPhone ඒ දෙක වෙනම තියාගන්නවා).<br>➊ Share ⬆️ → <strong>Add to Home Screen</strong> ➋ ඒ icon එකෙන් app එක open කරන්න ➌ ⚙️ සැකසුම් → <strong>🔗 Link එක paste කරන්න</strong>.</div>`:'';}
+function linkBox(note){return `<div class="card"><h3>🔗 Link එක මෙතන paste කරන්න</h3><p class="small muted">${note} WhatsApp එකේ link එක ඔබාගෙන ඉඳලා <strong>Copy</strong> කරලා, මේ app එක ඇතුළේ මෙතන දාන්න. (iPhone එකේ Home screen app එකට link එක දාන්න පුළුවන් එකම ක්‍රමය මේකයි.)</p><div class="field"><input id="linkIn" placeholder="https://…" autocomplete="off" autocapitalize="off" spellcheck="false"></div><button class="btn light block" onclick="pasteLink()">📋 Copy කරපු link එක ගන්න</button><button class="btn primary block" onclick="useLink($('linkIn').value)">✅ සකසන්න</button></div>`;}
+async function pasteLink(){try{const t=await navigator.clipboard.readText();$('linkIn').value=t;useLink(t);}catch(e){toast('Clipboard කියවන්න බැහැ. Box එක ඇතුළේ ඔබාගෙන ඉඳලා “Paste” කරන්න.','warn');$('linkIn').focus();}}
+function useLink(t){const m=/[#&]c=([a-z0-9-]+)~([A-Za-z0-9_-]+)/.exec(String(t||'').trim());if(!m||!cloudSetCfg(m[1],m[2])){toast('මේක ලොරි app link එක නෙවෙයි. PC එකෙන් එවපු “📱 ලොරි app link” එකම copy කරන්න.','err');return false;}toast('☁️ ඉබේම යැවීම සකස් කළා ✅');cloudSync(true);render();return true;}
+function renderHome(){renderHome0();const h=iosHint();if(h&&screen==='home')$('homeBody').insertAdjacentHTML('afterbegin',h);}
+function renderHome0(){
   const r=S.rep,cd=S.drafts.count,ld=S.drafts.load,c=S.cfg;
   if(!c){$('homeBody').innerHTML=S.cloud?`<div class="card hero"><div class="big">☁️</div><h2>ආයුබෝවන්!</h2><p>භාණ්ඩ ලැයිස්තුව ඉබේම ගන්නවා… (Internet ඕනේ)</p><button class="btn primary block" onclick="cloudSync(true)">🔄 දැන් ගන්න</button><p class="small muted">වැඩ නොකළොත් WhatsApp එකෙන් ආපු “📲 භාණ්ඩ ලැයිස්තුව” message එක දාන්න.</p><button class="btn light block" onclick="go('inbox')">📥 Message එක දාන්න</button></div>`:`<div class="card hero"><div class="big">👋</div><h2>ආයුබෝවන්!</h2><p>මුලින්ම ඔයාට WhatsApp එකෙන් ආපු <strong>“📲 භාණ්ඩ ලැයිස්තුව”</strong> message එක සම්පූර්ණයෙන්ම copy කරලා මෙතන දාන්න.</p><button class="btn primary block" onclick="go('inbox')">📥 Message එක දාන්න</button></div>`;return;}
   if(!S.me){go('setup');toast('මුලින්ම ඔයාගේ නම දාන්න','warn');return;}
@@ -383,6 +392,7 @@ function renderInbox(){$('inboxInfo').innerHTML=S.cfg?`භාණ්ඩ <strong>$
 async function pasteClip(){try{const t=await navigator.clipboard.readText();$('inboxText').value=t;inboxApply();}catch(e){toast('Clipboard කියවන්න බැහැ. Text box එක ඇතුළේ ඔබාගෙන ඉඳලා “Paste” කරන්න.','warn');$('inboxText').focus();}}
 function inboxApply(){
   const codes=sbpDecodeAll($('inboxText').value);
+  if(!codes.length&&/[#&]c=[a-z0-9-]+~/.test($('inboxText').value)){if(useLink($('inboxText').value))$('inboxText').value='';return;}
   if(!codes.length){toast('Message එකේ code එකක් (SBP1:…) නැහැ. සම්පූර්ණ message එකම copy කරන්න.','err');return;}
   const bad=codes.find(c=>c.error);if(bad){toast('Message එක කැපිලා / වෙනස් වෙලා. WhatsApp එකෙන් ආයෙත් සම්පූර්ණයෙන් copy කරන්න.','err');return;}
   if(codes.some(c=>['load','count','unload'].includes(c.type))){toast('මේක ඔයා main system එකට යවන message එකක්. මෙතන දාන්න ඕනේ නැහැ.','warn');return;}
@@ -488,7 +498,7 @@ function renderHistory(){const list=S.sent.slice().reverse();$('histList').inner
 function resend(i){const x=S.sent[i];if(x&&x.text)shareSheet('ආයෙත් යවන්න',x.text,null);}
 
 /* ---------------- SETUP ---------------- */
-function renderSetup(){$('cloudSetup').innerHTML=S.cloud?`${cloudLine()}<div class="muted">Project: ${esc(S.cloud.p)} · යවන්න බලාගෙන: ${S.outbox.length}</div>`:'<div class="muted">සකසලා නැහැ. ලොකු මහත්තයා එවන “📱 ලොරි app link” එකෙන් open කළාම ඉබේම සැකසෙනවා. ඒ වෙනකම් WhatsApp ක්‍රමය වැඩ කරනවා.</div>';$('meName').value=S.me||'';$('waNum').value=S.wa||(S.cfg&&S.cfg.wa)||'';$('setupInfo').innerHTML=S.cfg?`භාණ්ඩ ${products().length}ක් · ලැයිස්තුව ආවේ ${esc(fmtAt(S.cfg.at).slice(0,10))}`:'භාණ්ඩ ලැයිස්තුව තවම නැහැ';}
+function renderSetup(){$('linkBoxL').innerHTML=linkBox(S.cloud?'Phone එක මාරු කළොත් / link එක අලුත් කළොත්:':'Firebase තවම සකසලා නැහැ.');$('cloudSetup').innerHTML=S.cloud?`${cloudLine()}<div class="muted">Project: ${esc(S.cloud.p)} · යවන්න බලාගෙන: ${S.outbox.length}</div>`:'<div class="muted">සකසලා නැහැ. ලොකු මහත්තයා එවන “📱 ලොරි app link” එකෙන් open කළාම ඉබේම සැකසෙනවා. ඒ වෙනකම් WhatsApp ක්‍රමය වැඩ කරනවා.</div>';$('meName').value=S.me||'';$('waNum').value=S.wa||(S.cfg&&S.cfg.wa)||'';$('setupInfo').innerHTML=S.cfg?`භාණ්ඩ ${products().length}ක් · ලැයිස්තුව ආවේ ${esc(fmtAt(S.cfg.at).slice(0,10))}`:'භාණ්ඩ ලැයිස්තුව තවම නැහැ';}
 function saveSetup(){const n=$('meName').value.trim();if(n.length<2){toast('නම අකුරු 2කට වැඩි වෙන්න ඕනේ','err');return;}S.me=n.slice(0,40);const w=$('waNum').value.trim();S.wa=w;S.waOverride=!!w&&(!S.cfg||sbpWaNumber(w)!==S.cfg.wa);['load','count','unload'].forEach(k=>{if(S.drafts[k]&&!S.drafts[k].sentRev)S.drafts[k].by=S.me;});save();toast('✅ සුරැකුවා');go('home');}
 function resetApp(){if(!confirm('App එකේ ඔක්කොම දත්ත මකන්නද? (යැවූ message WhatsApp එකේ තියෙනවා)'))return;if(prompt('තහවුරු කරන්න DELETE කියලා type කරන්න')!=='DELETE')return;S=blankState();save();go('home');}
 
