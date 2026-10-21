@@ -1,13 +1,13 @@
 {
- "name": "කම්හල් App · Shanthi Food Products",
- "short_name": "කම්හල් App",
+ "name": "ලොරි App · Shanthi Food Products",
+ "short_name": "ලොරි App",
  "lang": "si",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
  "orientation": "portrait",
  "background_color": "#f4f5f8",
- "theme_color": "#0f766e",
+ "theme_color": "#e51b23",
  "icons": [
   {
    "src": "icon-192.png",

@@ -1,8 +1,9 @@
-/* offline cache for the factory app — version changes automatically when index.html changes */
-const CACHE='factory-app-fae10b98f1';
+/* offline cache for the lorry app (only its own old caches are removed — the factory app lives on the same site) */
+/* offline cache for the lorry app — version changes automatically when index.html changes */
+const CACHE='lorry-app-b496f436c7';
 const FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim()));});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE&&x.startsWith('lorry-app-')).map(x=>caches.delete(x)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{
   if(e.request.method!=='GET')return;
   const url=new URL(e.request.url);if(url.origin!==location.origin)return;
