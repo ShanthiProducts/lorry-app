@@ -89,7 +89,7 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
     <div class="grid2"><button class="tile" onclick="go('inbox')"><span>📥</span>Report / Code දාන්න<small>WhatsApp එකෙන් ආපු message (Cloud නැති වෙලාවට)</small></button><button class="tile" onclick="go('setup')"><span>⚙️</span>සැකසුම්<small>නම, WhatsApp අංකය</small></button></div>
-    <div class="foot">Shanthi Food Products · ලොරි App v4.1 · Internet නැතුවත් වැඩ කරනවා</div></section>
+    <div class="foot">Shanthi Food Products · ලොරි App v4.3 · Internet නැතුවත් වැඩ කරනවා</div></section>
 
   <section class="screen" id="s-inbox">
     <div class="card"><h3>📥 WhatsApp message එක දාන්න</h3><p class="muted small">ලොකු මහත්තයා එවන <strong>Report</strong> එක හෝ <strong>භාණ්ඩ ලැයිස්තුව</strong> — WhatsApp එකේ message එක ඔබාගෙන ඉඳලා <strong>Copy</strong> කරලා මෙතන <strong>Paste</strong> කරන්න.</p>
@@ -229,6 +229,7 @@ function renderHome(){
    ${step(1,!!r&&r.d>=(lastSent('load')||{d:''}).d,'📥 Report එක දාන්න',r?`අන්තිම Report: <strong>${esc(r.d)}</strong>`:'තවම Report එකක් නැහැ','go(\'inbox\')','දාන්න','light')}
    ${step(2,!!counted,'🔢 ලොරිය ගණන් කරන්න',r?(counted?`${esc(r.d)} — යැව්වා (සංශෝධනය ${counted.rev})`:(cd&&cd.d===r.d&&Object.keys(cd.c||{}).length?`${esc(r.d)} — ගණන් කරමින්… (${Object.keys(cd.c).length}ක්)`:`${esc(r.d)} Report එකට`)):'Report එක ආවට පස්සේ','go(\'count\')',counted?'බලන්න':'ගණන් කරන්න')}
    ${step(3,!!loadToday,'📦 ලොරියට පටවන්න',loadToday?`අද යැව්වා (සංශෝධනය ${loadToday.rev}) · පැකට් ${loadToday.total}`:(ld&&!ld.sentRev&&Object.keys(ld.i||{}).length?'දාමින්… (තවම යැව්වේ නැහැ)':'අද පටවන බඩු'),'go(\'load\')',loadToday?'බලන්න':'පටවන්න')}
+   ${ordHome()}
    <div class="grid2">
     <button class="tile" onclick="go('unload')"><span>🏭</span>Factory එකට බෑවා<small>Delivery නැති දවසට / ඉතුරු බඩු බානකොට</small></button>
     <button class="tile" onclick="go('history')"><span>📜</span>යැවූ ඒවා<small>${S.sent.length} ක්</small></button>
@@ -401,6 +402,7 @@ function applyCodes(codes,silent){
       if(S.rep&&S.rep.d===r.d&&S.rep.at===r.at){if(!silent)msg.push(`📤 ${r.d} Report එක දැනටමත් දාලා`);continue;}
       const same=S.rep&&S.rep.d===r.d;S.rep={d:r.d,at:r.at,route:r.route||'',sig:r.sig||'',rows:r.rows,rd:Array.isArray(r.rd)?r.rd:[],cfg:{blind:!!(r.cfg&&r.cfg.blind)}};
       S.reps=[S.rep,...S.reps.filter(x=>x.d!==r.d)].slice(0,10);msg.push(`📤 ${r.d} Report එක${same?' (අලුත් කළා)':''}`);}
+    if(c.type==='ord'){const g=c.data;if(!g||!Array.isArray(g.o))continue;if(S.ord&&S.ord.at===g.at)continue;S.ord={at:String(g.at||''),o:g.o.filter(x=>Array.isArray(x)&&x[0]&&Array.isArray(x[3]))};msg.push(`📋 දෙන්න තියෙන ඇණවුම් ${S.ord.o.length}`);continue;}
     if(c.type==='sug'){const g=c.data;if(!g||!/^\d{4}-\d{2}-\d{2}$/.test(String(g.d||''))||!Array.isArray(g.i))continue;
       if(S.sug&&S.sug.at===g.at)continue;
       S.sug={d:g.d,route:String(g.route||''),at:String(g.at||''),i:Object.fromEntries(g.i.filter(x=>Array.isArray(x)&&x[0]&&Number(x[1])>0).map(x=>[String(x[0]),Math.floor(Number(x[1]))]))};
@@ -434,7 +436,7 @@ async function cloudFlush(){
 }
 async function cloudPull(){
   if(!S.cloud)return;const got=[];
-  for(const k of ['cfg','rep','sug']){
+  for(const k of ['cfg','rep','sug','ord']){
     let r;try{r=await fetch(`${fsBase()}/out/${k}`,{cache:'no-store'});}catch(e){S.cloudErr='Internet නැහැ';return;}
     if(r.status===404)continue;if(!r.ok){let j={};try{j=await r.json();}catch(e){}S.cloudErr=cloudErrText(r.status,j);return;}
     let j;try{j=await r.json();}catch(e){continue;}const f=j.fields||{},at=(f.at||{}).stringValue||'',code=(f.code||{}).stringValue||'';
@@ -469,6 +471,13 @@ function sendOut(title,text,type,payload,onSent){
   shareSheet(title,text,null,id);
   cloudFlush().then(()=>{const el=$('sendState');if(!el)return;const ok=!S.outbox.some(x=>x.id===id);el.className='sendstate '+(ok?'ok':'wait');el.innerHTML=ok?'✅ ලොකු මහත්තයාට ඉබේම ගියා. WhatsApp එකෙන් යවන්න ඕනේ නැහැ.':`⏳ ${esc(S.cloudErr||'තවම ගියේ නැහැ')}.<br>Signal ආපු ගමන් ඉබේම යනවා. හදිසි නම් පහළ WhatsApp බොත්තමෙන් යවන්න.`;if(screen==='home')render();});
 }
+
+/* ---------------- v4.3 · orders to give today: a list + ✓ only (no bills, no money) ---------------- */
+function ordHome(){const o=(S.ord&&S.ord.o)||[];if(!o.length)return '';S.ordDone=S.ordDone||{};
+  return `<div class="card"><h3>📋 දෙන්න තියෙන ඇණවුම් (${o.length})</h3><p class="small muted">කඩේට දුන්නම ✓ ඔබන්න — ලොකු මහත්තයා PC එකේ බිල හදනවා.</p>${o.map(x=>{const done=S.ordDone[x[0]];return `<div class="row" style="padding:8px 0;border-bottom:1px solid #eee"><div class="grow"><strong>${esc(x[1])}</strong> <span class="small muted">${esc(x[2]||'')}${x[4]?' · '+esc(x[4]):''}</span><div class="small">${x[3].map(i=>esc(i[1])+' <strong>'+i[2]+'</strong>').join(', ')}</div></div>${done?'<span class="ok">✓ යැව්වා</span>':`<button class="btn sm primary" onclick="ordGive('${esc(x[0])}')">✓ දුන්නා</button>`}</div>`;}).join('')}</div>`;}
+function ordGive(id){const x=((S.ord&&S.ord.o)||[]).find(o=>o[0]===id);if(!x)return;if(!confirm(`${x[1]} ට ${x[3].map(i=>i[1]+' '+i[2]).join(', ')} දුන්නාද?`))return;
+  const payload={uid:uid(),rev:1,d:today(),o:id,it:x[3].map(i=>[i[0],i[2]]),by:S.me||'',at:new Date().toISOString()};S.ordDone=S.ordDone||{};S.ordDone[id]=payload.uid;save();
+  sendOut('📋 ඇණවුම දුන්නා',`📋 ${S.cfg?S.cfg.biz:''} — ඇණවුම දුන්නා\n${x[1]}: ${x[3].map(i=>i[1]+' '+i[2]).join(', ')}\n\n${sbpEncode('odone',payload)}`,'odone',payload);render();}
 
 /* ---------------- HISTORY ---------------- */
 const TT={load:'📦 පැටවීම',count:'🔢 ගණන් කිරීම',unload:'🏭 Factory එකට','count-draft':'📝 නොයැවූ ගණන් කිරීම'};
