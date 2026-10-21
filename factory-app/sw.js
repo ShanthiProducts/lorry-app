@@ -1,5 +1,5 @@
 /* offline cache for the factory app (only its own old caches are removed — the factory app lives on the same site) */
-const CACHE='factory-app-a1e7f9e8eb';
+const CACHE='factory-app-a32d0155bf';
 const FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE&&x.startsWith('factory-app-')).map(x=>caches.delete(x)))).then(()=>self.clients.claim()));});
