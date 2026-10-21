@@ -89,7 +89,7 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
     <div class="grid2"><button class="tile" onclick="go('inbox')"><span>📥</span>Report / Code දාන්න<small>WhatsApp එකෙන් ආපු message (Cloud නැති වෙලාවට)</small></button><button class="tile" onclick="go('setup')"><span>⚙️</span>සැකසුම්<small>නම, WhatsApp අංකය</small></button></div>
-    <div class="foot">Shanthi Food Products · ලොරි App v4.3 · Internet නැතුවත් වැඩ කරනවා</div></section>
+    <div class="foot">Shanthi Food Products · ලොරි App v4.3.4 · Internet නැතුවත් වැඩ කරනවා</div></section>
 
   <section class="screen" id="s-inbox">
     <div class="card"><h3>📥 WhatsApp message එක දාන්න</h3><p class="muted small">ලොකු මහත්තයා එවන <strong>Report</strong> එක හෝ <strong>භාණ්ඩ ලැයිස්තුව</strong> — WhatsApp එකේ message එක ඔබාගෙන ඉඳලා <strong>Copy</strong> කරලා මෙතන <strong>Paste</strong> කරන්න.</p>
@@ -205,6 +205,8 @@ function draftOf(k){return k==='count'?countDraft():k==='load'?loadDraft():unloa
 function lockHtml(k,rows){const d=draftOf(k);return `<div class="card lockbox">🔒 <strong>යැව්වා</strong> — ${esc(d.d)} · සංශෝධනය ${d.sentRev}<div class="small">ලොකු මහත්තයාට ගියා. දැන් වෙනස් කරන්න බැහැ. වැරැද්දක් නම් පමණක් පහළ බොත්තම ඔබලා, හේතුව කියලා නිවැරදි කරන්න.</div><button class="btn light sm" style="margin-top:8px" onclick="askFix('${k}')">✏️ නිවැරදි කිරීමක් කරන්න</button></div>${rows?`<div class="card">${rows}</div>`:''}`;}
 function lockRows(map){const ids=Object.keys(map).filter(id=>map[id]);return ids.length?ids.sort((a,b)=>porder(a)-porder(b)).map(id=>`<div class="rdrow"><span>${esc(pname(id))}</span><strong>${map[id]}</strong></div>`).join(''):'';}
 function askFix(k){sheet('✏️ නිවැරදි කිරීම',`<p>මොකක්ද වැරදුණේ? (උදා: “මිරිස් 100g 5ක් අඩුවෙන් ගැහුවා”)</p><textarea id="fixWhy" rows="3" style="width:100%;font:inherit;padding:8px;border-radius:10px;border:1px solid #cbd5e1"></textarea><p class="small">මේ හේතුව ලොකු මහත්තයාට පේනවා. ඔහු අනුමත කරනකම් කිසිවක් වෙනස් වෙන්නේ නැහැ.</p>`,[{t:'✏️ වෙනස් කරන්න පටන් ගන්න',c:'primary',f:()=>{const w=($('fixWhy').value||'').trim();if(w.length<3){toast('හේතුව ලියන්න (අකුරු 3කට වැඩි)','err');return;}const d=draftOf(k);d.unlock=true;d.why=w.slice(0,200);save();closeSheet();(k==='count'?renderCount:k==='load'?renderLoad:renderUnload)();}}]);}
+/* v4.3.4 · Sri Lanka time for a saved moment (records keep world time inside) */
+function fmtAt(iso){if(!iso)return '';const d=new Date(iso);if(isNaN(d))return String(iso).slice(0,16).replace('T',' ');try{const p={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(d).forEach(x=>p[x.type]=x.value);return `${p.year}-${p.month}-${p.day} ${p.hour}:${p.minute}`;}catch(e){return String(iso).slice(0,16).replace('T',' ');}}
 function hmNow(){try{const p={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);return p.hour+':'+p.minute;}catch(e){return '';}}
 /* checks before sending, then (if asked) the place, then send */
 function beforeSend(type,payload,text,go){
@@ -310,7 +312,7 @@ function countBar(){const ids=countIds(),c=countDraft();let done=0,bad=0,over=0;
   $('countBar').innerHTML=`<div class="grow"><strong>${done}/${ids.length}</strong> ගණන් කළා${bad?` · <span class="tbad">අඩු ${bad}</span>`:''}${over?` · <span class="tover">වැඩි ${over}</span>`:''}${c.sentRev?`<div class="small">✅ යැව්වා (සංශෝධනය ${c.sentRev}) — වෙනස් කළොත් ආයෙත් යවන්න</div>`:''}</div><button class="btn primary" onclick="reviewCount()" ${done?'':'disabled'}>යවන්න ➜</button>`;}
 function renderCount(){
   if(!S.cfg){go('inbox');return;}const r=S.rep,c=countDraft();
-  $('countHead').innerHTML=r?`<div class="card infobox"><strong>📅 ${esc(r.d)}</strong> Report එකට ගණන් කරනවා${r.route?' · '+esc(r.route):''}<div class="small">Report ආවේ: ${esc(String(r.at||'').slice(0,16).replace('T',' '))}</div></div>`:`<div class="card warnbox">⚠️ තවම Report එකක් නැහැ. Report එක නැතුව ගණන් කළොත් “තියෙන්න ඕනේ” ප්‍රමාණ පේන්නේ නැහැ. <button class="btn light sm" onclick="go('inbox')">📥 Report දාන්න</button></div>`;
+  $('countHead').innerHTML=r?`<div class="card infobox"><strong>📅 ${esc(r.d)}</strong> Report එකට ගණන් කරනවා${r.route?' · '+esc(r.route):''}<div class="small">Report ආවේ: ${esc(fmtAt(r.at))}</div></div>`:`<div class="card warnbox">⚠️ තවම Report එකක් නැහැ. Report එක නැතුව ගණන් කළොත් “තියෙන්න ඕනේ” ප්‍රමාණ පේන්නේ නැහැ. <button class="btn light sm" onclick="go('inbox')">📥 Report දාන්න</button></div>`;
   const rd=(r&&r.rd)||[];
   $('countRD').innerHTML=rd.length?`<div class="card"><h3>↩ Factory එකට භාර දෙන්න (Return / Damage)</h3>${rd.map(x=>`<div class="rdrow"><span>${esc(pname(x[0]))}</span><span>${x[1]?'Return '+x[1]:''}${x[1]&&x[2]?' · ':''}${x[2]?'Damage '+x[2]:''}</span></div>`).join('')}<label class="check"><input type="checkbox" ${c.rd?'checked':''} onchange="countDraft().rd=this.checked;save()"> මේවා Factory එකට භාර දුන්නා</label></div>`:'';
   $('countQ').value=countQ;document.querySelectorAll('#countFilters button').forEach(b=>b.classList.toggle('on',b.dataset.f===countFilter));
@@ -460,7 +462,7 @@ function cloudLine(){
   const n=S.outbox.length;
   if(n)return `<div class="cloudline ${S.cloudErr?'bad':'wait'}"><span>⏳</span><span class="grow">යවන්න බලාගෙන ${n}ක්${S.cloudErr?' — '+esc(S.cloudErr):''}</span><button class="btn light sm" onclick="cloudSync(true)">🔄</button></div>`;
   if(S.cloudErr)return `<div class="cloudline bad"><span>⚠️</span><span class="grow">${esc(S.cloudErr)}</span><button class="btn light sm" onclick="cloudSync(true)">🔄</button></div>`;
-  return `<div class="cloudline"><span>☁️</span><span class="grow">ඉබේම යවනවා / ගන්නවා${S.cloudOk?' · '+esc(new Date(S.cloudOk).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})):''}</span><button class="btn light sm" onclick="cloudSync(true)">🔄</button></div>`;
+  return `<div class="cloudline"><span>☁️</span><span class="grow">ඉබේම යවනවා / ගන්නවා${S.cloudOk?' · '+esc(fmtAt(S.cloudOk).slice(11)):''}</span><button class="btn light sm" onclick="cloudSync(true)">🔄</button></div>`;
 }
 /* send one message: cloud first (queued, survives offline), WhatsApp / Share / Copy as fallback */
 function sendOut(title,text,type,payload,onSent){
@@ -482,11 +484,11 @@ function ordGive(id){const x=((S.ord&&S.ord.o)||[]).find(o=>o[0]===id);if(!x)ret
 /* ---------------- HISTORY ---------------- */
 const TT={load:'📦 පැටවීම',count:'🔢 ගණන් කිරීම',unload:'🏭 Factory එකට','count-draft':'📝 නොයැවූ ගණන් කිරීම'};
 function trimSent(){if(S.sent.length>80)S.sent=S.sent.slice(-80);}
-function renderHistory(){const list=S.sent.slice().reverse();$('histList').innerHTML=list.length?list.map((x,i)=>`<div class="card hist"><div class="grow"><strong>${TT[x.t]||x.t}</strong> · ${esc(x.d)}${x.rev?' · සංශෝධනය '+x.rev:''}<div class="small muted">${esc(String(x.at).slice(0,16).replace('T',' '))}${x.total?' · පැකට් '+x.total:''}${x.cloudId?(x.cloudAt?' · ☁️ ගියා':' · ⏳ යවන්න බලාගෙන'):''}</div></div>${x.text?`<button class="btn light sm" onclick="resend(${S.sent.length-1-i})">ආයෙත් යවන්න</button>`:''}</div>`).join(''):'<div class="empty">තවම කිසිවක් යැව්වේ නැහැ</div>';}
+function renderHistory(){const list=S.sent.slice().reverse();$('histList').innerHTML=list.length?list.map((x,i)=>`<div class="card hist"><div class="grow"><strong>${TT[x.t]||x.t}</strong> · ${esc(x.d)}${x.rev?' · සංශෝධනය '+x.rev:''}<div class="small muted">${esc(fmtAt(x.at))}${x.total?' · පැකට් '+x.total:''}${x.cloudId?(x.cloudAt?' · ☁️ ගියා':' · ⏳ යවන්න බලාගෙන'):''}</div></div>${x.text?`<button class="btn light sm" onclick="resend(${S.sent.length-1-i})">ආයෙත් යවන්න</button>`:''}</div>`).join(''):'<div class="empty">තවම කිසිවක් යැව්වේ නැහැ</div>';}
 function resend(i){const x=S.sent[i];if(x&&x.text)shareSheet('ආයෙත් යවන්න',x.text,null);}
 
 /* ---------------- SETUP ---------------- */
-function renderSetup(){$('cloudSetup').innerHTML=S.cloud?`${cloudLine()}<div class="muted">Project: ${esc(S.cloud.p)} · යවන්න බලාගෙන: ${S.outbox.length}</div>`:'<div class="muted">සකසලා නැහැ. ලොකු මහත්තයා එවන “📱 ලොරි app link” එකෙන් open කළාම ඉබේම සැකසෙනවා. ඒ වෙනකම් WhatsApp ක්‍රමය වැඩ කරනවා.</div>';$('meName').value=S.me||'';$('waNum').value=S.wa||(S.cfg&&S.cfg.wa)||'';$('setupInfo').innerHTML=S.cfg?`භාණ්ඩ ${products().length}ක් · ලැයිස්තුව ආවේ ${esc(String(S.cfg.at||'').slice(0,10))}`:'භාණ්ඩ ලැයිස්තුව තවම නැහැ';}
+function renderSetup(){$('cloudSetup').innerHTML=S.cloud?`${cloudLine()}<div class="muted">Project: ${esc(S.cloud.p)} · යවන්න බලාගෙන: ${S.outbox.length}</div>`:'<div class="muted">සකසලා නැහැ. ලොකු මහත්තයා එවන “📱 ලොරි app link” එකෙන් open කළාම ඉබේම සැකසෙනවා. ඒ වෙනකම් WhatsApp ක්‍රමය වැඩ කරනවා.</div>';$('meName').value=S.me||'';$('waNum').value=S.wa||(S.cfg&&S.cfg.wa)||'';$('setupInfo').innerHTML=S.cfg?`භාණ්ඩ ${products().length}ක් · ලැයිස්තුව ආවේ ${esc(fmtAt(S.cfg.at).slice(0,10))}`:'භාණ්ඩ ලැයිස්තුව තවම නැහැ';}
 function saveSetup(){const n=$('meName').value.trim();if(n.length<2){toast('නම අකුරු 2කට වැඩි වෙන්න ඕනේ','err');return;}S.me=n.slice(0,40);const w=$('waNum').value.trim();S.wa=w;S.waOverride=!!w&&(!S.cfg||sbpWaNumber(w)!==S.cfg.wa);['load','count','unload'].forEach(k=>{if(S.drafts[k]&&!S.drafts[k].sentRev)S.drafts[k].by=S.me;});save();toast('✅ සුරැකුවා');go('home');}
 function resetApp(){if(!confirm('App එකේ ඔක්කොම දත්ත මකන්නද? (යැවූ message WhatsApp එකේ තියෙනවා)'))return;if(prompt('තහවුරු කරන්න DELETE කියලා type කරන්න')!=='DELETE')return;S=blankState();save();go('home');}
 
