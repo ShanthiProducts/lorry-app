@@ -111,13 +111,25 @@ textarea.ntext{min-height:90px;font:16px/1.4 system-ui,"Noto Sans Sinhala",sans-
 .wpd{text-align:center;font-size:44px;font-weight:900;letter-spacing:1px;margin:6px 0}.wpd small{font-size:20px;color:var(--muted)}
 .wpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0 12px}.wpad button{height:58px;border-radius:14px;border:1.5px solid #cbd5e1;background:#fff;font-size:26px;font-weight:900}.wpad button:active{background:#fee2e2}.wpad button:disabled{opacity:.3}
 .ok{color:var(--ok);font-weight:800;white-space:nowrap}.wait{color:#92400e;font-weight:800;white-space:nowrap}.hist .bad{white-space:nowrap}
+/* v4.4 */
+.bno{font:800 26px/1.15 ui-monospace,Consolas,monospace;letter-spacing:.5px;color:#b91c1c}.bno.sm{font-size:18px}
+.bigno{font:900 34px/1.1 ui-monospace,Consolas,monospace;text-align:center;color:#b91c1c;margin:4px 0 8px;letter-spacing:1px}
+.center{text-align:center}.qrbox{width:62%;max-width:260px;margin:10px auto}.qrbox svg{width:100%;height:auto;display:block}
+.qs-wrap{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3}.qs-wrap video{width:100%;height:100%;object-fit:cover;display:block}
+.qs-aim{position:absolute;inset:18% 22%;border:3px solid #fde047;border-radius:12px;box-shadow:0 0 0 2000px rgba(0,0,0,.25)}
+.qs-msg{position:absolute;left:0;right:0;bottom:46px;text-align:center;color:#fff;font-weight:700;text-shadow:0 1px 3px #000}.qs-btns{position:absolute;right:8px;bottom:8px;display:flex;gap:6px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:14px;margin:4px 0}.kv span{color:#64748b}.kv b.bad,.bad{color:#b91c1c}.kv b.warn,.warn{color:#c2410c}
+.holdcard{border:3px solid #dc2626}.shoplist div{padding:4px 0;border-bottom:1px solid #eee}
+.badge.bad{background:#fee2e2;color:#b91c1c}.badge.warn{background:#ffedd5;color:#c2410c}
+.irow .bcalc{grid-column:1/-1}.chip small{opacity:.7}
+#bnewBody .irow{display:grid;grid-template-columns:76px 110px 1fr;align-items:center;gap:8px}#bnewBody .irow .bcalc{grid-column:auto}#bnewBody .irow select{max-width:100%;padding:6px}
 </style>
 </head>
 <body>
 <header><button class="back" id="backBtn" onclick="go('home')" aria-label="ආපසු">⌂</button><div><h1>🏭 කම්හල් App</h1><p id="hdrSub"></p></div></header>
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
-    <div class="foot">Shanthi Food Products · කම්හල් App v4.3.7 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
+    <div class="foot">Shanthi Food Products · කම්හල් App v4.4 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
   <section class="screen" id="s-bill"><div id="billBody"></div></section>
   <section class="screen" id="s-pay"><div id="payBody"></div></section>
   <section class="screen" id="s-ret"><div id="retBody"></div></section>
@@ -128,13 +140,20 @@ textarea.ntext{min-height:90px;font:16px/1.4 system-ui,"Noto Sans Sinhala",sans-
   <section class="screen" id="s-history"><div id="historyBody"></div></section>
   <section class="screen" id="s-setup"><div id="setupBody"></div></section>
   <section class="screen" id="s-notes"><div id="notesBody"></div></section>
+  <section class="screen" id="s-batches"><div id="batchesBody"></div></section>
+  <section class="screen" id="s-bnew"><div id="bnewBody"></div></section>
+  <section class="screen" id="s-raw"><div id="rawBody"></div></section>
+  <section class="screen" id="s-scan"><div id="scanBody"></div></section>
+  <section class="screen" id="s-loadl"><div id="loadlBody"></div></section>
+  <section class="screen" id="s-stock"><div id="stockBody"></div></section>
+  <section class="screen" id="s-fcount"><div id="fcountBody"></div></section>
 </main>
 <div class="toast" id="toast"></div>
 <script>
 'use strict';
 const $=id=>document.getElementById(id),KEY='sbpFactoryApp1',FS='https://firestore.googleapis.com/v1/projects/';
 let S=load(),screen='home',cloudBusy=false,ckey=null;
-function blank(){return {me:'',cloud:null,cfg:null,outbox:[],sent:[],seq:0,dev:'',bookLast:{},drafts:{},cloudErr:'',cloudOk:'',pulledAt:'',recent:[],notes:[],nack:[],newProds:[]};}
+function blank(){return {me:'',cloud:null,cfg:null,outbox:[],sent:[],seq:0,dev:'',bookLast:{},drafts:{},cloudErr:'',cloudOk:'',pulledAt:'',recent:[],notes:[],nack:[],newProds:[],myB:[],myL:[],ld:null,stk:null,fbatAt:'',bsync:''};}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return x&&typeof x==='object'?{...blank(),...x}:blank();}catch(e){return blank();}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('⚠️ Phone එකේ ඉඩ නැහැ — සුරකින්න බැරි වුණා!','err');}}
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
@@ -190,15 +209,16 @@ async function pull(){
   const j=await r.json(),f=j.fields||{},at=(f.at||{}).stringValue||'',code=(f.code||{}).stringValue||'';
   if(code&&(!S.cfg||S.cfg.pushAt!==at)){try{const c=await unseal(code,'fcfg');c.pushAt=at;S.cfg=c;Object.entries(c.bl||{}).forEach(([k,v])=>{if(!S.bookLast[k]||S.bookLast[k].d<v.d||(S.bookLast[k].d===v.d&&S.bookLast[k].n<v.n))S.bookLast[k]=v;});}catch(e){S.cloudErr='PC එකෙන් ආපු ලැයිස්තුව කියවන්න බැහැ — link එක පරණද? (PC එකෙන් අලුත් link එක ගන්න)';save();return;}}
   S.cloudErr='';S.cloudOk=new Date().toISOString();S.pulledAt=new Date().toISOString();save();
+  try{await pullBatches();}catch(e){console.warn('batches',e);}
 }
 async function sync(manual){if(!S.cloud){if(manual)toast('Link එකෙන් open කරලා නැහැ. PC එකෙන් “🏭 කම්හල් app link” එක ගන්න.','warn');return;}if(cloudBusy)return;cloudBusy=true;try{await flush();await pull();}finally{cloudBusy=false;}if(manual)toast(S.cloudErr?'⚠️ '+S.cloudErr:'☁️ යැව්වා / ගත්තා ✅',S.cloudErr?'warn':'ok');if(['home','history','setup'].includes(screen))render();}
-async function send(k,body,label){
+async function send(k,body,label,quiet){
   if(!S.cloud||!S.cfg){toast('PC එකෙන් ලැයිස්තුව තවම ආවේ නැහැ.','err');return false;}
   if((body.d||'')>today()){toast('අනාගත දිනයක් දාන්න බැහැ — දිනය හරි කරන්න.','err');return false;}
   const rec={uid:ensureDev()+'-'+(++S.seq),rev:1,k,d:body.d||workDay(),at:new Date().toISOString(),by:S.me||'',pv:S.cfg.pv||'',...body};
   let code;try{code=await seal('fx',rec);}catch(e){toast('Encrypt කරන්න බැරි වුණා: '+e.message,'err');return false;}
   S.outbox.push({id:'fx_'+rec.uid.replace(/[^A-Za-z0-9_-]/g,'_'),uid:rec.uid,code,at:rec.at});
-  const keep=JSON.parse(JSON.stringify(rec));if(keep.ph)keep.ph=1;if(keep.pay&&keep.pay.ph)keep.pay.ph=1;S.sent.unshift({uid:rec.uid,k,d:rec.d,at:rec.at,label,rec:keep});S.sent=S.sent.slice(0,400);save();
+  if(!quiet){const keep=JSON.parse(JSON.stringify(rec));if(keep.ph)keep.ph=1;if(keep.pay&&keep.pay.ph)keep.pay.ph=1;S.sent.unshift({uid:rec.uid,k,d:rec.d,at:rec.at,label,rec:keep});S.sent=S.sent.slice(0,400);}save();
   flush().then(()=>{if(['home','history'].includes(screen))render();});return true;
 }
 /* ---------- lists from the PC ---------- */
@@ -226,9 +246,9 @@ function bookName(id){const b=bookOf(id);if(!b)return id||'';return (b[3]==='l'?
 function nextNoOf(book){const l=book&&S.bookLast[book];if(!l)return null;const bs=(S.cfg&&S.cfg.bs)||50;return l.n>=bs&&l.n%bs===0?1:l.n+1;}
 function autoNo(d){if(S.cfg&&S.cfg.ab===0)return;if(!d.book){d.no='';d.noAuto=0;return;}if(d.no&&!d.noAuto)return;const n=nextNoOf(d.book);d.no=n?String(n):'';d.noAuto=n?1:0;}
 /* ---------- screens ---------- */
-const TITLES={home:'🏭 කම්හල් App',bill:'🧾 බිලක් දාන්න',pay:'💰 ණය ගෙවීමක්',ret:'↩️ Return / Damage',move:'📦 විකුණුමක් නැතුව බඩු',take:'💸 ලාච්චුවෙන් ගත්තා',order:'📋 අලුත් ඇණවුමක්',orders:'🚚 ඇණවුම් දුන්නා ✓',history:'📜 යැව්ව ඒවා',setup:'⚙️ සැකසුම්',notes:'📝 මතක් කිරීම්'};
-function go(n){if(!['home','setup','history','notes'].includes(n)&&!S.cfg){toast('මුලින්ම PC එකෙන් ලැයිස්තුව ගන්න (Internet ඕනේ)','warn');n='home';}if(n!=='home'&&n!=='setup'&&!S.me){toast('මුලින්ම ඔයාගේ නම දාන්න','warn');n='setup';}if(n==='notes'&&!S.cfg){toast('මුලින්ම PC එකෙන් ලැයිස්තුව ගන්න','warn');n='home';}screen=n;document.querySelector('header h1').textContent=TITLES[n];$('backBtn').style.visibility=n==='home'?'hidden':'visible';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+n));window.scrollTo(0,0);render();try{history.replaceState(null,'','#'+n);}catch(e){}}
-function render(){$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'පළමු වතාවට සකසන්න';({home:renderHome,bill:renderBill,pay:renderPay,ret:renderRet,move:renderMove,take:renderTake,order:renderOrder,orders:renderOrders,history:renderHistory,setup:renderSetup,notes:renderNotes})[screen]();}
+const TITLES={home:'🏭 කම්හල් App',bill:'🧾 බිලක් දාන්න',pay:'💰 ණය ගෙවීමක්',ret:'↩️ Return / Damage',move:'📦 විකුණුමක් නැතුව බඩු',take:'💸 ලාච්චුවෙන් ගත්තා',order:'📋 අලුත් ඇණවුමක්',orders:'🚚 ඇණවුම් දුන්නා ✓',history:'📜 යැව්ව ඒවා',setup:'⚙️ සැකසුම්',notes:'📝 මතක් කිරීම්',batches:'🏷️ අද නිෂ්පාදනය',bnew:'🏷️ Batch',raw:'🌶️ අමු ද්‍රව්‍ය ලැබුණා',scan:'📷 Scan',loadl:'🚚 ලොරියට පටවන්න',stock:'📦 තොගය',fcount:'🔢 තොගය ගණන් කළා'};
+function go(n){try{QS.close();}catch(e){}if(!['home','setup','history','notes'].includes(n)&&!S.cfg){toast('මුලින්ම PC එකෙන් ලැයිස්තුව ගන්න (Internet ඕනේ)','warn');n='home';}if(n!=='home'&&n!=='setup'&&!S.me){toast('මුලින්ම ඔයාගේ නම දාන්න','warn');n='setup';}if(n==='notes'&&!S.cfg){toast('මුලින්ම PC එකෙන් ලැයිස්තුව ගන්න','warn');n='home';}screen=n;document.querySelector('header h1').textContent=TITLES[n];$('backBtn').style.visibility=n==='home'?'hidden':'visible';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+n));window.scrollTo(0,0);render();try{history.replaceState(null,'','#'+n);}catch(e){}}
+function render(){$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'පළමු වතාවට සකසන්න';({home:renderHome,bill:renderBill,pay:renderPay,ret:renderRet,move:renderMove,take:renderTake,order:renderOrder,orders:renderOrders,history:renderHistory,setup:renderSetup,notes:renderNotes,batches:renderBatches,bnew:renderBNew,raw:renderRaw,scan:renderScan,loadl:renderLoadL,stock:renderStock,fcount:renderFCount})[screen]();}
 function cloudLine(){if(!S.cloud)return '<div class="cloudline off">☁️ Link එකෙන් open කරලා නැහැ</div>';const w=S.outbox.length;return `<div class="cloudline ${S.cloudErr?'bad':w?'wait':''}"><div class="grow">${w?`📤 තවම PC එකට නොගිය: <strong>${w}</strong>`:'☁️ ඔක්කොම PC එකට ගියා ✅'}${S.cloudErr?`<div class="small">${esc(S.cloudErr)}</div>`:''}</div><button class="btn sm light" onclick="sync(true)">🔄</button></div>`;}
 function renderHome(){renderHome0();const h=iosHint();if(h&&screen==='home')$('homeBody').insertAdjacentHTML('afterbegin',h);}
 function renderHome0(){
@@ -239,6 +259,7 @@ function renderHome0(){
   $('homeBody').innerHTML=`<div class="hello">ආයුබෝවන් <strong>${esc(S.me||'')}</strong> 👋 <span class="muted">· ${today()}</span></div>${cloudLine()}
    ${S.outbox.length?'<div class="warnbox">⚠️ PC එකට නොගිය බිල් තියෙද්දී app එකේ <strong>data clear කරන්න / app එක මකන්න එපා</strong>.</div>':''}
    ${notesOn()?`<button class="notebtn${nn?' has':''}" onclick="go('notes')"><span>📝 මතක් කරන්න</span>${nn?`<b class="badge">${nn}</b>`:''}<small>${nn?'ඉතිරි මතක් කිරීම් '+nn+'ක්':'ගෙදර යද්දී අමතක වෙන දේවල් — PC එකේ රතු තීරුවක් වෙනවා'}</small></button>`:''}
+   ${batchTiles()}
    <div class="grid2"><button class="tile" onclick="newDraft('bill');go('bill')"><span>🧾</span>බිලක් දාන්න<small>පොතේ අංකය එක්ක</small></button>
    <button class="tile" onclick="newDraft('pay');go('pay')"><span>💰</span>ණය ගෙවීමක්<small>පරණ ණයට සල්ලි / චෙක්</small></button>
    <button class="tile" onclick="newDraft('ret');go('ret')"><span>↩️</span>Return / Damage<small>කඩෙන් ආපහු</small></button>
@@ -437,7 +458,7 @@ function renderHistory(){const ok=okSet(),rj=rjMap(),out=new Set(S.outbox.map(x=
   $('historyBody').innerHTML=cloudLine()+(S.sent.length?S.sent.slice(0,120).map(x=>{const st=x.gone?'<span class="muted">—</span>':rj.has(x.uid)&&/^phone එකෙන්/.test(rj.get(x.uid))?'<span class="muted">🔁 වෙනස් කළා</span>':rj.has(x.uid)?`<span class="bad">❌ ප්‍රතික්ෂේප</span>`:ok.has(x.uid)?'<span class="ok">✅ PC එකේ</span>':out.has(x.uid)?'<span class="bad">📱 phone එකේ</span>':'<span class="wait">☁️ ගියා</span>';
     return `<div class="hist"><div class="grow"><strong>${esc(x.label)}</strong><div class="small muted">${esc(x.d)} · ${esc(fmtAt(x.at))}${x.up?' · ☁️ '+esc(fmtAt(x.up)):''}${x.fix?` · ${x.fix==='void'?'❌ අවලංගු ඉල්ලුවා':'✏️ නිවැරදි කිරීම යැව්වා'}`:''}${rj.has(x.uid)?' · '+esc(rj.get(x.uid)):''}</div>${canFix(x)?`<div class="hbtns"><button class="btn sm light" onclick="fixEdit('${esc(x.uid)}')">✏️ නිවැරදි කරන්න</button><button class="btn sm light" onclick="fixVoid('${esc(x.uid)}')">❌ අවලංගු කරන්න</button></div>`:(!x.gone&&out.has(x.uid)&&x.k!=='bill'?`<div class="hbtns"><button class="btn sm light" onclick="fixVoid('${esc(x.uid)}')">❌ මකන්න (තවම නොගිය)</button></div>`:'')}</div>${st}</div>`;}).join(''):'<div class="card empty">තවම නැහැ</div>');}
 function renderSetup(){$('setupBody').innerHTML=`<div class="card"><div class="field"><label>ඔයාගේ නම</label><input id="meName" maxlength="40" value="${esc(S.me)}"></div><button class="btn primary block" onclick="const n=$('meName').value.trim();if(n.length<2){toast('නම දාන්න','err');return;}S.me=n;save();toast('✅ සුරැකුවා');go('home')">💾 සුරකින්න</button></div>
-  <div class="card">${cloudLine()}<div class="small muted">${S.cloud?'Project: '+esc(S.cloud.p):'සකසලා නැහැ'} · Phone ID: ${esc(ensureDev())}</div><button class="btn light block" onclick="askPersist()">🔒 Phone එකේ ස්ථිරව තියාගන්න ඉල්ලන්න</button><p class="small muted">⚠️ Chrome → “Clear data” / app එක (Home screen icon එක) මකන්න එපා — PC එකට නොගිය බිල් නැති වෙනවා. Phone එක මාරු කරනවා නම් PC එකෙන් අලුත් link එකක් ගන්න (පරණ එක ඉබේම නවතිනවා).</p></div>`+linkBox(S.cloud?'Phone එක මාරු කළොත් / අලුත් link එකක් ආවොත්:':'');}
+  <div class="card">${cloudLine()}<div class="small muted">${S.cloud?'Project: '+esc(S.cloud.p):'සකසලා නැහැ'} · Phone ID: ${esc(ensureDev())}</div><button class="btn light block" onclick="askPersist()">🔒 Phone එකේ ස්ථිරව තියාගන්න ඉල්ලන්න</button>${bOn()?`<button class="btn light block" onclick="send('bfull',{},'',true).then(ok=>{if(ok)toast('🔄 ඉල්ලුවා — PC එක on වුණාම ඔක්කොම එනවා (විනාඩි කීපයක්)');})">🔄 Batch විස්තර ඔක්කොම ආයෙත් ගන්න</button><div class="small muted">Phone එකේ batch ${BT.size} · අන්තිම sync ${esc(fmtAt(S.bsync,true)||'—')}</div>`:''}<p class="small muted">⚠️ Chrome → “Clear data” / app එක (Home screen icon එක) මකන්න එපා — PC එකට නොගිය බිල් නැති වෙනවා. Phone එක මාරු කරනවා නම් PC එකෙන් අලුත් link එකක් ගන්න (පරණ එක ඉබේම නවතිනවා).</p></div>`+linkBox(S.cloud?'Phone එක මාරු කළොත් / අලුත් link එකක් ආවොත්:':'');}
 async function askPersist(){try{const ok=navigator.storage&&navigator.storage.persist?await navigator.storage.persist():false;toast(ok?'✅ ස්ථිර ගබඩාව ලැබුණා':'Phone එක ඉඩ දුන්නේ නැහැ — app එක Home screen එකට දාලා පාවිච්චි කරන්න',ok?'ok':'warn');}catch(e){toast('බැහැ','warn');}}
 /* ---------- 📝 reminder notes (→ a red bar on the PC; 📲 an alarm on this phone) ---------- */
 function notesOn(){return !(S.cfg&&S.cfg.nt===0);}
@@ -471,6 +492,504 @@ function alarm(n){let due=n.due;if(!due){const p=lkParts(new Date(Date.now()+360
   try{const blob=new Blob([ics],{type:'text/calendar;charset=utf-8'});if(/iP(hone|ad|od)/.test(navigator.userAgent)){location.href='data:text/calendar;charset=utf-8,'+encodeURIComponent(ics);return;}const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='mathak-kireema.ics';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},2000);toast('📲 Calendar එකට — ගොනුව open කරලා “Save / Add” ඔබන්න');}catch(e){toast('Alarm එක හදන්න බැරි වුණා','err');}}
 /* a bottom sheet (weight pad, staff list, new item); sheet() closes it */
 function sheet(html){let el=$('sheetX');if(!el){el=document.createElement('div');el.id='sheetX';el.className='sheet';el.innerHTML='<div class="panel"></div>';el.addEventListener('click',e=>{if(e.target===el){wp=null;sheet();}});document.body.appendChild(el);}if(!html){el.classList.remove('show');return;}el.querySelector('.panel').innerHTML=html;el.classList.add('show');}
+
+/* SBPQR — small QR code encoder + decoder (versions 1–10), written for Smart Bill Pro v4.4.
+   No outside library, works offline. Encoder: byte / alphanumeric mode, ECC L/M/Q/H, best mask.
+   Decoder: camera frame (RGBA ImageData) → text. Finder patterns → perspective grid → format → RS error correction. */
+var SBPQR=(function(){
+'use strict';
+/* ---------- GF(256) ---------- */
+var EXP=new Array(512),LOG=new Array(256);
+(function(){var x=1;for(var i=0;i<255;i++){EXP[i]=x;LOG[x]=i;x<<=1;if(x&256)x^=0x11d;}for(i=255;i<512;i++)EXP[i]=EXP[i-255];LOG[0]=0;})();
+function gmul(a,b){return a&&b?EXP[LOG[a]+LOG[b]]:0;}
+function gdiv(a,b){if(!b)throw new Error('div0');return a?EXP[(LOG[a]+255-LOG[b])%255]:0;}
+/* RS blocks: per version, per level (L,M,Q,H): [count,total,data,...] */
+var RSB=[
+[[1,26,19],[1,26,16],[1,26,13],[1,26,9]],
+[[1,44,34],[1,44,28],[1,44,22],[1,44,16]],
+[[1,70,55],[1,70,44],[2,35,17],[2,35,13]],
+[[1,100,80],[2,50,32],[2,50,24],[4,25,9]],
+[[1,134,108],[2,67,43],[2,33,15,2,34,16],[2,33,11,2,34,12]],
+[[2,86,68],[4,43,27],[4,43,19],[4,43,15]],
+[[2,98,78],[4,49,31],[2,32,14,4,33,15],[4,39,13,1,40,14]],
+[[2,121,97],[2,60,38,2,61,39],[4,40,18,2,41,19],[4,40,14,2,41,15]],
+[[2,146,116],[3,58,36,2,59,37],[4,36,16,4,37,17],[4,36,12,4,37,13]],
+[[2,86,68,2,87,69],[4,69,43,1,70,44],[6,43,19,2,44,20],[6,43,15,2,44,16]]];
+var ALIGN=[[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],[6,28,50]];
+var LV={L:0,M:1,Q:2,H:3},LV_BITS=[1,0,3,2];/* format bits: L=01 M=00 Q=11 H=10 */
+var ALNUM='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+function blocks(ver,lv){var t=RSB[ver-1][lv],out=[];for(var i=0;i<t.length;i+=3)for(var j=0;j<t[i];j++)out.push([t[i+1],t[i+2]]);return out;}
+function dataCap(ver,lv){return blocks(ver,lv).reduce(function(s,b){return s+b[1];},0);}
+function utf8(s){return Array.prototype.slice.call(new TextEncoder().encode(s));}
+/* ---------- encoder ---------- */
+function rsGen(n){var g=[1];for(var i=0;i<n;i++){var ng=new Array(g.length+1).fill(0);for(var j=0;j<g.length;j++){ng[j]^=g[j];ng[j+1]^=gmul(g[j],EXP[i]);}g=ng;}return g;}
+function rsEnc(data,n){var g=rsGen(n),r=data.concat(new Array(n).fill(0));for(var i=0;i<data.length;i++){var c=r[i];if(c)for(var j=0;j<g.length;j++)r[i+j]^=gmul(g[j],c);}return r.slice(data.length);}
+function bch(v,poly,bits){var d=v<<(bits);var pl=0;for(var t=poly;t;t>>=1)pl++;while(true){var dl=0;for(var t2=d;t2;t2>>=1)dl++;if(dl<pl)break;d^=poly<<(dl-pl);}return (v<<bits)|d;}
+function formatBits(lv,mask){return bch((LV_BITS[lv]<<3)|mask,0x537,10)^0x5412;}
+function versionBits(v){return bch(v,0x1f25,12);}
+function isAlnum(s){for(var i=0;i<s.length;i++)if(ALNUM.indexOf(s[i])<0)return false;return true;}
+function buildBits(text,ver,lv){
+  var bits=[],put=function(v,n){for(var i=n-1;i>=0;i--)bits.push((v>>>i)&1);};
+  if(isAlnum(text)){put(2,4);put(text.length,ver<10?9:11);for(var i=0;i+1<text.length;i+=2)put(ALNUM.indexOf(text[i])*45+ALNUM.indexOf(text[i+1]),11);if(text.length%2)put(ALNUM.indexOf(text[text.length-1]),6);}
+  else{var b=utf8(text);put(4,4);put(b.length,ver<10?8:16);b.forEach(function(x){put(x,8);});}
+  var cap=dataCap(ver,lv)*8;if(bits.length>cap)return null;
+  for(var k=0;k<4&&bits.length<cap;k++)bits.push(0);while(bits.length%8)bits.push(0);
+  var bytes=[];for(i=0;i<bits.length;i+=8){var v=0;for(var j=0;j<8;j++)v=(v<<1)|bits[i+j];bytes.push(v);}
+  for(var p=0;bytes.length<cap/8;p++)bytes.push(p%2?0x11:0xec);
+  return bytes;
+}
+function interleave(bytes,ver,lv){
+  var bl=blocks(ver,lv),dat=[],ecc=[],o=0;
+  bl.forEach(function(b){var d=bytes.slice(o,o+b[1]);o+=b[1];dat.push(d);ecc.push(rsEnc(d,b[0]-b[1]));});
+  var out=[],mx=Math.max.apply(null,dat.map(function(d){return d.length;}));
+  for(var i=0;i<mx;i++)dat.forEach(function(d){if(i<d.length)out.push(d[i]);});
+  for(i=0;i<ecc[0].length;i++)ecc.forEach(function(e){out.push(e[i]);});
+  return out;
+}
+function funcMask(ver){/* true = function module (not data) */
+  var n=17+4*ver,f=[];for(var y=0;y<n;y++){f.push(new Array(n).fill(false));}
+  function rect(x0,y0,w,h){for(var y=y0;y<y0+h;y++)for(var x=x0;x<x0+w;x++)if(x>=0&&y>=0&&x<n&&y<n)f[y][x]=true;}
+  rect(0,0,9,9);rect(n-8,0,8,9);rect(0,n-8,9,8);
+  for(var i=0;i<n;i++){f[6][i]=true;f[i][6]=true;}
+  var a=ALIGN[ver-1];a.forEach(function(cy){a.forEach(function(cx){if((cx<9&&cy<9)||(cx>n-10&&cy<9)||(cx<9&&cy>n-10))return;rect(cx-2,cy-2,5,5);});});
+  if(ver>=7){rect(n-11,0,3,6);rect(0,n-11,6,3);}
+  return f;
+}
+var MASKS=[function(x,y){return (x+y)%2===0;},function(x,y){return y%2===0;},function(x){return x%3===0;},function(x,y){return (x+y)%3===0;},
+  function(x,y){return (Math.floor(y/2)+Math.floor(x/3))%2===0;},function(x,y){return (x*y)%2+(x*y)%3===0;},function(x,y){return ((x*y)%2+(x*y)%3)%2===0;},function(x,y){return ((x+y)%2+(x*y)%3)%2===0;}];
+function dataOrder(ver,fm){/* list of [x,y] in placement order */
+  var n=17+4*ver,out=[],up=true;
+  for(var x=n-1;x>0;x-=2){if(x===6)x--;for(var k=0;k<n;k++){var y=up?n-1-k:k;for(var c=0;c<2;c++){var xx=x-c;if(!fm[y][xx])out.push([xx,y]);}}up=!up;}
+  return out;
+}
+function placeFixed(m,ver){
+  var n=m.length;
+  function finder(x0,y0){for(var y=-1;y<=7;y++)for(var x=-1;x<=7;x++){var xx=x0+x,yy=y0+y;if(xx<0||yy<0||xx>=n||yy>=n)continue;var on=(x>=0&&x<=6&&(y===0||y===6))||(y>=0&&y<=6&&(x===0||x===6))||(x>=2&&x<=4&&y>=2&&y<=4);m[yy][xx]=on?1:0;}}
+  finder(0,0);finder(n-7,0);finder(0,n-7);
+  for(var i=8;i<n-8;i++){m[6][i]=i%2?0:1;m[i][6]=i%2?0:1;}
+  var a=ALIGN[ver-1];a.forEach(function(cy){a.forEach(function(cx){if((cx<9&&cy<9)||(cx>n-10&&cy<9)||(cx<9&&cy>n-10))return;for(var y=-2;y<=2;y++)for(var x=-2;x<=2;x++)m[cy+y][cx+x]=(Math.max(Math.abs(x),Math.abs(y))!==1)?1:0;});});
+  m[n-8][8]=1;
+  if(ver>=7){var vb=versionBits(ver);for(i=0;i<18;i++){var bit=(vb>>i)&1,r=Math.floor(i/3),c=i%3;m[r][n-11+c]=bit;m[n-11+c][r]=bit;}}
+}
+function placeFormat(m,lv,mask){
+  var n=m.length,fb=formatBits(lv,mask);
+  for(var i=0;i<15;i++){var bit=(fb>>i)&1;
+    if(i<6)m[i][8]=bit;else if(i<8)m[i+1][8]=bit;else if(i===8)m[8][7]=bit;else m[8][14-i]=bit;
+    if(i<8)m[8][n-1-i]=bit;else m[n-15+i][8]=bit;}
+}
+function penalty(m){
+  var n=m.length,p=0,x,y,run,c;
+  for(y=0;y<n;y++){run=1;for(x=1;x<n;x++){if(m[y][x]===m[y][x-1]){run++;if(run===5)p+=3;else if(run>5)p++;}else run=1;}}
+  for(x=0;x<n;x++){run=1;for(y=1;y<n;y++){if(m[y][x]===m[y-1][x]){run++;if(run===5)p+=3;else if(run>5)p++;}else run=1;}}
+  for(y=0;y<n-1;y++)for(x=0;x<n-1;x++){c=m[y][x];if(c===m[y][x+1]&&c===m[y+1][x]&&c===m[y+1][x+1])p+=3;}
+  var pat=[1,0,1,1,1,0,1];
+  for(y=0;y<n;y++)for(x=0;x<=n-7;x++){var okH=true,okV=true;for(var k=0;k<7;k++){if(m[y][x+k]!==pat[k])okH=false;if(m[x+k][y]!==pat[k])okV=false;}
+    if(okH){var l=x>=4&&!m[y][x-1]&&!m[y][x-2]&&!m[y][x-3]&&!m[y][x-4],r=x+10<n&&!m[y][x+7]&&!m[y][x+8]&&!m[y][x+9]&&!m[y][x+10];if(l||r)p+=40;}
+    if(okV){var t=x>=4&&!m[x-1][y]&&!m[x-2][y]&&!m[x-3][y]&&!m[x-4][y],b=x+10<n&&!m[x+7][y]&&!m[x+8][y]&&!m[x+9][y]&&!m[x+10][y];if(t||b)p+=40;}}
+  var dark=0;for(y=0;y<n;y++)for(x=0;x<n;x++)dark+=m[y][x];p+=Math.floor(Math.abs(dark*100/(n*n)-50)/5)*10;
+  return p;
+}
+/* encode(text, level 'L'|'M'|'Q'|'H', minVersion) → {size, modules:[[0|1]], version} */
+function encode(text,level,minVer){
+  var lv=LV[level||'M'];if(lv===undefined)lv=1;text=String(text);
+  for(var ver=Math.max(1,minVer||1);ver<=10;ver++){
+    var bytes=buildBits(text,ver,lv);if(!bytes)continue;
+    var cw=interleave(bytes,ver,lv),fm=funcMask(ver),ord=dataOrder(ver,fm),n=17+4*ver,best=null,bestP=1e9;
+    var bits=[];cw.forEach(function(b){for(var i=7;i>=0;i--)bits.push((b>>i)&1);});
+    for(var mk=0;mk<8;mk++){
+      var m=[];for(var y=0;y<n;y++)m.push(new Array(n).fill(0));
+      placeFixed(m,ver);
+      for(var i=0;i<ord.length;i++){var xy=ord[i],v=i<bits.length?bits[i]:0;if(MASKS[mk](xy[0],xy[1]))v^=1;m[xy[1]][xy[0]]=v;}
+      placeFormat(m,lv,mk);var pn=penalty(m);if(pn<bestP){bestP=pn;best=m;}
+    }
+    return {size:n,modules:best,version:ver};
+  }
+  throw new Error('QR: text too long');
+}
+/* SVG markup (black modules, quiet zone `q` modules) */
+function svg(text,level,opts){opts=opts||{};var q=opts.quiet===undefined?2:opts.quiet,qr=encode(text,level,opts.minVersion),n=qr.size,d='';
+  for(var y=0;y<n;y++)for(var x=0;x<n;x++)if(qr.modules[y][x])d+='M'+(x+q)+' '+(y+q)+'h1v1h-1z';
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+(n+2*q)+' '+(n+2*q)+'" shape-rendering="crispEdges"'+(opts.cls?' class="'+opts.cls+'"':'')+(opts.style?' style="'+opts.style+'"':'')+'><rect width="100%" height="100%" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>';}
+
+/* ---------- decoder ---------- */
+function toGray(img){var w=img.width,h=img.height,d=img.data,g=new Uint8Array(w*h);for(var i=0,j=0;i<g.length;i++,j+=4)g[i]=(d[j]*77+d[j+1]*150+d[j+2]*29)>>8;return {w:w,h:h,g:g};}
+/* local-mean threshold (block 8px, window 5x5 blocks) */
+function binarize(G,bias){
+  var w=G.w,h=G.h,g=G.g,B=8,bw=Math.ceil(w/B),bh=Math.ceil(h/B),mean=new Float32Array(bw*bh),out=new Uint8Array(w*h);
+  for(var by=0;by<bh;by++)for(var bx=0;bx<bw;bx++){var s=0,c=0,mn=255,mx=0;for(var y=by*B;y<Math.min(h,by*B+B);y++)for(var x=bx*B;x<Math.min(w,bx*B+B);x++){var v=g[y*w+x];s+=v;c++;if(v<mn)mn=v;if(v>mx)mx=v;}
+    var avg=s/c;if(mx-mn<=24){avg=mn/2;if(by>0&&bx>0){var nb=(mean[(by-1)*bw+bx]+2*mean[by*bw+bx-1]+mean[(by-1)*bw+bx-1])/4;if(mn<nb)avg=nb;}}mean[by*bw+bx]=avg;}
+  for(by=0;by<bh;by++)for(bx=0;bx<bw;bx++){var cx=Math.min(Math.max(bx,2),bw-3),cy=Math.min(Math.max(by,2),bh-3),sum=0,cnt=0;
+    for(var yy=cy-2;yy<=cy+2;yy++)for(var xx=cx-2;xx<=cx+2;xx++){if(xx<0||yy<0||xx>=bw||yy>=bh)continue;sum+=mean[yy*bw+xx];cnt++;}
+    var t=sum/cnt+(bias||0);for(y=by*B;y<Math.min(h,by*B+B);y++)for(x=bx*B;x<Math.min(w,bx*B+B);x++)out[y*w+x]=g[y*w+x]<=t?1:0;}
+  return {w:w,h:h,b:out};
+}
+function ratioOK(s){var tot=s[0]+s[1]+s[2]+s[3]+s[4];if(tot<7)return false;var m=tot/7,v=m/1.6;return Math.abs(m-s[0])<v&&Math.abs(m-s[1])<v&&Math.abs(3*m-s[2])<3*v&&Math.abs(m-s[3])<v&&Math.abs(m-s[4])<v;}
+function crossCheck(B,cx,cy,dx,dy,maxC){/* states along a line through (cx,cy): returns [centre offset, total] or null */
+  var w=B.w,h=B.h,b=B.b,s=[0,0,0,0,0],at=function(x,y){x=Math.round(x);y=Math.round(y);return x>=0&&y>=0&&x<w&&y<h?b[y*w+x]:-1;};
+  if(at(cx,cy)!==1)return null;
+  var i=0,a2=0,b2=0;
+  while(at(cx-dx*i,cy-dy*i)===1){a2++;i++;}
+  while(at(cx-dx*i,cy-dy*i)===0&&s[1]<=maxC){s[1]++;i++;}if(!s[1]||s[1]>maxC)return null;
+  while(at(cx-dx*i,cy-dy*i)===1&&s[0]<=maxC){s[0]++;i++;}if(!s[0]||s[0]>maxC)return null;
+  i=1;while(at(cx+dx*i,cy+dy*i)===1){b2++;i++;}
+  while(at(cx+dx*i,cy+dy*i)===0&&s[3]<=maxC){s[3]++;i++;}if(!s[3]||s[3]>maxC)return null;
+  while(at(cx+dx*i,cy+dy*i)===1&&s[4]<=maxC){s[4]++;i++;}if(!s[4]||s[4]>maxC)return null;
+  s[2]=a2+b2;if(!ratioOK(s))return null;
+  return [(b2-(a2-1))/2,s[0]+s[1]+s[2]+s[3]+s[4]];
+}
+function findFinders(B){
+  var w=B.w,h=B.h,b=B.b,cands=[],step=Math.max(1,Math.floor(h/300));
+  for(var y=0;y<h;y+=step){var s=[0,0,0,0,0],st=0;
+    for(var x=0;x<=w;x++){var v=x<w?b[y*w+x]:0;
+      if(v===1){if(st&1)st++;s[st]++;}
+      else if(!(st&1)){
+        if(st===4){if(ratioOK(s))tryC(x,y,s);s=[s[2],s[3],s[4],1,0];st=3;}
+        else if(s[st]){st++;s[st]++;}
+      }else s[st]++;
+    }}
+  function tryC(xEnd,y,s){var tot=s[0]+s[1]+s[2]+s[3]+s[4],cx=xEnd-s[4]-s[3]-s[2]/2;
+    var v=crossCheck(B,cx,y,0,1,s[2]*2);if(!v)return;var cy=y+v[0];
+    var hh=crossCheck(B,cx,cy,1,0,s[2]*2);if(!hh)return;cx=cx+hh[0];
+    var v2=crossCheck(B,cx,cy,0,1,s[2]*2);if(v2)cy=cy+v2[0];
+    var ms=(tot+v[1]+hh[1])/21;
+    for(var i=0;i<cands.length;i++){var c=cands[i];if(Math.abs(c.x-cx)<=ms*2&&Math.abs(c.y-cy)<=ms*2&&Math.abs(c.m-ms)<=Math.max(1,c.m*0.6)){c.x=(c.x*c.n+cx)/(c.n+1);c.y=(c.y*c.n+cy)/(c.n+1);c.m=(c.m*c.n+ms)/(c.n+1);c.n++;return;}}
+    cands.push({x:cx,y:cy,m:ms,n:1});}
+  var good=cands.filter(function(c){return c.n>=2;});if(good.length<3)good=cands;
+  return good.sort(function(a,b){return b.n-a.n;}).slice(0,12);
+}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+function pickThree(c){
+  var best=null,bs=1e18;
+  for(var i=0;i<c.length;i++)for(var j=i+1;j<c.length;j++)for(var k=j+1;k<c.length;k++){var a=c[i],b=c[j],d=c[k],ms=[a.m,b.m,d.m],mm=(a.m+b.m+d.m)/3;
+    var vm=ms.reduce(function(s,x){return s+Math.pow(x-mm,2);},0)/(mm*mm);if(vm>0.25)continue;
+    var ab=dist(a,b),ad=dist(a,d),bd=dist(b,d),sides=[ab,ad,bd].sort(function(x,y){return x-y;});
+    /* right isoceles: two short ≈ equal, long ≈ short*√2 */
+    var e=Math.abs(sides[0]-sides[1])/sides[1]+Math.abs(sides[2]-sides[1]*Math.SQRT2)/sides[2];if(e>0.35)continue;
+    var sc=e+vm-0.02*(a.n+b.n+d.n)/30;if(sc<bs){bs=sc;best=[a,b,d];}}
+  if(!best)return null;
+  var a=best[0],b=best[1],d=best[2],ab=dist(a,b),ad=dist(a,d),bd=dist(b,d),tl,o1,o2;
+  if(bd>=ab&&bd>=ad){tl=a;o1=b;o2=d;}else if(ad>=ab&&ad>=bd){tl=b;o1=a;o2=d;}else{tl=d;o1=a;o2=b;}
+  /* cross product: TR is clockwise from BL (image y down) */
+  var cr=(o1.x-tl.x)*(o2.y-tl.y)-(o1.y-tl.y)*(o2.x-tl.x);
+  return cr>0?{tl:tl,tr:o1,bl:o2}:{tl:tl,tr:o2,bl:o1};
+}
+/* perspective: unit square → quad, and quad → quad */
+function sqToQuad(x0,y0,x1,y1,x2,y2,x3,y3){var dx3=x0-x1+x2-x3,dy3=y0-y1+y2-y3;
+  if(Math.abs(dx3)<1e-9&&Math.abs(dy3)<1e-9)return [x1-x0,x2-x1,x0,y1-y0,y2-y1,y0,0,0,1];
+  var dx1=x1-x2,dx2=x3-x2,dy1=y1-y2,dy2=y3-y2,den=dx1*dy2-dx2*dy1,a13=(dx3*dy2-dx2*dy3)/den,a23=(dx1*dy3-dx3*dy1)/den;
+  return [x1-x0+a13*x1,x3-x0+a23*x3,x0,y1-y0+a13*y1,y3-y0+a23*y3,y0,a13,a23,1];}
+function adj(m){return [m[4]*m[8]-m[5]*m[7],m[2]*m[7]-m[1]*m[8],m[1]*m[5]-m[2]*m[4],m[5]*m[6]-m[3]*m[8],m[0]*m[8]-m[2]*m[6],m[2]*m[3]-m[0]*m[5],m[3]*m[7]-m[4]*m[6],m[1]*m[6]-m[0]*m[7],m[0]*m[4]-m[1]*m[3]];}
+function mul(a,b){/* a∘b where points map p→b then →a : use column vector convention: M = a*b */
+  var r=new Array(9);for(var i=0;i<3;i++)for(var j=0;j<3;j++){r[i*3+j]=a[i*3]*b[j]+a[i*3+1]*b[3+j]+a[i*3+2]*b[6+j];}return r;}
+function quadToQuad(src,dst){/* src/dst: 8 numbers */var s2q=sqToQuad.apply(null,dst),q2s=adj(sqToQuad.apply(null,src));return mul(s2q,q2s);}
+function apply(M,x,y){/* M as [a11 a12 a13; a21 a22 a23; a31 a32 a33] in sqToQuad layout (x' = (a*x + b*y + c)/(g*x+h*y+1)) */
+  var d=M[6]*x+M[7]*y+M[8];return [(M[0]*x+M[1]*y+M[2])/d,(M[3]*x+M[4]*y+M[5])/d];}
+function sampleGrid(B,M,n){var w=B.w,h=B.h,b=B.b,g=[];for(var y=0;y<n;y++){var row=[];for(var x=0;x<n;x++){var p=apply(M,x+0.5,y+0.5),px=Math.round(p[0]),py=Math.round(p[1]);row.push(px>=0&&py>=0&&px<w&&py<h?b[py*w+px]:0);}g.push(row);}return g;}
+var FORMATS=(function(){var a=[];for(var lv=0;lv<4;lv++)for(var m=0;m<8;m++)a.push({lv:lv,m:m,b:formatBits(lv,m)});return a;})();
+function hd(a,b){var x=a^b,c=0;while(x){c+=x&1;x>>=1;}return c;}
+function readFormat(g){var n=g.length,a=0,b=0,i;
+  for(i=0;i<15;i++){var bit;if(i<6)bit=g[i][8];else if(i===6)bit=g[7][8];else if(i===7)bit=g[8][8];else if(i===8)bit=g[8][7];else bit=g[8][14-i];a|=bit<<i;
+    var bit2=i<8?g[8][n-1-i]:g[n-15+i][8];b|=bit2<<i;}
+  var best=null,bd=99;FORMATS.forEach(function(f){var d=Math.min(hd(f.b,a),hd(f.b,b));if(d<bd){bd=d;best=f;}});return bd<=3?best:null;}
+function rsDecode(cw,ne){/* Berlekamp–Massey; returns corrected array or null */
+  var n=cw.length,syn=new Array(ne),bad=false;
+  for(var i=0;i<ne;i++){var s=0;for(var j=0;j<n;j++)s=gmul(s,EXP[i])^cw[j];syn[i]=s;if(s)bad=true;}
+  if(!bad)return cw.slice();
+  var C=[1],Bp=[1],L=0,m=1,bb=1;
+  for(var k=0;k<ne;k++){var d=syn[k];for(i=1;i<=L;i++)d^=gmul(C[i]||0,syn[k-i]);
+    if(d===0){m++;continue;}var T=C.slice(),coef=gdiv(d,bb),Cn=C.slice();
+    for(i=0;i<Bp.length;i++){Cn[i+m]=(Cn[i+m]||0)^gmul(coef,Bp[i]);}C=Cn;
+    if(2*L<=k){L=k+1-L;Bp=T;bb=d;m=1;}else m++;}
+  /* Chien search: error positions */
+  var pos=[];for(i=0;i<n;i++){var xinv=EXP[(255-(n-1-i))%255],v=0;for(j=C.length-1;j>=0;j--)v=gmul(v,xinv)^(C[j]||0);if(v===0)pos.push(i);}
+  if(pos.length!==L)return null;
+  /* Forney: omega = S(x)*C(x) mod x^ne */
+  var om=new Array(ne).fill(0);for(i=0;i<ne;i++)for(j=0;j<=i&&j<C.length;j++)om[i]^=gmul(C[j]||0,syn[i-j]);
+  var out=cw.slice();
+  pos.forEach(function(p){var X=EXP[(n-1-p)%255],xinv=gdiv(1,X),num=0,den=0;
+    for(var t=ne-1;t>=0;t--)num=gmul(num,xinv)^om[t];
+    for(t=1;t<C.length;t+=2)den^=gmul(C[t]||0,t-1?EXP[(LOG[xinv]*(t-1))%255]:1);
+    if(!den){out=null;return;}if(out)out[p]^=gmul(X,gdiv(num,den));});
+  if(!out)return null;
+  for(i=0;i<ne;i++){s=0;for(j=0;j<n;j++)s=gmul(s,EXP[i])^out[j];if(s)return null;}
+  return out;
+}
+function readData(g,ver,fmt){
+  var n=g.length,fm=funcMask(ver),ord=dataOrder(ver,fm),bits=[];
+  ord.forEach(function(xy){var v=g[xy[1]][xy[0]];if(MASKS[fmt.m](xy[0],xy[1]))v^=1;bits.push(v);});
+  var bl=blocks(ver,fmt.lv),total=bl.reduce(function(s,b){return s+b[0];},0),cw=[];
+  for(var i=0;i+8<=bits.length&&cw.length<total;i+=8){var v=0;for(var j=0;j<8;j++)v=(v<<1)|bits[i+j];cw.push(v);}
+  /* de-interleave */
+  var dat=bl.map(function(){return [];}),ecc=bl.map(function(){return [];}),k=0,mx=Math.max.apply(null,bl.map(function(b){return b[1];}));
+  for(i=0;i<mx;i++)bl.forEach(function(b,bi){if(i<b[1])dat[bi].push(cw[k++]);});
+  var ne=bl[0][0]-bl[0][1];for(i=0;i<ne;i++)bl.forEach(function(b,bi){ecc[bi].push(cw[k++]);});
+  var out=[];for(var bi=0;bi<bl.length;bi++){var fixed=rsDecode(dat[bi].concat(ecc[bi]),ne);if(!fixed)return null;out=out.concat(fixed.slice(0,bl[bi][1]));}
+  return out;
+}
+function parse(bytes,ver){
+  var pos=0,rd=function(n){var v=0;for(var i=0;i<n;i++){var by=bytes[pos>>3];if(by===undefined)throw new Error('eod');v=(v<<1)|((by>>(7-(pos&7)))&1);pos++;}return v;};
+  var txt='',bytesOut=[];
+  try{while(pos+4<=bytes.length*8){var mode=rd(4);if(mode===0)break;
+    if(mode===4){var len=rd(ver<10?8:16);for(var i=0;i<len;i++)bytesOut.push(rd(8));}
+    else if(mode===2){flush();len=rd(ver<10?9:11);for(i=0;i+1<len;i+=2){var v=rd(11);txt+=ALNUM[Math.floor(v/45)]+ALNUM[v%45];}if(len%2)txt+=ALNUM[rd(6)];}
+    else if(mode===1){flush();len=rd(ver<10?10:12);for(i=0;i+2<len;i+=3)txt+=String(rd(10)).padStart(3,'0');if(len%3===2)txt+=String(rd(7)).padStart(2,'0');else if(len%3===1)txt+=String(rd(4));}
+    else if(mode===7){rd(8);}else break;}}catch(e){}
+  flush();return txt;
+  function flush(){if(bytesOut.length){try{txt+=new TextDecoder('utf-8',{fatal:false}).decode(new Uint8Array(bytesOut));}catch(e){txt+=String.fromCharCode.apply(null,bytesOut);}bytesOut=[];}}
+}
+function gridOK(g,n){/* timing patterns: fraction correct */var ok=0,t=0;for(var i=8;i<n-8;i++){t+=2;if(g[6][i]===(i%2?0:1))ok++;if(g[i][6]===(i%2?0:1))ok++;}return t?ok/t:1;}
+function alignScore(B,M,n){/* how well the bottom-right alignment pattern matches when sampled through M */
+  var w=B.w,h=B.h,b=B.b,c=n-7,sc=0;
+  for(var y=-2;y<=2;y++)for(var x=-2;x<=2;x++){var p=apply(M,c+x+0.5,c+y+0.5),px=Math.round(p[0]),py=Math.round(p[1]);var v=px>=0&&py>=0&&px<w&&py<h?b[py*w+px]:-1;var want=Math.max(Math.abs(x),Math.abs(y))!==1?1:0;if(v===want)sc++;}
+  /* light ring around it (one module outside) adds confidence */
+  for(var k=-3;k<=3;k+=6)for(var j=-3;j<=3;j++){var q=apply(M,c+j+0.5,c+k+0.5),qx=Math.round(q[0]),qy=Math.round(q[1]);if(qx>=0&&qy>=0&&qx<w&&qy<h&&!b[qy*w+qx])sc+=0.25;var r=apply(M,c+k+0.5,c+j+0.5),rx=Math.round(r[0]),ry=Math.round(r[1]);if(rx>=0&&ry>=0&&rx<w&&ry<h&&!b[ry*w+rx])sc+=0.25;}
+  return sc;
+}
+function decodeGrid(B,M,n){var ver=(n-17)/4,g=sampleGrid(B,M,n),fmt=readFormat(g);if(!fmt)return null;var data=readData(g,ver,fmt);if(!data)return null;return parse(data,ver)||null;}
+function tryDecode(B){
+  var c=findFinders(B);if(c.length<3)return null;var f=pickThree(c);if(!f)return null;
+  /* the version (size) is found from the timing patterns — module size from the finders is biased by blur */
+  var cands=[];for(var v=1;v<=10;v++){var nn=17+4*v,sq=[3.5,3.5,nn-3.5,3.5,nn-3.5,nn-3.5,3.5,nn-3.5],Mv=quadToQuad(sq,[f.tl.x,f.tl.y,f.tr.x,f.tr.y,f.tr.x+f.bl.x-f.tl.x,f.tr.y+f.bl.y-f.tl.y,f.bl.x,f.bl.y]);cands.push([gridOK(sampleGrid(B,Mv,nn),nn),nn]);}
+  cands.sort(function(a,b){return b[0]-a[0];});
+  for(var ci=0;ci<3;ci++){if(cands[ci][0]<0.7)break;var n=cands[ci][1],ver=(n-17)/4;
+    var src=[3.5,3.5,n-3.5,3.5,n-3.5,n-3.5,3.5,n-3.5],brx=f.tr.x+f.bl.x-f.tl.x,bry=f.tr.y+f.bl.y-f.tl.y;
+    var M0=quadToQuad(src,[f.tl.x,f.tl.y,f.tr.x,f.tr.y,brx,bry,f.bl.x,f.bl.y]);
+    var r=decodeGrid(B,M0,n);if(r)return r;
+    if(ver<2)continue;
+    /* search the bottom-right corner (perspective) so the alignment pattern lines up */
+    var ux=(f.tr.x-f.tl.x)/(n-7),uy=(f.tr.y-f.tl.y)/(n-7),vx=(f.bl.x-f.tl.x)/(n-7),vy=(f.bl.y-f.tl.y)/(n-7),scored=[];
+    for(var a=-5;a<=5;a+=0.5)for(var bb=-5;bb<=5;bb+=0.5){var px=brx+a*ux+bb*vx,py=bry+a*uy+bb*vy,M=quadToQuad(src,[f.tl.x,f.tl.y,f.tr.x,f.tr.y,px,py,f.bl.x,f.bl.y]);scored.push([alignScore(B,M,n)-0.02*(Math.abs(a)+Math.abs(bb)),M]);}
+    scored.sort(function(x,y){return y[0]-x[0];});
+    for(var t=0;t<Math.min(6,scored.length);t++){if(scored[t][0]<18)break;r=decodeGrid(B,scored[t][1],n);if(r)return r;}
+  }
+  return null;
+}
+/* decode(ImageData) → text | null. Tries a few thresholds; downsizes large frames. */
+function decode(img){
+  var G=toGray(img);
+  var scales=[1];if(Math.max(G.w,G.h)>900)scales=[900/Math.max(G.w,G.h),1];
+  for(var si=0;si<scales.length;si++){var S=scales[si]<1?shrink(G,scales[si]):G;
+    var biases=[0,-12,12];for(var bi=0;bi<biases.length;bi++){var r=tryDecode(binarize(S,biases[bi]));if(r)return r;}}
+  return null;
+}
+function shrink(G,s){var w=Math.max(1,Math.round(G.w*s)),h=Math.max(1,Math.round(G.h*s)),g=new Uint8Array(w*h);for(var y=0;y<h;y++)for(var x=0;x<w;x++)g[y*w+x]=G.g[Math.min(G.h-1,Math.floor(y/s))*G.w+Math.min(G.w-1,Math.floor(x/s))];return {w:w,h:h,g:g};}
+return {encode:encode,svg:svg,decode:decode,_rs:rsDecode,_i:{toGray:toGray,binarize:binarize,findFinders:findFinders,pickThree:pickThree,tryDecode:tryDecode,readFormat:readFormat,sampleGrid:sampleGrid,quadToQuad:quadToQuad,apply:apply,readData:readData}};
+})();
+
+/* QS — camera QR scanner for the phone apps (BarcodeDetector when the phone has it, otherwise SBPQR in JavaScript). */
+var QS=(function(){'use strict';
+  var st=null;
+  function beep(){try{var a=new (window.AudioContext||window.webkitAudioContext)(),o=a.createOscillator(),g=a.createGain();o.frequency.value=1250;g.gain.value=0.12;o.connect(g);g.connect(a.destination);o.start();setTimeout(function(){o.stop();a.close();},110);}catch(e){}try{navigator.vibrate&&navigator.vibrate(60);}catch(e){}}
+  async function open(box,onText,opts){close();opts=opts||{};
+    box.innerHTML='<div class="qs-wrap"><video playsinline muted autoplay></video><div class="qs-aim"></div><div class="qs-msg">📷 QR එක කොටුව ඇතුළට ගන්න…</div><div class="qs-btns"><button type="button" class="btn sm light qs-torch" style="display:none">🔦</button><button type="button" class="btn sm light qs-stop">✕ නවත්වන්න</button></div></div>';
+    var video=box.querySelector('video'),msg=box.querySelector('.qs-msg');
+    box.querySelector('.qs-stop').onclick=function(){close();if(opts.onClose)opts.onClose();};
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){msg.textContent='⚠️ මේ phone එකේ camera එක app එකට දෙන්න බැහැ — අංකය type කරන්න.';return false;}
+    var stream;try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:720}},audio:false});}
+    catch(e){msg.textContent=e&&e.name==='NotAllowedError'?'⚠️ Camera අවසරය දීලා නැහැ — phone එකේ සැකසුම් → මේ app / Chrome → Camera → Allow.':'⚠️ Camera එක open කරන්න බැහැ ('+(e&&e.name||'')+') — අංකය type කරන්න.';return false;}
+    video.srcObject=stream;try{await video.play();}catch(e){}
+    var det=null;try{if('BarcodeDetector' in window){var f=await window.BarcodeDetector.getSupportedFormats();if(f.indexOf('qr_code')>=0)det=new window.BarcodeDetector({formats:['qr_code']});}}catch(e){det=null;}
+    var track=stream.getVideoTracks()[0],tb=box.querySelector('.qs-torch');
+    try{var caps=track.getCapabilities&&track.getCapabilities();if(caps&&caps.torch){tb.style.display='';var on=false;tb.onclick=function(){on=!on;track.applyConstraints({advanced:[{torch:on}]}).catch(function(){});};}}catch(e){}
+    var cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true}),last='',lastAt=0,busy=false,paused=0;
+    st={stream:stream,video:video,timer:0,alive:true};
+    async function tick(){if(!st||!st.alive)return;
+      if(!busy&&video.readyState>=2&&Date.now()>paused){busy=true;var txt=null;
+        try{if(det){var r=await det.detect(video);if(r&&r.length)txt=r[0].rawValue;}
+          else{var vw=video.videoWidth,vh=video.videoHeight,s=Math.min(1,720/Math.max(vw,vh));cv.width=Math.round(vw*s);cv.height=Math.round(vh*s);cx.drawImage(video,0,0,cv.width,cv.height);txt=SBPQR.decode(cx.getImageData(0,0,cv.width,cv.height));}}catch(e){}
+        busy=false;
+        if(txt){var now=Date.now();if(txt!==last||now-lastAt>2500){last=txt;lastAt=now;beep();msg.textContent='✅ කියෙව්වා';var keep=onText(txt);paused=now+(opts.gap||900);if(keep===false){close();return;}setTimeout(function(){if(st&&st.alive)msg.textContent='📷 ඊළඟ එක…';},opts.gap||900);}}}
+      st.timer=setTimeout(tick,det?120:60);}
+    tick();return true;}
+  function close(){if(!st)return;st.alive=false;clearTimeout(st.timer);try{st.stream.getTracks().forEach(function(t){t.stop();});}catch(e){}st=null;}
+  /* the same QR text → what it is (bundle / batch book / raw lot) */
+  function parse(t){t=String(t||'').trim();var m;
+    if((m=/^SHANTHI\s+([A-Z]{2,3}-\d{6}-\d{1,3})\s+(\S+)\s+([BC])(\d+)\/(\d+)\s+Q(\d+)/i.exec(t)))return {k:'bundle',no:m[1].toUpperCase(),size:m[2],card:m[3].toUpperCase()==='C',i:+m[4],of:+m[5],q:+m[6]};
+    if((m=/Lot\s+(R-\d{6}-\d{1,3})/i.exec(t)))return {k:'lot',no:m[1].toUpperCase()};
+    var bn=/Batch\s+([A-Z]{2,3}-\d{6}-\d{1,3})/i.exec(t);
+    if(bn){var bu=/(Bundle|Card)\s+(\d+)\/(\d+)\s*\|\s*(\d+)\s*packets/i.exec(t);if(bu){var seg=t.split('|').map(function(x){return x.trim();}),sz=(seg[1]||'').split(/\s+/).pop();return {k:'bundle',no:bn[1].toUpperCase(),size:sz,card:/card/i.test(bu[1]),i:+bu[2],of:+bu[3],q:+bu[4]};}return {k:'batch',no:bn[1].toUpperCase()};}
+    if((m=/^(?:SHANTHI\s+)?([A-Z]{2,3}-\d{6}-\d{1,3})(?:\s+(\S+)\s+(\d+)\s*\/\s*(\d+))?$/i.exec(t))){if(m[2])return {k:'bundle',no:m[1].toUpperCase(),size:m[2],card:false,i:+m[3],of:+m[4],q:0,typed:1};return {k:'batch',no:m[1].toUpperCase()};}
+    if((m=/^SHANTHI\s+LOT\s+(R-\d{6}-\d{1,3})$/i.exec(t))||(m=/^(R-\d{6}-\d{1,3})$/i.exec(t)))return {k:'lot',no:m[1].toUpperCase()};
+    return null;}
+  return {open:open,close:close,parse:parse,beep:beep};
+})();
+
+/* ================= v4.4 · 🏷️ batch numbers · 🌶️ raw-material lots · 📷 scan · 🚚 load the lorry by scanning · 📦 stock ================= */
+const BST={making:'🟡 හදමින්',ok:'🟢 හරි',hold:'🔴 නවත්වලා',done:'⚫ ඉවරයි',void:'❌ අවලංගුයි'};
+const UNITS=['kg','g','මල්ල','බෑග්','ලීටර්','ගණන','roll','පෙට්ටි'];
+function bOn(){return !!(S.cfg&&S.cfg.bon);}
+function BF(){return (S.cfg&&S.cfg.bf)||[];}/* [fam, code, en, expMonths, [[size, type b|c|s, count, pid]]] */
+function bfOf(fam){return BF().find(f=>f[0]===fam)||null;}
+function bfByCode(code){return BF().find(f=>f[1]===String(code||'').toUpperCase())||null;}
+function ddmmyy(d){return d.slice(8,10)+d.slice(5,7)+d.slice(2,4);}
+function dmy(d){return d?d.slice(8,10)+'.'+d.slice(5,7)+'.'+d.slice(0,4):'';}
+function addMonths(d,m){const y=+d.slice(0,4),mo=+d.slice(5,7)-1+Math.round(num(m)),dd=+d.slice(8,10),t=new Date(Date.UTC(y,mo,1)),last=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth()+1,0)).getUTCDate();t.setUTCDate(Math.min(dd,last));return t.toISOString().slice(0,10);}
+function daysTo(d){const a=Date.parse(today()+'T00:00:00Z'),b=Date.parse(String(d||'')+'T00:00:00Z');return Number.isFinite(b)?Math.round((b-a)/864e5):null;}
+function myB(){if(!Array.isArray(S.myB))S.myB=[];return S.myB;}
+function myL(){if(!Array.isArray(S.myL))S.myL=[];return S.myL;}
+function knownNos(){const s=new Set((S.cfg&&S.cfg.bn)||[]);myB().forEach(b=>s.add(b.no));return s;}
+function nextBatchNo(fam,d){const f=bfOf(fam),pre=(f?f[1]:'XX')+'-'+ddmmyy(d)+'-';let n=0;knownNos().forEach(no=>{if(String(no).startsWith(pre))n=Math.max(n,parseInt(String(no).slice(pre.length))||0);});BT.forEach((t,no)=>{if(no.startsWith(pre))n=Math.max(n,parseInt(no.slice(pre.length))||0);});return pre+(n+1);}
+function nextLotNo(d){const pre='R-'+ddmmyy(d)+'-',s=new Set((S.cfg&&S.cfg.ln)||[]);myL().forEach(l=>s.add(l.no));((S.cfg&&S.cfg.rl)||[]).forEach(l=>s.add(l[0]));let n=0;s.forEach(no=>{if(String(no).startsWith(pre))n=Math.max(n,parseInt(String(no).slice(pre.length))||0);});return pre+(n+1);}
+function sizeLines(fam){const f=bfOf(fam);return f?f[4]:[];}
+function bundlesOf(t,per,q,rem){per=Math.floor(num(per));q=Math.floor(num(q));if(t==='c')return {n:q,full:q,rem:0,small:0,loose:0};if(t!=='b'||per<=0)return {n:0,full:0,rem:0,small:0,loose:q};const full=Math.floor(q/per),r=q-full*per;return {n:full+(r&&rem!=='B'?1:0),full,rem:r,small:r&&rem!=='B'?r:0,loose:r&&rem==='B'?r:0};}
+function bookQR(no,fam,d,exp){const f=bfOf(fam);return `Shanthi Food Products | ${(f&&f[2])||fam} | Batch ${no} | MFD ${dmy(d)} | EXP ${dmy(exp)}`;}
+function lotQR(l){return `Shanthi Food Products | Raw material: ${l.mat} | Lot ${l.no} | Supplier: ${l.sn||'-'} | Received ${dmy(l.d)} | ${l.q} ${l.u}`;}
+function pidOf(fam,size){const s=sizeLines(fam).find(x=>String(x[0]).toUpperCase()===String(size||'').toUpperCase());return s?s[3]:'';}
+/* ---------- batch details from the PC (IndexedDB: years of batches, works offline) ---------- */
+const BT=new Map();let idb=null;
+function idbOpen(){return new Promise(res=>{if(idb)return res(idb);try{const r=indexedDB.open('sbpFactoryBatches',1);r.onupgradeneeded=()=>{r.result.createObjectStore('b',{keyPath:'n'});};r.onsuccess=()=>{idb=r.result;res(idb);};r.onerror=()=>res(null);}catch(e){res(null);}});}
+async function idbAll(){const d=await idbOpen();if(!d)return [];return new Promise(res=>{try{const q=d.transaction('b').objectStore('b').getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=()=>res([]);}catch(e){res([]);}});}
+async function idbPut(list){const d=await idbOpen();if(!d||!list.length)return false;return new Promise(res=>{try{const tx=d.transaction('b','readwrite'),st=tx.objectStore('b');list.forEach(t=>{if(t.s==='void')st.delete(t.n);else st.put(t);});tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);}catch(e){res(false);}});}
+async function btLoad(){(await idbAll()).forEach(t=>BT.set(t.n,t));}
+btLoad();
+async function pullBatches(){/* out/fbat: what changed (or everything, in parts) — then ✓ to the PC */
+  if(!S.cloud||!bOn())return;let r;try{r=await fetch(`${fsBase()}/out/fbat`,{cache:'no-store'});}catch(e){return;}if(!r.ok)return;
+  const j=await r.json(),f=j.fields||{},at=(f.at||{}).stringValue||'',code=(f.code||{}).stringValue||'';if(!code||S.fbatAt===at)return;
+  let p;try{p=await unseal(code,'fbat');}catch(e){return;}
+  let list=p.b||[];
+  if(p.full){for(let i=0;i<(p.parts||0);i++){let rr;try{rr=await fetch(`${fsBase()}/out/fb${i}`,{cache:'no-store'});}catch(e){return;}if(!rr.ok)return;const jj=await rr.json(),cc=((jj.fields||{}).code||{}).stringValue||'';try{const pp=await unseal(cc,'fbat');if(pp.ts!==p.ts)return;list=list.concat(pp.b||[]);}catch(e){return;}}}
+  if(!(await idbPut(list))&&list.length){S.cloudErr='⚠️ Phone එකේ batch විස්තර සුරකින්න බැහැ (ඉඩ?)';save();return;}
+  list.forEach(t=>{if(t.s==='void')BT.delete(t.n);else BT.set(t.n,t);});
+  if(p.stk)S.stk=p.stk;S.fbatAt=at;S.bsync=p.ts;S.bcount=BT.size;save();
+  await send('back',{ts:p.ts},'',true);}
+/* ---------- home tiles ---------- */
+function batchTiles(){if(!bOn())return '';const todayB=myB().filter(b=>b.d===workDay()).length;
+  return `<div class="grid2"><button class="tile" onclick="go('batches')"><span>🏷️</span>අද නිෂ්පාදනය<small>Batch අංකය ඉබේම${todayB?' · අද '+todayB:''}</small></button>
+   <button class="tile" onclick="newDraft('raw');go('raw')"><span>🌶️</span>අමු ද්‍රව්‍ය ලැබුණා<small>Lot අංකය (R-…)</small></button>
+   <button class="tile" onclick="go('scan')"><span>📷</span>Scan<small>Batch / බණ්ඩල / මල්ල</small></button>
+   <button class="tile" onclick="go('loadl')"><span>🚚</span>ලොරියට පටවන්න<small>බණ්ඩල scan කරලා</small></button>
+   <button class="tile" onclick="go('stock')"><span>📦</span>තොගය<small>${S.stk&&S.stk.at?'අන්තිමට '+esc(fmtAt(S.stk.at,true)):'PC එකෙන් තවම ආවේ නැහැ'}</small></button></div>`;}
+/* ---------- 🏷️ today's batches ---------- */
+function renderBatches(){const d=workDay(),mine=myB().filter(b=>b.d>=addDays(d,-2)).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+  $('batchesBody').innerHTML=`<button class="btn primary block big" onclick="bNew()">＋ අලුත් Batch එකක්</button>
+   ${mine.length?mine.map(b=>{const f=bfOf(b.fam),tot=b.sz.reduce((s,x)=>s+num(x[1]),0);return `<div class="card"><div class="bno">${esc(b.no)}</div><div><strong>${esc(b.fam)}</strong> · ${esc(b.d)} · ${BST[b.st]||''}</div><div class="small muted">${b.sz.filter(x=>num(x[1])>0).map(x=>esc(sizeOfPid(b.fam,x[0]))+' × '+x[1]).join(' · ')||'පැකට් ගණන තවම නැහැ'}${tot?' · එකතුව '+tot:''}</div>
+     <div class="hbtns"><button class="btn sm light" onclick="bShow('${esc(b.bid)}')">🔢 අංකය / QR</button><button class="btn sm light" onclick="bEdit('${esc(b.bid)}')">✏️ ${b.st==='making'?'පැකට් ගණන දාන්න':'වෙනස් කරන්න'}</button><button class="btn sm light" onclick="bWa('${esc(b.bid)}')">💬 සේවකයන්ට</button></div>${outbox(b.uidLast)?'<div class="small bad">📤 තවම PC එකට ගියේ නැහැ</div>':''}</div>`;}).join(''):'<div class="card empty">අද batch නැහැ</div>'}
+   <button class="btn light block" onclick="bWaAll()">💬 අද batch ලැයිස්තුව සේවකයන්ට (WhatsApp)</button>`;}
+function outbox(uid){return uid&&S.outbox.some(x=>x.uid===uid);}
+function sizeOfPid(fam,pid){const s=sizeLines(fam).find(x=>x[3]===pid);return s?s[0]:'?';}
+let bd=null;/* the batch being made / changed */
+function bNew(){bd={bid:'',fam:'',d:workDay(),sz:{},rem:{},raw:[],rt:'',kg:'',w:'',nt:'',sm:0,st:'making'};go('bnew');}
+function bEdit(bid){const b=myB().find(x=>x.bid===bid);if(!b)return;bd={...JSON.parse(JSON.stringify(b)),sz:Object.fromEntries(b.sz.map(x=>[x[0],x[1]])),rem:Object.fromEntries(b.sz.map(x=>[x[0],x[2]||'A']))};go('bnew');}
+function renderBNew(){if(!bd){bNew();return;}const fams=BF();
+  if(!bd.fam){$('bnewBody').innerHTML=`<div class="card"><h3>භාණ්ඩය තෝරන්න</h3><div class="field"><input type="search" placeholder="🔎 සොයන්න" oninput="document.querySelectorAll('.famchip').forEach(c=>c.style.display=c.textContent.includes(this.value)?'':'none')"></div><div class="chips">${fams.map(f=>`<button class="chip famchip" onclick="bd.fam=${esc(JSON.stringify(f[0]))};render()">${esc(f[0])}${f[1]?'':' ❓'}</button>`).join('')}</div></div>`;return;}
+  const f=bfOf(bd.fam),exp=addMonths(bd.d,f?f[3]:8),no=bd.no||nextBatchNo(bd.fam,bd.d),lots=((S.cfg&&S.cfg.rl)||[]).map(l=>({no:l[0],mat:l[1],sn:l[2],d:l[3]})).concat(myL().map(l=>({no:l.no,mat:l.mat,sn:l.sn,d:l.d}))).filter((l,i,a)=>a.findIndex(x=>x.no===l.no)===i).sort((a,b)=>String(b.d).localeCompare(String(a.d))).slice(0,40);
+  $('bnewBody').innerHTML=`<div class="card"><div class="row2"><div><strong>${esc(bd.fam)}</strong> ${bd.bid?'':`<button class="btn sm light" onclick="bd.fam='';render()">මාරු කරන්න</button>`}</div><div class="bno sm">${esc(no)}</div></div>${f&&!f[1]?'<div class="warnbox">❓ මේ භාණ්ඩයට batch කේතයක් PC එකේ නැහැ (⚙️ Batch සැකසුම්).</div>':''}
+    ${dateField0(bd.d,'bdDate')}<div class="small muted">කල් ඉකුත්: <strong>${dmy(exp)}</strong> (මාස ${f?f[3]:8})</div></div>
+   <div class="card"><h3>📦 හදපු පැකට් ගණන <span class="small muted">(පස්සේ දාන්නත් පුළුවන්)</span></h3>${sizeLines(bd.fam).map(([size,t,n,pid])=>{const q=bd.sz[pid]||'',bb=bundlesOf(t,n,q,bd.rem[pid]);return `<div class="irow"><label><strong>${esc(size)}</strong><small class="muted">${t==='b'?'බණ්ඩලයට '+n:t==='c'?'කාඩ්':'තනි'}</small></label><input type="number" inputmode="numeric" min="0" value="${esc(q)}" oninput="bd.sz['${esc(pid)}']=this.value;bCalc(this,'${esc(pid)}',${JSON.stringify(t)},${num(n)})"><div class="bcalc small" id="bc_${esc(pid)}">${bCalcText(t,n,q,bd.rem[pid],pid)}</div></div>`;}).join('')}</div>
+   <div class="card"><h3>🌶️ අමු ද්‍රව්‍ය (මලු 2–3 මිශ්‍ර නම් ඔක්කොම)</h3><div class="chips">${lots.map(l=>`<button class="chip ${bd.raw.includes(l.no)?'ok':''}" onclick="bToggleLot('${esc(l.no)}')">${esc(l.no)} · ${esc(l.mat)}<small> ${esc(l.sn||'')}</small></button>`).join('')||'<span class="small muted">Lot නැහැ — “🌶️ අමු ද්‍රව්‍ය ලැබුණා” එකෙන් දාන්න, නැත්නම් පහළ ලියන්න.</span>'}</div>
+    <button class="btn sm light" onclick="scanFor='lot';go('scan')">📷 මල්ලේ QR scan කරන්න</button>
+    <div class="field"><label>නැත්නම් (සැපයුම්කරු + ගෙනාපු දිනය)</label><input maxlength="200" value="${esc(bd.rt)}" onchange="bd.rt=this.value"></div><div class="field"><label>අමු ද්‍රව්‍ය බර kg (අස්වැන්න %)</label><input type="number" inputmode="decimal" min="0" value="${esc(bd.kg)}" onchange="bd.kg=this.value"></div></div>
+   <div class="card"><div class="field"><label>නාස්තිය (ඕනේ නම්)</label><input maxlength="60" value="${esc(bd.w)}" onchange="bd.w=this.value" placeholder="උදා: 0.3 kg"></div><div class="field"><label>සටහන</label><input maxlength="240" value="${esc(bd.nt)}" onchange="bd.nt=this.value"></div><label class="check"><input type="checkbox" ${bd.sm?'checked':''} onchange="bd.sm=this.checked?1:0"> 🧪 Sample පැකට් 1–2 තියාගත්තා</label>${bd.bid?`<div class="field"><label>වෙනස් කරන හේතුව</label><input id="bdWhy" maxlength="200"></div>`:''}</div>
+   <button class="btn primary block big" onclick="bSave()">${bd.bid?'💾 සුරකින්න / PC එකට':'✅ Batch අංකය ගන්න'}</button>`;}
+function dateField0(v,id){return `<div class="field"><label>📅 හැදුව දිනය</label><input type="date" id="${id}" max="${today()}" value="${esc(v)}" onchange="bd.d=this.value;render()"></div>`;}
+function bCalcText(t,n,q,rem,pid){const b=bundlesOf(t,n,q,rem);if(!num(q))return '';if(t==='c')return `${b.n} කාඩ්`;if(t!=='b')return 'තනි පැකට්';return `බණ්ඩල ${b.full}${b.rem?` + ඉතුරු ${b.rem} <select onchange="bd.rem['${pid}']=this.value;bCalc(null,'${pid}','${t}',${n})"><option value="A" ${rem!=='B'?'selected':''}>🅰️ පොඩි බණ්ඩලය</option><option value="B" ${rem==='B'?'selected':''}>🅱️ ලිහිල්</option></select>`:''}`;}
+function bCalc(inp,pid,t,n){const el=$('bc_'+pid);if(el)el.innerHTML=bCalcText(t,n,bd.sz[pid],bd.rem[pid],pid);}
+function bToggleLot(no){const i=bd.raw.indexOf(no);if(i>=0)bd.raw.splice(i,1);else bd.raw.push(no);render();}
+async function bSave(){if(!bd||!bd.fam){toast('භාණ්ඩය තෝරන්න','err');return;}const f=bfOf(bd.fam);if(!f||!f[1]){toast('මේ භාණ්ඩයට batch කේතයක් නැහැ (PC එකේ ⚙️ සැකසුම්)','err');return;}
+  bd.d=($('bdDate')||{}).value||bd.d;if(bd.d>today()){toast('අනාගත දිනයක් බැහැ','err');return;}
+  const sz=sizeLines(bd.fam).map(([size,t,n,pid])=>[pid,Math.max(0,Math.floor(num(bd.sz[pid]))),bd.rem[pid]==='B'?'B':'A']).filter(x=>x[1]>0||bd.bid);
+  const why=bd.bid?(($('bdWhy')||{}).value||'').trim():'';const old=bd.bid?myB().find(x=>x.bid===bd.bid):null;
+  if(old&&old.st!=='making'&&why.length<2){toast('වෙනස් කරන හේතුව ලියන්න','err');return;}
+  const st=sz.some(x=>x[1]>0)?(old&&old.st==='hold'?'hold':'ok'):'making';
+  const b={bid:bd.bid||('FB'+ensureDev()+'-'+(++S.seq)),no:bd.no||nextBatchNo(bd.fam,bd.d),fam:bd.fam,d:bd.d,exp:addMonths(bd.d,f[3]),sz,raw:bd.raw.slice(),rt:bd.rt||'',kg:num(bd.kg)||0,w:bd.w||'',nt:bd.nt||'',sm:bd.sm?1:0,st,rv:(old?num(old.rv):0)+1,at:new Date().toISOString(),by:S.me};
+  const ok=await send('batch',{bid:b.bid,no:b.no,rv:b.rv,fam:b.fam,d:b.d,sz:b.sz,raw:b.raw,rt:b.rt,kg:b.kg,w:b.w,nt:b.nt,sm:b.sm,st:b.st,why},`🏷️ ${b.no} ${b.fam}`);if(!ok)return;
+  b.uidLast=S.sent[0]&&S.sent[0].uid;const i=myB().findIndex(x=>x.bid===b.bid);if(i>=0)myB()[i]=b;else myB().unshift(b);S.myB=myB().filter(x=>x.d>=addDays(today(),-60)).slice(0,300);save();
+  const t=BT.get(b.no);if(!t)BT.set(b.no,localTuple(b));bd=null;toast(old?'💾 යැව්වා':'✅ '+b.no);if(!old)bShow(b.bid);else go('batches');}
+function localTuple(b){return {n:b.no,f:b.fam,c:(bfOf(b.fam)||[])[1]||'',e:(bfOf(b.fam)||[])[2]||'',d:b.d,x:b.exp,s:b.st,sm:b.sm,by:b.by,src:'factory',sz:b.sz.map(([pid,q,rem])=>{const l=sizeLines(b.fam).find(x=>x[3]===pid)||[];return [pid,l[0]||'?',q,l[1]||'s',l[2]||0,rem];}),rw:b.raw.map(no=>[no,'','','']),rt:b.rt,k:b.kg,w:b.w,m:b.sz.reduce((s,x)=>s+x[1],0),fl:b.sz.reduce((s,x)=>s+x[1],0),ll:0,tl:[],ls:0,fs:0,mv:0,ca:0,sh:[],rq:0,rp:0,rl:[],local:1};}
+function bShow(bid){const b=myB().find(x=>x.bid===bid);if(!b)return;const qr=bookQR(b.no,b.fam,b.d,b.exp);
+  sheet(`<div class="bigno">${esc(b.no)}</div><div class="center"><strong>${esc(b.fam)}</strong><br>B.No : ${esc(b.no)} / MFD : ${dmy(b.d)} / EXP : ${dmy(b.exp)}</div><div class="qrbox">${SBPQR.svg(qr,'M',{quiet:2,minVersion:2})}</div><div class="small muted center">Stamp එකට: <strong>${esc(b.no)}</strong> · Stickers PC එකෙන් රෑ print කරන්න</div><button class="btn light block" onclick="bWa('${esc(b.bid)}')">💬 සේවකයන්ට WhatsApp</button><button class="btn primary block" onclick="sheet();go('batches')">හරි</button>`);}
+function bWaText(list){return `🏷️ *අද batch අංක* — ${dmy(workDay())}\n\n`+list.map(b=>`• *${b.fam}* — B.No : *${b.no}*\n  MFD : ${dmy(b.d)} / EXP : ${dmy(b.exp)}`).join('\n\n')+'\n\nපැකට් වලට stamp එකෙන් මේ අංකයම ගහන්න.';}
+function bWa(bid){const b=myB().find(x=>x.bid===bid);if(b)window.open('https://wa.me/?text='+encodeURIComponent(bWaText([b])),'_blank');}
+function bWaAll(){const l=myB().filter(b=>b.d===workDay());if(!l.length){toast('අද batch නැහැ','warn');return;}window.open('https://wa.me/?text='+encodeURIComponent(bWaText(l)),'_blank');}
+/* ---------- 🌶️ raw material received ---------- */
+function renderRaw(){const d=D('raw'),sp=(S.cfg&&S.cfg.sp)||[],sup=sp.find(s=>s[0]===d.sup),mats=[...new Set(((S.cfg&&S.cfg.rl)||[]).map(l=>l[1]).concat(myL().map(l=>l.mat)))].slice(0,40);
+  $('rawBody').innerHTML=`<div class="card">${dateField('raw')}<div class="field"><label>සැපයුම්කරු</label><input type="search" placeholder="🔎 නම" value="${esc(sup?sup[1]:d.sn||'')}" oninput="rawSup(this.value)" id="rawSupQ"><div id="rawSupList" class="chips" style="margin-top:6px">${rawSupChips(sup?sup[1]:'')}</div></div>
+   <div class="field"><label>අමු ද්‍රව්‍යය</label><input list="rawMats" maxlength="80" value="${esc(d.mat||'')}" onchange="D('raw').mat=this.value;save()" placeholder="උදා: වියළි මිරිස්"><datalist id="rawMats">${mats.map(m=>`<option value="${esc(m)}">`).join('')}${sup&&sup[3]?`<option value="${esc(sup[3])}">`:''}</datalist></div>
+   <div class="row2"><div class="field"><label>ප්‍රමාණය</label><input type="number" inputmode="decimal" min="0" value="${esc(d.q||'')}" onchange="D('raw').q=this.value;save()"></div><div class="field"><label>ඒකකය</label><select onchange="D('raw').u=this.value;save()">${UNITS.map(u=>`<option ${(d.u||'kg')===u?'selected':''}>${u}</option>`).join('')}</select></div></div>
+   <div class="field"><label>සැපයුම්කරුගේ බිල් අංකය</label><input maxlength="40" value="${esc(d.inv||'')}" onchange="D('raw').inv=this.value;save()"></div><div class="field"><label>සටහන (මලු ගණන / තත්ත්වය)</label><input maxlength="200" value="${esc(d.note||'')}" onchange="D('raw').note=this.value;save()"></div></div>
+   <button class="btn primary block big" onclick="rawSend()">✅ Lot අංකය ගන්න + PC එකට</button>
+   ${myL().slice(0,6).map(l=>`<div class="hist"><div class="grow"><strong>${esc(l.no)}</strong> ${esc(l.mat)} ${esc(String(l.q))} ${esc(l.u)}<div class="small muted">${esc(l.sn||'')} · ${esc(l.d)}</div></div><button class="btn sm light" onclick="lotShow('${esc(l.no)}')">QR</button></div>`).join('')}`;}
+function rawSupChips(q){const sp=(S.cfg&&S.cfg.sp)||[],n=norm(q);const l=sp.filter(s=>!n||norm(s[1]).includes(n)).sort((a,b)=>(a[2]==='raw'?0:1)-(b[2]==='raw'?0:1)).slice(0,14);return l.map(s=>`<button class="chip ${D('raw').sup===s[0]?'ok':''}" onclick="D('raw').sup='${esc(s[0])}';D('raw').sn='';save();render()">${esc(s[1])}</button>`).join('')+(q&&!l.some(s=>norm(s[1])===n)?`<button class="chip" onclick="D('raw').sup='';D('raw').sn=$('rawSupQ').value.trim();save();render()">＋ “${esc(q)}”</button>`:'');}
+function rawSup(q){$('rawSupList').innerHTML=rawSupChips(q);}
+async function rawSend(){const d=D('raw'),sp=((S.cfg&&S.cfg.sp)||[]).find(s=>s[0]===d.sup);if(!sp&&!d.sn){toast('සැපයුම්කරු තෝරන්න','err');return;}if(!String(d.mat||'').trim()){toast('අමු ද්‍රව්‍යය ලියන්න','err');return;}
+  const l={lid:'FL'+ensureDev()+'-'+(++S.seq),no:nextLotNo(d.d),sup:sp?sp[0]:'',sn:sp?sp[1]:d.sn,mat:String(d.mat).trim(),q:num(d.q),u:d.u||'kg',d:d.d,inv:d.inv||'',nt:d.note||''};
+  const ok=await send('raw',{no:l.no,lid:l.lid,sup:l.sup,sn:l.sn,mat:l.mat,q:l.q,u:l.u,d:l.d,inv:l.inv,nt:l.nt},`🌶️ ${l.no} ${l.mat}`);if(!ok)return;myL().unshift(l);S.myL=myL().slice(0,200);newDraft('raw');save();lotShow(l.no);}
+function lotShow(no){const l=myL().find(x=>x.no===no);if(!l)return;sheet(`<div class="bigno">${esc(l.no)}</div><div class="center"><strong>${esc(l.mat)}</strong> · ${esc(String(l.q))} ${esc(l.u)}<br>${esc(l.sn||'')} · ${dmy(l.d)}</div><div class="qrbox">${SBPQR.svg(lotQR(l),'L',{quiet:2,minVersion:2})}</div><div class="small muted center">මල්ලට sticker එක PC එකෙන් print කරන්න (🖨️ Stickers). දැනට අංකය මල්ලේ ලියන්න.</div><button class="btn primary block" onclick="sheet();go('home')">හරි</button>`);}
+/* ---------- 📷 scan + batch card ---------- */
+let scanFor='';
+function renderScan(){$('scanBody').innerHTML=`<div id="camBox" class="card"></div><div class="card"><div class="field"><label>නැත්නම් අංකය type කරන්න</label><input id="scanType" placeholder="MR-271026-1 · R-271026-1" autocapitalize="characters" onkeydown="if(event.key==='Enter')scanGot(this.value)"></div><button class="btn light block" onclick="scanGot($('scanType').value)">🔎 බලන්න</button></div><div id="scanOut"></div>`;
+  QS.open($('camBox'),t=>{scanGot(t);return scanFor==='lot'?false:undefined;},{gap:1200});}
+function scanGot(t){const p=QS.parse(t);if(!p){toast('මේ QR එක Shanthi batch / lot එකක් නෙවෙයි','warn');return;}
+  if(scanFor==='lot'){scanFor='';if(p.k!=='lot'){toast('මේක මල්ලක lot QR එකක් නෙවෙයි','warn');return;}if(bd&&!bd.raw.includes(p.no))bd.raw.push(p.no);QS.close();go('bnew');toast('🌶️ '+p.no+' එකතු කළා');return;}
+  $('scanOut').innerHTML=p.k==='lot'?lotCard(p.no):bCard(p.no,p);window.scrollTo(0,$('scanOut').offsetTop-60);}
+function lotCard(no){const l=myL().find(x=>x.no===no),r=((S.cfg&&S.cfg.rl)||[]).find(x=>x[0]===no),used=[...BT.values()].filter(t=>(t.rw||[]).some(x=>x[0]===no));
+  return `<div class="card"><div class="bno">🌶️ ${esc(no)}</div>${l||r?`<div><strong>${esc(l?l.mat:r[1])}</strong> · ${esc(l?l.sn:r[2])} · ${esc(l?l.d:r[3])} · ${esc(String(l?l.q:r[4]))} ${esc(l?l.u:r[5])}</div>`:'<div class="small muted">Phone එකේ විස්තර නැහැ.</div>'}<h3 style="margin-top:8px">පාවිච්චි කළ batch</h3>${used.map(t=>`<div>▸ <a href="#" onclick="scanGot('${esc(t.n)}');return false">${esc(t.n)}</a> ${esc(t.f)} · ${esc(t.d)}</div>`).join('')||'<div class="small muted">තවම නැහැ</div>'}</div>`;}
+function bCard(no,p){const t=BT.get(no)||(()=>{const b=myB().find(x=>x.no===no);return b?localTuple(b):null;})();
+  if(!t)return `<div class="card"><div class="bno">${esc(no)}</div><div class="warnbox">මේ batch එකේ විස්තර phone එකේ තවම නැහැ (PC එකෙන් sync වෙලා නැහැ). ${p&&p.k==='bundle'?`බණ්ඩල ${p.i}/${p.of} · ${esc(p.size)} · ${p.q}`:''}</div></div>`;
+  const left=daysTo(t.x),hold=t.s==='hold',sz=p&&p.k==='bundle'?(t.sz||[]).find(x=>String(x[1]).toUpperCase()===String(p.size).toUpperCase()):null;
+  return `<div class="card ${hold?'holdcard':''}"><div class="bno">${esc(t.n)}</div><div><strong>${esc(t.f)}</strong> · ${BST[t.s]||''}${t.sm?' · 🧪 sample':''}</div>
+   ${p&&p.k==='bundle'?`<div class="okbox">📦 ${p.card?'කාඩ්':'බණ්ඩල'} <strong>${p.i}/${p.of}</strong> · ${esc(p.size)} · ${p.q}${sz?'':' — ⚠️ මේ batch එකේ මේ ප්‍රමාණය නැහැ'}</div>`:''}
+   <div class="kv"><span>හැදුවේ</span><b>${dmy(t.d)}</b><span>කල් ඉකුත්</span><b class="${left!==null&&left<0?'bad':left!==null&&left<30?'warn':''}">${dmy(t.x)} · ${left===null?'':left<0?'ඉකුත් වෙලා දින '+(-left):'තව දින '+left}</b><span>හැදුවේ කවුද</span><b>${esc(t.by||'')}</b><span>Stickers</span><b>${t.st?'✅':'❓'}</b></div>
+   <h3>① ප්‍රමාණ</h3><div class="small">${(t.sz||[]).map(x=>`${esc(x[1])} × <b>${x[2]}</b> <span class="muted">${x[3]==='b'?'(බණ්ඩලයට '+x[4]+')':x[3]==='c'?'(කාඩ්)':''}</span>`).join(' · ')}</div>
+   <h3>② අමු ද්‍රව්‍ය</h3><div class="small">${(t.rw||[]).map(r=>`${esc(r[0])} ${esc(r[1])} ${r[2]?'— '+esc(r[2]):''} ${r[3]?'('+esc(r[3])+')':''}`).join('<br>')||esc(t.rt||'❓')}</div>
+   <h3>③ ගණන්</h3><div class="kv"><span>හැදුවා</span><b>${t.m||0}${t.y?' · අස්වැන්න '+t.y+'%':''}</b><span>🏭 කම්හලේ ඉතිරි</span><b>${t.fl||0}</b><span>🚚 ලොරියේ ඉතිරි</span><b>${t.ll||0}</b><span>ලොරියට ගියා</span><b>${(t.tl||[]).map(x=>x[0].slice(5)+' · '+x[1]).join(', ')||'—'}</b><span>විකුණුවා</span><b>🚚 ${t.ls||0} · 🏭 ${t.fs||0}</b><span>වෙනත්</span><b>${t.mv||0}</b></div>
+   <h3>④ ගිය කඩ (${(t.sh||[]).length})${t.ca?' + 🚶 '+t.ca:''}</h3><div class="small shoplist">${(t.sh||[]).map(s=>`<div><b>${esc(s[0])}</b> ${s[3]?'':'<span class="warn">(ගන්න ඇති)</span>'} <span class="muted">${esc(s[1]||'')}</span> ${s[2]?`<a href="tel:${esc(digits(s[2]))}">📞</a>`:''}<br><span class="muted">${(s[4]||[]).map(r=>r[0].slice(5)+' '+esc(r[1])+' '+r[2]).join(' · ')}</span></div>`).join('')||'<span class="muted">තවම නැහැ</span>'}</div>
+   <h3>⑤ Return</h3><div class="small">${t.rq?`${t.rq} (${t.rp}%)${t.rp>=5?' ⚠️':''}<br>`+(t.rl||[]).map(r=>`${r[0].slice(5)} ${esc(r[1])} ${esc(r[2])} ${r[3]} ${r[4]?'Damage':''} ${esc(r[5]||'')}`).join('<br>'):'නැහැ'}</div>
+   ${t.local?'<div class="small muted">📱 Phone එකේ විතරයි (PC එකෙන් තවම ආවේ නැහැ)</div>':`<div class="small muted">විස්තර ${esc(fmtAt(S.stk&&S.stk.at,true))} දක්වා</div>`}
+   <div class="hbtns"><button class="btn sm ${hold?'primary':'light'}" onclick="bStatus('${esc(t.n)}','${hold?'ok':'hold'}')">${hold?'🟢 නැවත හරි':'🔴 නවත්වන්න'}</button><button class="btn sm light" onclick="bRecall('${esc(t.n)}')">📢 Recall</button><button class="btn sm light" onclick="go('loadl')">🚚 ලොරියට</button></div></div>`;}
+async function bStatus(no,st){const why=(prompt(st==='hold'?`🔴 ${no} නවත්වන්නේ ඇයි?`:`🟢 ${no} ආයෙත් හරි — හේතුව:`,'')||'').trim();if(why.length<2){toast('හේතුව ලියන්න','err');return;}
+  if(await send('bst',{no,st,why},`${BST[st]} ${no}`)){const t=BT.get(no);if(t){t.s=st;idbPut([t]);}const b=myB().find(x=>x.no===no);if(b){b.st=st;save();}toast(BST[st]+' — PC එකට යැව්වා');scanGot(no);}}
+async function bRecall(no){const t=BT.get(no);const why=(prompt(`📢 ${no} Recall — හේතුව (batch එක 🔴 නවත්වනවා):`,'')||'').trim();if(why.length<3){toast('හේතුව ලියන්න','err');return;}
+  if(!(await send('bst',{no,st:'hold',why,rc:1},`📢 Recall ${no}`)))return;if(t){t.s='hold';idbPut([t]);}
+  const txt=`ශාන්ති ආහාර නිෂ්පාදන — වැදගත් දැනුම්දීමක් 🙏\nඔබ කඩේට දුන්න *${t?t.f:''}* (Batch ${no}${t?', හැදුවේ '+dmy(t.d):''}) පැකට් විකුණන්න එපා. අපේ ලොරියෙන් ඇවිත් ආපහු ගන්නවා / මාරු කර දෙනවා. කරදරයට සමාවෙන්න.`;
+  sheet(`<h3>📢 Recall — ${esc(no)}</h3><p class="small">කඩ ${(t&&t.sh||[]).length} · ඔබලා WhatsApp කරන්න. සම්පූර්ණ ලැයිස්තුව + රියදුරුට පත්‍රය PC එකෙන්.</p><div class="shoplist">${(t&&t.sh||[]).map(s=>{let n=digits(s[2]);if(n.length===10&&n[0]==='0')n='94'+n.slice(1);return `<div class="hist"><div class="grow"><b>${esc(s[0])}</b> <span class="small muted">${esc(s[1]||'')}</span></div>${n.length>=11?`<a class="btn sm primary" target="_blank" href="https://wa.me/${n}?text=${encodeURIComponent(txt)}">💬</a>`:'<span class="small muted">📞 නැහැ</span>'}</div>`;}).join('')||'<div class="muted">කඩ නැහැ</div>'}</div><button class="btn light block" onclick="sheet()">වසන්න</button>`);}
+/* ---------- 🚚 loading the lorry by scanning (owner here + helper in the lorry app → one list in Firebase) ---------- */
+let ld={mode:'b',others:{},pulled:'',busy:false,timer:0};
+function ldDoc(){return S.cfg&&S.cfg.lb&&S.cloud?`${FS}${S.cfg.lp||S.cloud.p}/databases/(default)/documents/boxes/${S.cfg.lb}/out/ld-${workDay()}`:'';}
+function ldMine(){const d=workDay();if(!S.ld||S.ld.d!==d)S.ld={d,sc:[],sent:''};return S.ld;}
+function ldAll(){const all=[],seen=new Set();const add=(x,by)=>{if(x.k&&x.kind==='b'){if(seen.has(x.k))return;seen.add(x.k);}all.push({...x,by});};ldMine().sc.forEach(x=>add(x,S.me+' (මම)'));Object.entries(ld.others).forEach(([dev,o])=>(o.sc||[]).forEach(x=>add(x,o.by||dev)));return all;}
+function ldHolds(){const h=new Set();BT.forEach(t=>{if(t.s==='hold')h.add(t.n);});return h;}
+async function ldPush(){const url=ldDoc();if(!url)return;const m=ldMine();const body=JSON.stringify({by:S.me,at:new Date().toISOString(),sc:m.sc});if(m.sent===body)return;const f='s_'+ensureDev().replace(/[^A-Za-z0-9_]/g,'_');
+  try{const r=await fetch(`${url}?updateMask.fieldPaths=code&updateMask.fieldPaths=${f}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:'SBP1:lscan:0:00000000'},[f]:{stringValue:body}}})});if(r.ok){m.sent=body;save();}}catch(e){}}
+async function ldPull(){const url=ldDoc();if(!url)return;try{const r=await fetch(url,{cache:'no-store'});if(r.status===404){ld.others={};return;}if(!r.ok)return;const j=await r.json(),me='s_'+ensureDev().replace(/[^A-Za-z0-9_]/g,'_');ld.others={};Object.entries(j.fields||{}).forEach(([k,v])=>{if(k.startsWith('s_')&&k!==me){try{ld.others[k]=JSON.parse(v.stringValue||'{}');}catch(e){}}});ld.pulled=new Date().toISOString();}catch(e){}}
+function renderLoadL(){if(!S.cfg.lb){$('loadlBody').innerHTML='<div class="card warnbox">ලොරි app එකේ Firebase mailbox එක PC එකෙන් තවම ආවේ නැහැ (PC එකේ Firebase සක්‍රියද?).</div>';return;}
+  $('loadlBody').innerHTML=`<div class="card"><div class="seg"><button class="${ld.mode==='b'?'on':''}" onclick="ld.mode='b';render()">📦 බණ්ඩල</button><button class="${ld.mode==='l'?'on':''}" onclick="ld.mode='l';render()">🔓 කඩපු බණ්ඩලය (ලිහිල්)</button></div><div id="camBox"></div><button class="btn light block" onclick="ldLooseAsk()">＋ ලිහිල් පැකට් (sticker නැති)</button></div><div id="ldList"></div>`;
+  ldDraw();QS.open($('camBox'),t=>{ldScan(t);},{gap:1100});clearInterval(ld.timer);ld.timer=setInterval(async()=>{if(screen!=='loadl'){clearInterval(ld.timer);QS.close();return;}await ldPush();await ldPull();ldDraw();},15000);ldPull().then(ldDraw);}
+function ldScan(t){const p=QS.parse(t);if(!p||p.k!=='bundle'){toast(p&&p.k==='batch'?'මේක පොතේ sticker එක — බණ්ඩලයේ sticker එක scan කරන්න':'බණ්ඩල sticker එකක් නෙවෙයි','warn');return;}
+  const f=bfByCode(p.no.split('-')[0]);if(!f){toast('නොදන්නා භාණ්ඩ කේතයක්: '+p.no,'err');return;}const pid=pidOf(f[0],p.size);if(!pid){toast(`${f[0]} ${p.size} — භාණ්ඩය හමු වුණේ නැහැ`,'err');return;}
+  if(ldHolds().has(p.no)){QS.beep();toast(`⛔ ${p.no} නවත්වලා (🔴 hold) — ලොරියට පටවන්න එපා!`,'err');return;}
+  if(!p.card&&!(p.q>0)){const t=BT.get(p.no),z=t&&(t.sz||[]).find(x=>x[0]===pid);p.q=z?num(z[4]):0;if(!p.q){toast('බණ්ඩලයේ පැකට් ගණන හොයාගන්න බැහැ','err');return;}}
+  const key=`${p.no}|${String(p.size).toUpperCase()}|${p.i}`,all=ldAll(),dup=all.find(x=>x.k===key&&x.kind==='b');
+  if(ld.mode==='l'){const left=(p.card?1:p.q)-all.filter(x=>x.k===key).reduce((s,x)=>s+x.q,0);const q=Math.floor(num(prompt(`🔓 ${f[0]} ${p.size} · ${p.no} බණ්ඩල ${p.i}/${p.of} — ලිහිල් පැකට් කීයද? (ඉතුරු ${Math.max(0,left)})`,'')));if(!(q>0))return;if(q>left)toast(`⚠️ ඉතුරු ${left}ට වඩා වැඩියි`,'warn');ldMine().sc.push({k:key,pid,no:p.no,q,at:new Date().toISOString(),kind:'l'});}
+  else{if(dup){toast(`⚠️ මේ බණ්ඩලය දැනටමත් පැටෙව්වා (${dup.by})`,'warn');return;}ldMine().sc.push({k:key,pid,no:p.no,q:p.card?1:p.q,at:new Date().toISOString(),kind:'b'});}
+  const old=oldestOther(pid,p.no);if(old)toast(`ℹ️ ${old} පරණ batch එක කම්හලේ තවම තියෙනවා — ඒක මුලින් යවන්න`,'warn');else toast('✅ '+f[0]+' '+p.size+' +'+(p.card?1:p.q));
+  save();ldDraw();ldPush();}
+function oldestOther(pid,no){const f=S.stk&&S.stk.f?S.stk.f.find(x=>x[0]===pid):null;if(!f)return '';const used=new Set(ldAll().filter(x=>x.pid===pid).map(x=>x.no));const older=f[1].find(([b,q])=>b&&b!==no&&q>0&&!used.has(b)&&String(b.split('-')[1]||'').slice(4)+String(b.split('-')[1]||'').slice(2,4)+String(b.split('-')[1]||'').slice(0,2)<String(no.split('-')[1]||'').slice(4)+String(no.split('-')[1]||'').slice(2,4)+String(no.split('-')[1]||'').slice(0,2));return older?older[0]:'';}
+function ldLooseAsk(){const opts=BF().flatMap(f=>f[4].map(s=>({pid:s[3],name:f[0]+' '+s[0]})));
+  sheet(`<h3>＋ ලිහිල් පැකට්</h3><div class="field"><label>භාණ්ඩය</label><select id="llP">${opts.map(o=>`<option value="${esc(o.pid)}">${esc(o.name)}</option>`).join('')}</select></div><div class="field"><label>Batch</label><select id="llB"></select></div><div class="field"><label>පැකට් ගණන</label><input id="llQ" type="number" inputmode="numeric" min="1"></div><button class="btn primary block" onclick="ldLooseAdd()">＋ එකතු කරන්න</button><button class="btn light block" onclick="sheet()">අවලංගු</button>`);
+  const fill=()=>{const pid=$('llP').value,f=S.stk&&S.stk.f?S.stk.f.find(x=>x[0]===pid):null,list=(f?f[1]:[]).filter(([b,q])=>b&&q>0);const mine=[...BT.values()].filter(t=>(t.sz||[]).some(x=>x[0]===pid)).map(t=>t.n);
+    $('llB').innerHTML=list.map(([b,q],i)=>`<option value="${esc(b)}">${esc(b)} (කම්හලේ ${q})${i===0?' — පරණම':''}</option>`).join('')+mine.filter(n=>!list.some(x=>x[0]===n)).map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('')+'<option value="">— නොදන්නා —</option>';};
+  $('llP').onchange=fill;fill();}
+function ldLooseAdd(){const pid=$('llP').value,no=$('llB').value,q=Math.floor(num($('llQ').value));if(!(q>0)){toast('ගණන දාන්න','err');return;}if(no&&ldHolds().has(no)){toast(`⛔ ${no} නවත්වලා`,'err');return;}ldMine().sc.push({k:'',pid,no,q,at:new Date().toISOString(),kind:'x'});save();sheet();ldDraw();ldPush();toast('✅ +'+q);}
+function ldDraw(){const box=$('ldList');if(!box)return;const all=ldAll(),by={};all.forEach(x=>{const k=x.pid;(by[k]=by[k]||{b:0,l:0,q:0,n:{}});const r=by[k];if(x.kind==='b')r.b++;else r.l+=x.q;r.q+=x.q;r.n[x.no||'?']=(r.n[x.no||'?']||0)+x.q;});
+  const name=pid=>{for(const f of BF())for(const s of f[4])if(s[3]===pid)return f[0]+' '+s[0];return pid;};
+  box.innerHTML=`<div class="card"><h3>🚚 අද ලොරි පැටවීම — ${dmy(workDay())}</h3><div class="small muted">${Object.keys(ld.others).length?'👥 '+Object.values(ld.others).map(o=>esc(o.by||'')).join(', ')+' එක්කම · ':''}${ld.pulled?'අන්තිමට බැලුවේ '+esc(fmtAt(ld.pulled)):'Internet නැත්නම් phone එකේ තියාගෙන පස්සේ යවනවා'}</div>
+   ${Object.keys(by).length?Object.entries(by).map(([pid,r])=>`<div class="hist"><div class="grow"><b>${esc(name(pid))}</b> = <b>${r.q}</b><div class="small muted">${r.b?'බණ්ඩල '+r.b:''}${r.l?' + ලිහිල් '+r.l:''} · ${Object.entries(r.n).map(([n,q])=>esc(n)+' '+q).join(' · ')}</div></div></div>`).join(''):'<div class="empty">තවම scan කරලා නැහැ</div>'}
+   ${ldMine().sc.length?`<button class="btn sm light" onclick="ldUndo()">↩️ මගේ අන්තිම scan එක අයින් කරන්න</button>`:''}<div class="infobox small">අන්තිමට <strong>ලොරි app එකේ</strong> “පටවන” තිරයේ ✓ කරලා යවන්න කියන්න — මේ ලැයිස්තුව එතනට ඉබේම යනවා.</div></div>`;}
+function ldUndo(){const m=ldMine();m.sc.pop();save();ldDraw();ldPush();}
+/* ---------- 📦 stock ---------- */
+function renderStock(){const s=S.stk,name=pid=>{for(const f of BF())for(const x of f[4])if(x[3]===pid)return [f[0],x[0]];return [pid,''];};
+  const rows={};((s&&s.f)||[]).forEach(([pid,l])=>{(rows[pid]=rows[pid]||{f:[],l:[]}).f=l;});((s&&s.l)||[]).forEach(([pid,l])=>{(rows[pid]=rows[pid]||{f:[],l:[]}).l=l;});
+  const today0=myB().filter(b=>b.d>=addDays(today(),-1)&&!(S.stk&&S.stk.at&&b.at<S.stk.at));
+  const chip=([b,q])=>{const t=BT.get(b),dl=t?daysTo(t.x):null;return `<span class="badge ${t&&t.s==='hold'?'bad':dl!==null&&dl<30?'warn':''}">${b?esc(b):'පරණ'} · ${q}</span>`;};
+  $('stockBody').innerHTML=`<div class="card small muted">${s&&s.at?'📦 PC එකේ ගණන් '+esc(fmtAt(s.at,true))+' දක්වා':'PC එකෙන් තොගය තවම ආවේ නැහැ (Internet + PC එක on කරලා 🔄)'}${today0.length?'<br>📱 ඊට පස්සේ phone එකෙන් හදපු: '+today0.map(b=>esc(b.no)).join(', '):''}</div>
+   ${Object.keys(rows).length?Object.entries(rows).sort((a,b)=>name(a[0])[0].localeCompare(name(b[0])[0],'si')).map(([pid,r])=>{const [fam,sz]=name(pid),fq=r.f.reduce((t,x)=>t+x[1],0),lq=r.l.reduce((t,x)=>t+x[1],0);return `<div class="hist"><div class="grow"><b>${esc(fam)} ${esc(sz)}</b><div class="small">🏭 <b>${fq}</b> ${r.f.map(chip).join(' ')}</div>${lq?`<div class="small">🚚 <b>${lq}</b> ${r.l.map(chip).join(' ')}</div>`:''}</div></div>`;}).join(''):''}
+   <button class="btn primary block" onclick="go('fcount')">🔢 කම්හල් තොගය ගණන් කළා</button>`;}
+function renderFCount(){const d=D('fcnt');d.c=d.c||{};$('fcountBody').innerHTML=`<div class="card">${dateField('fcnt')}<label class="check"><input type="checkbox" ${d.op?'checked':''} onchange="D('fcnt').op=this.checked?1:0;save()"> ආරම්භක තොගය (පළමු පාර)</label><div class="small muted">ගණන් කළ ඒවා විතරක් දාන්න (හිස් = ගණන් කළේ නැහැ).</div></div>
+   ${BF().map(f=>`<div class="card"><h3>${esc(f[0])}</h3>${f[4].map(s=>`<div class="irow"><label>${esc(s[0])}</label><input type="number" inputmode="numeric" min="0" value="${esc(d.c[s[3]]??'')}" onchange="const v=this.value;if(v==='')delete D('fcnt').c['${esc(s[3])}'];else D('fcnt').c['${esc(s[3])}']=v;save()"></div>`).join('')}</div>`).join('')}
+   <div class="card"><div class="field"><label>සටහන</label><input maxlength="200" value="${esc(d.note||'')}" onchange="D('fcnt').note=this.value;save()"></div></div><button class="btn primary block big" onclick="fcSend()">📤 PC එකට යවන්න</button>`;}
+async function fcSend(){const d=D('fcnt'),it=Object.entries(d.c||{}).filter(([,v])=>v!==''&&num(v)>=0).map(([pid,v])=>[pid,Math.floor(num(v))]);if(!it.length){toast('ගණනක් දාලා නැහැ','err');return;}
+  if(await send('fcnt',{it,nt:d.note||'',op:d.op?1:0},`🔢 තොග ගණන (${it.length})`)){newDraft('fcnt');toast('✅ යැව්වා');go('stock');}}
 
 /* ---------- start ---------- */
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
