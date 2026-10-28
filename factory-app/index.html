@@ -123,13 +123,16 @@ textarea.ntext{min-height:90px;font:16px/1.4 system-ui,"Noto Sans Sinhala",sans-
 .badge.bad{background:#fee2e2;color:#b91c1c}.badge.warn{background:#ffedd5;color:#c2410c}
 .irow .bcalc{grid-column:1/-1}.chip small{opacity:.7}
 #bnewBody .irow{display:grid;grid-template-columns:76px 110px 1fr;align-items:center;gap:8px}#bnewBody .irow .bcalc{grid-column:auto}#bnewBody .irow select{max-width:100%;padding:6px}
+/* v4.4.3 */
+.prow{display:grid;grid-template-columns:1fr 104px 84px;gap:6px;align-items:center;padding:6px 0;border-top:1px solid #eef2f7}.prow input{padding:8px;font-size:16px;text-align:center}.prow .pn{font-weight:800}
+.hist.gone{opacity:.55}.okbox{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:12px;padding:10px 12px}
 </style>
 </head>
 <body>
 <header><button class="back" id="backBtn" onclick="go('home')" aria-label="ආපසු">⌂</button><div><h1>🏭 කම්හල් App</h1><p id="hdrSub"></p></div></header>
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
-    <div class="foot">Shanthi Food Products · කම්හල් App v4.4 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
+    <div class="foot">Shanthi Food Products · කම්හල් App v4.4.3 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
   <section class="screen" id="s-bill"><div id="billBody"></div></section>
   <section class="screen" id="s-pay"><div id="payBody"></div></section>
   <section class="screen" id="s-ret"><div id="retBody"></div></section>
@@ -147,6 +150,8 @@ textarea.ntext{min-height:90px;font:16px/1.4 system-ui,"Noto Sans Sinhala",sans-
   <section class="screen" id="s-loadl"><div id="loadlBody"></div></section>
   <section class="screen" id="s-stock"><div id="stockBody"></div></section>
   <section class="screen" id="s-fcount"><div id="fcountBody"></div></section>
+  <section class="screen" id="s-price"><div id="priceBody"></div></section>
+  <section class="screen" id="s-iss"><div id="issBody"></div></section>
 </main>
 <div class="toast" id="toast"></div>
 <script>
@@ -246,9 +251,9 @@ function bookName(id){const b=bookOf(id);if(!b)return id||'';return (b[3]==='l'?
 function nextNoOf(book){const l=book&&S.bookLast[book];if(!l)return null;const bs=(S.cfg&&S.cfg.bs)||50;return l.n>=bs&&l.n%bs===0?1:l.n+1;}
 function autoNo(d){if(S.cfg&&S.cfg.ab===0)return;if(!d.book){d.no='';d.noAuto=0;return;}if(d.no&&!d.noAuto)return;const n=nextNoOf(d.book);d.no=n?String(n):'';d.noAuto=n?1:0;}
 /* ---------- screens ---------- */
-const TITLES={home:'🏭 කම්හල් App',bill:'🧾 බිලක් දාන්න',pay:'💰 ණය ගෙවීමක්',ret:'↩️ Return / Damage',move:'📦 විකුණුමක් නැතුව බඩු',take:'💸 ලාච්චුවෙන් ගත්තා',order:'📋 අලුත් ඇණවුමක්',orders:'🚚 ඇණවුම් දුන්නා ✓',history:'📜 යැව්ව ඒවා',setup:'⚙️ සැකසුම්',notes:'📝 මතක් කිරීම්',batches:'🏷️ අද නිෂ්පාදනය',bnew:'🏷️ Batch',raw:'🌶️ අමු ද්‍රව්‍ය ලැබුණා',scan:'📷 Scan',loadl:'🚚 ලොරියට පටවන්න',stock:'📦 තොගය',fcount:'🔢 තොගය ගණන් කළා'};
+const TITLES={home:'🏭 කම්හල් App',bill:'🧾 බිලක් දාන්න',pay:'💰 ණය ගෙවීමක්',ret:'↩️ Return / Damage',move:'📦 විකුණුමක් නැතුව බඩු',take:'💸 ලාච්චුවෙන් ගත්තා',order:'📋 අලුත් ඇණවුමක්',orders:'🚚 ඇණවුම් දුන්නා ✓',history:'📜 යැව්ව ඒවා',setup:'⚙️ සැකසුම්',notes:'📝 මතක් කිරීම්',batches:'🏷️ අද නිෂ්පාදනය',bnew:'🏷️ Batch',raw:'🌶️ අමු ද්‍රව්‍ය ලැබුණා',scan:'📷 Scan',loadl:'🚚 ලොරියට පටවන්න',stock:'📦 තොගය',fcount:'🔢 තොගය ගණන් කළා',price:'🏷️ මිල',iss:'📋 වැරදි'};
 function go(n){try{QS.close();}catch(e){}if(!['home','setup','history','notes'].includes(n)&&!S.cfg){toast('මුලින්ම PC එකෙන් ලැයිස්තුව ගන්න (Internet ඕනේ)','warn');n='home';}if(n!=='home'&&n!=='setup'&&!S.me){toast('මුලින්ම ඔයාගේ නම දාන්න','warn');n='setup';}if(n==='notes'&&!S.cfg){toast('මුලින්ම PC එකෙන් ලැයිස්තුව ගන්න','warn');n='home';}screen=n;document.querySelector('header h1').textContent=TITLES[n];$('backBtn').style.visibility=n==='home'?'hidden':'visible';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+n));window.scrollTo(0,0);render();try{history.replaceState(null,'','#'+n);}catch(e){}}
-function render(){$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'පළමු වතාවට සකසන්න';({home:renderHome,bill:renderBill,pay:renderPay,ret:renderRet,move:renderMove,take:renderTake,order:renderOrder,orders:renderOrders,history:renderHistory,setup:renderSetup,notes:renderNotes,batches:renderBatches,bnew:renderBNew,raw:renderRaw,scan:renderScan,loadl:renderLoadL,stock:renderStock,fcount:renderFCount})[screen]();}
+function render(){$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'පළමු වතාවට සකසන්න';({home:renderHome,bill:renderBill,pay:renderPay,ret:renderRet,move:renderMove,take:renderTake,order:renderOrder,orders:renderOrders,history:renderHistory,setup:renderSetup,notes:renderNotes,batches:renderBatches,bnew:renderBNew,raw:renderRaw,scan:renderScan,loadl:renderLoadL,stock:renderStock,fcount:renderFCount,price:renderPrice,iss:renderIss})[screen]();}
 function cloudLine(){if(!S.cloud)return '<div class="cloudline off">☁️ Link එකෙන් open කරලා නැහැ</div>';const w=S.outbox.length;return `<div class="cloudline ${S.cloudErr?'bad':w?'wait':''}"><div class="grow">${w?`📤 තවම PC එකට නොගිය: <strong>${w}</strong>`:'☁️ ඔක්කොම PC එකට ගියා ✅'}${S.cloudErr?`<div class="small">${esc(S.cloudErr)}</div>`:''}</div><button class="btn sm light" onclick="sync(true)">🔄</button></div>`;}
 function renderHome(){renderHome0();const h=iosHint();if(h&&screen==='home')$('homeBody').insertAdjacentHTML('afterbegin',h);}
 function renderHome0(){
@@ -273,7 +278,7 @@ function renderHome0(){
 }
 /* ---------- drafts ---------- */
 function newDraft(k,keep){keep=keep||{};
-  const d={d:keep.d||workDay(),c:'',cn:'',it:[],later:[],pay:{m:'cash',amt:''},book:'',no:'',noAuto:0,note:'',kind:'',back:[],staff:'',amt:'',prom:'',adv:'',advm:'cash',cr:'',cph:'',chain:keep.chain?1:0};
+  const d={d:keep.d||workDay(),c:'',cn:'',it:[],later:[],pay:{m:'cash',amt:''},book:'',no:'',noAuto:0,note:'',kind:'',back:[],staff:'',amt:'',prom:'',adv:'',advm:'cash',cr:'',cph:'',cv:'',chain:keep.chain?1:0};
   if(k==='bill'){d.book=keep.book!==undefined?keep.book:(S.lastBook!==undefined&&(S.lastBook===''||bookOf(S.lastBook))?S.lastBook:'');autoNo(d);}
   S.drafts[k]=d;save();}
 function D(k){if(!S.drafts[k])newDraft(k);return S.drafts[k];}
@@ -282,7 +287,7 @@ function custPicker(k,allowNew){
   const d=D(k),c=cust(d.c);
   if(c||d.cn){const newName=d.cn&&d.cn!=='__walk';
     return `<div class="card"><div class="row"><div class="grow"><strong>${d.staff?'👷 ':''}${esc(custName(d))}</strong>${c?`<div class="small muted">${d.staff?'සේවකයා':esc(c[2]||'Route නැහැ')}${c[7]?' · 📞 '+esc(c[7]):''} · ණය ${money(c[3])}${c[4]>0&&c[3]>c[4]?' <span class="bad">⚠️ සීමාව '+money(c[4])+' පැනලා</span>':''}</div>`:newName?`<div class="small warn">🆕 අලුත් ${d.staff?'සේවක නමක්':'නමක්'} — PC එකේදී බලනවා</div>`:''}</div><button class="btn sm light" onclick="D('${k}').c='';D('${k}').cn='';D('${k}').staff=0;save();render()">වෙනස් කරන්න</button></div>
-     ${newName&&!d.staff?`<div class="row2"><div class="field"><label>🛣️ Route</label><select onchange="D('${k}').cr=this.value;save()"><option value="">— Route එකක් නැහැ / කම්හලට එන කෙනෙක් —</option>${((S.cfg&&S.cfg.r)||[]).map(r=>`<option value="${esc(r[0])}" ${d.cr===r[0]?'selected':''}>${esc(r[1])}</option>`).join('')}</select></div><div class="field"><label>📞 දුරකථන</label><input type="tel" inputmode="tel" maxlength="20" value="${esc(d.cph)}" placeholder="ඕනේ නම්" onchange="D('${k}').cph=this.value.trim();save()"></div></div>`:''}
+     ${newName&&!d.staff?`<div class="row2"><div class="field"><label>🛣️ Route</label><select onchange="D('${k}').cr=this.value;save()"><option value="">— Route එකක් නැහැ / කම්හලට එන කෙනෙක් —</option>${((S.cfg&&S.cfg.r)||[]).map(r=>`<option value="${esc(r[0])}" ${d.cr===r[0]?'selected':''}>${esc(r[1])}</option>`).join('')}</select></div><div class="field"><label>📞 දුරකථන</label><input type="tel" inputmode="tel" maxlength="20" value="${esc(d.cph)}" placeholder="ඕනේ නම්" onchange="D('${k}').cph=this.value.trim();save()"></div></div>${S.cfg&&S.cfg.vo?`<div class="field"><label>🏘️ ගම${S.cfg.vr?' *':''}</label><input list="vl_${k}" maxlength="40" value="${esc(d.cv||'')}" placeholder="ගම (උදා: මාවතුපොළ)" onchange="D('${k}').cv=this.value.trim();save()"><datalist id="vl_${k}">${vilOpts(d.cr)}</datalist><div class="small muted">එකම නමින් කඩ කිහිපයක් තියෙන නිසා — “නම – ගම”</div></div>`:''}`:''}
      ${k==='bill'&&!d.it.length?sameAsLastBtn(d):''}</div>`;}
   return `<div class="card"><div class="field"><label>👤 කඩය / පාරිභෝගිකයා</label><input type="search" id="cq" placeholder="නම / 📞 අංකය / Route" oninput="custList('${k}',${allowNew?1:0})" autocomplete="off"></div><div id="cl">${custListHtml(k,allowNew,'')}</div>${k==='bill'?`<div class="row2"><button class="btn light" onclick="D('bill').c='';D('bill').cn='__walk';D('bill').staff=0;D('bill').pay.m='cash';save();render()">🚶 නම නැති කෙනෙක් (Cash)</button><button class="btn light" onclick="staffPick()">👷 සේවකයෙක්</button></div>`:''}</div>`;
 }
@@ -366,10 +371,11 @@ function renderBill(){const d=D('bill');
   if(d.chain&&!d.c&&!d.cn)setTimeout(()=>{const q=$('cq');if(q&&screen==='bill')q.focus();},60);}
 function billBody(d,t){const m=d.pay.m,amt=m==='cash'?t.net:(m==='credit'||m==='salary')?0:r2(num(d.pay.amt));
   const used=new Set(d.it.filter(x=>x[1]>0).map(x=>x[0])),np=(S.newProds||[]).filter(n=>used.has(n.id)).map(n=>[n.id,n.name,n.kind]);
-  return {d:d.d,book:d.book,no:d.book?Math.floor(num(d.no)):0,c:d.cn==='__walk'?'':d.c,cn:d.cn==='__walk'?'':d.cn,...(d.cn&&d.cn!=='__walk'&&!d.staff?{cr:d.cr||'',cph:d.cph||''}:{}),...(d.staff?{staff:1}:{}),...(np.length?{np}:{}),it:d.it.filter(x=>x[1]>0).map(x=>[x[0],isW(prod(x[0]))?kg(x[1]):x[1],isW(prod(x[0]))?0:(x[2]||0),x[3]]),later:d.later.filter(x=>x[1]>0).map(x=>[x[0],x[1],x[3]]),prom:d.prom,pay:{m,amt,no:d.pay.no||'',bank:d.pay.bank||'',cd:d.pay.cd||'',...(m==='cheque'&&d.pay.ph?{ph:d.pay.ph}:{})},note:d.note,est:t.net};}
+  return {d:d.d,book:d.book,no:d.book?Math.floor(num(d.no)):0,c:d.cn==='__walk'?'':d.c,cn:d.cn==='__walk'?'':d.cn,...(d.cn&&d.cn!=='__walk'&&!d.staff?{cr:d.cr||'',cph:d.cph||'',cv:d.cv||''}:{}),...(d.staff?{staff:1}:{}),...(np.length?{np}:{}),it:d.it.filter(x=>x[1]>0).map(x=>[x[0],isW(prod(x[0]))?kg(x[1]):x[1],isW(prod(x[0]))?0:(x[2]||0),x[3]]),later:d.later.filter(x=>x[1]>0).map(x=>[x[0],x[1],x[3]]),prom:d.prom,pay:{m,amt,no:d.pay.no||'',bank:d.pay.bank||'',cd:d.pay.cd||'',...(m==='cheque'&&d.pay.ph?{ph:d.pay.ph}:{})},note:d.note,est:t.net};}
 async function sendBill(next){const d=D('bill');
   if(!d.c&&!d.cn){toast('කඩය තෝරන්න (නම නැත්නම් “🚶 නම නැති කෙනෙක්”)','err');return;}
   if(!d.it.some(x=>x[1]>0)&&!d.later.some(x=>x[1]>0)){toast('භාණ්ඩ දාන්න','err');return;}
+  if(d.cn&&d.cn!=='__walk'&&!d.staff&&S.cfg&&S.cfg.vo&&S.cfg.vr&&!String(d.cv||'').trim()&&!/ – /.test(d.cn)){toast('🏘️ අලුත් කඩයට ගම දාන්න','err');return;}
   if(d.it.some(x=>isW(prod(x[0]))&&!(x[1]>0))){toast('⚖️ බර දාන්න (නැත්නම් ✕ කරන්න)','err');return;}
   if(d.it.some(x=>x[1]>0&&!(x[3]>0))){toast('මිල නැති භාණ්ඩයක් තියෙනවා'+(d.it.some(x=>isW(prod(x[0]))&&!(x[3]>0))?' (⚖️ කිලෝ මිල දාන්න)':''),'err');return;}
   if(d.book&&!(num(d.no)>0)){toast('📒 පොතේ අංකය දාන්න (නැත්නම් “පොතක් නැහැ”)','err');$('bookNo')&&$('bookNo').focus();return;}
@@ -442,7 +448,7 @@ function canFix(x){const ok=okSet(),rj=rjMap();return x.k==='bill'&&!x.gone&&!x.
 function inOutbox(uid){return S.outbox.some(o=>o.uid===uid);}
 function fixEdit(uid){const x=S.sent.find(s=>s.uid===uid);if(!x||!x.rec)return;const r=x.rec,local=inOutbox(uid);
   if(r.pay&&r.pay.ph===1){toast('චෙක් ෆොටෝ එක phone එකේ නැහැ — ෆොටෝ එක ආයෙත් ගන්න','warn');}
-  const d={d:r.d,c:r.c||'',cn:r.cn||(!r.c&&!r.cn?'__walk':''),staff:r.staff?1:0,cr:r.cr||'',cph:r.cph||'',it:r.it.map(i=>[i[0],i[1],i[2]||0,i[3]]),later:(r.later||[]).map(i=>[i[0],i[1],0,i[2]]),pay:{m:r.pay.m,amt:r.pay.m==='part'||r.pay.m==='cheque'?String(r.pay.amt):'',no:r.pay.no||'',bank:r.pay.bank||'',cd:r.pay.cd||'',...(r.pay.ph&&r.pay.ph!==1?{ph:r.pay.ph}:{})},book:r.book||'',no:r.no?String(r.no):'',noAuto:0,note:r.note||'',prom:r.prom||'',chain:0,...(local?{editUid:uid}:{fixOf:uid,why:''})};
+  const d={d:r.d,c:r.c||'',cn:r.cn||(!r.c&&!r.cn?'__walk':''),staff:r.staff?1:0,cr:r.cr||'',cph:r.cph||'',cv:r.cv||'',it:r.it.map(i=>[i[0],i[1],i[2]||0,i[3]]),later:(r.later||[]).map(i=>[i[0],i[1],0,i[2]]),pay:{m:r.pay.m,amt:r.pay.m==='part'||r.pay.m==='cheque'?String(r.pay.amt):'',no:r.pay.no||'',bank:r.pay.bank||'',cd:r.pay.cd||'',...(r.pay.ph&&r.pay.ph!==1?{ph:r.pay.ph}:{})},book:r.book||'',no:r.no?String(r.no):'',noAuto:0,note:r.note||'',prom:r.prom||'',chain:0,...(local?{editUid:uid}:{fixOf:uid,why:''})};
   S.drafts.bill=d;save();go('bill');}
 async function fixVoid(uid){const x=S.sent.find(s=>s.uid===uid);if(!x)return;
   if(inOutbox(uid)){if(!confirm(`“${x.label}” — තවම PC එකට ගිහින් නැහැ. මේක මකන්නද? (PC එකට යන්නේ නැහැ)`))return;S.outbox=S.outbox.filter(o=>o.uid!==uid);x.gone=1;x.label='❌ '+x.label+' (phone එකේදී අවලංගු කළා)';save();render();toast('❌ අයින් කළා');return;}
@@ -997,6 +1003,73 @@ function renderFCount(){const d=D('fcnt');d.c=d.c||{};$('fcountBody').innerHTML=
    <div class="card"><div class="field"><label>සටහන</label><input maxlength="200" value="${esc(d.note||'')}" onchange="D('fcnt').note=this.value;save()"></div></div><button class="btn primary block big" onclick="fcSend()">📤 PC එකට යවන්න</button>`;}
 async function fcSend(){const d=D('fcnt'),it=Object.entries(d.c||{}).filter(([,v])=>v!==''&&num(v)>=0).map(([pid,v])=>[pid,Math.floor(num(v))]);if(!it.length){toast('ගණනක් දාලා නැහැ','err');return;}
   if(await send('fcnt',{it,nt:d.note||'',op:d.op?1:0},`🔢 තොග ගණන (${it.length})`)){newDraft('fcnt');toast('✅ යැව්වා');go('stock');}}
+
+
+/* ================= v4.4.3 · 🏷️ මිල (phone එකෙන්) · 📋 වැරදි · 📦 තොගය අඩු · 🏘️ ගම · 📥 ලොරිය භාර ගැනීම ================= */
+/* ---------- 🏷️ prices: a change made here is used on this phone at once and goes to the PC (encrypted) ---------- */
+function pendPrices(){const ok=okSet();S.pPend=(S.pPend||[]).filter(x=>!ok.has(x.uid)&&Date.now()-new Date(x.at)<20*864e5);return S.pPend;}
+function pendPrice(pid,date){let v=null;pendPrices().filter(x=>!x.undo&&x.from<=(date||today())).sort((a,b)=>String(a.at).localeCompare(String(b.at))).forEach(x=>{(x.it||[]).forEach(i=>{if(i[0]===pid&&i[1]!==null&&i[1]!==undefined)v=num(i[1]);});});return v;}
+function pendMrp(pid){let v;pendPrices().filter(x=>!x.undo).forEach(x=>(x.it||[]).forEach(i=>{if(i[0]===pid&&i[2]!==undefined&&i[2]!=='')v=i[2];}));return v;}
+function mrpOf(pid){const v=pendMrp(pid);if(v!==undefined)return v===null?null:num(v);const m=S.cfg&&S.cfg.pm?S.cfg.pm[pid]:undefined;return m===undefined?null:num(m);}
+function priceNow(p,date){const v=pendPrice(p[0],date);if(v!==null)return v;const f=S.cfg&&S.cfg.pf?S.cfg.pf[p[0]]:null;if(f&&date&&date>=f[1])return num(f[0]);return p[3];}
+let pr={edit:{},when:'today',date:'',q:''};
+function split(name){const n=String(name||'').trim().replace(/\s+/g,' '),parts=n.split(' '),last=parts[parts.length-1];return parts.length>1&&/^(\d+(?:\.\d+)?(?:g|kg|ml|l|P)|Card|Packet)$/i.test(last)?{fam:parts.slice(0,-1).join(' '),size:last}:{fam:n,size:''};}
+function prFrom(){const t=today();return pr.when==='tomorrow'?addDays(t,1):pr.when==='date'&&/^\d{4}-\d{2}-\d{2}$/.test(pr.date)?pr.date:t;}
+function renderPrice(){const off=S.cfg&&S.cfg.pe===0,from=prFrom(),list=P().filter(p=>!isW(p)&&(!pr.q||norm(p[1]).includes(norm(pr.q)))),pend=pendPrices();
+  const ch=Object.entries(pr.edit).filter(([pid,x])=>{const p=prod(pid);return p&&((x.p!==undefined&&x.p!==''&&Math.abs(num(x.p)-priceNow(p,from))>0.004)||(x.m!==undefined&&x.m!==''&&Math.abs(num(x.m)-(mrpOf(pid)??-1))>0.004));});
+  let html='',fam=null;list.forEach(p=>{const s=split(p[1]);if(s.fam!==fam){if(fam!==null)html+='</div>';fam=s.fam;html+=`<div class="card"><h3>${esc(fam)}</h3>`;}
+    const e=pr.edit[p[0]]||{},cur=priceNow(p,from),m=mrpOf(p[0]),pp=pendPrice(p[0],'9999-12-31')!==null;
+    html+=`<div class="prow"><div class="pn">${esc(s.size||p[1])}<div class="small muted">${money(cur)}${m!==null?' · MRP '+money(m):''}${pp?' <span class="warn">⏳ PC එකට යනකම්</span>':''}</div></div><input type="number" inputmode="decimal" min="0" step="0.01" placeholder="අලුත් මිල" value="${esc(e.p??'')}" ${off?'disabled':''} onfocus="this.select()" oninput="(pr.edit['${esc(p[0])}']=pr.edit['${esc(p[0])}']||{}).p=this.value;prBar()"><input class="pm" type="number" inputmode="decimal" min="0" step="0.01" placeholder="MRP" value="${esc(e.m??'')}" ${off?'disabled':''} onfocus="this.select()" oninput="(pr.edit['${esc(p[0])}']=pr.edit['${esc(p[0])}']||{}).m=this.value;prBar()"></div>`;});
+  if(fam!==null)html+='</div>';
+  $('priceBody').innerHTML=`${off?'<div class="card warnbox">⛔ PC එකේ සැකසුම් වලින් phone එකෙන් මිල වෙනස් කිරීම off කරලා. PC එකෙන් කරන්න.</div>':''}
+   <div class="card"><div class="field"><label>ක්‍රියාත්මක වෙන්නේ</label><select onchange="pr.when=this.value;renderPrice()" ${off?'disabled':''}><option value="today" ${pr.when==='today'?'selected':''}>📅 අද ඉඳන් (අද බිල් ඔක්කොම)</option><option value="tomorrow" ${pr.when==='tomorrow'?'selected':''}>🌅 හෙට ඉඳන්</option><option value="date" ${pr.when==='date'?'selected':''}>🗓️ දිනයක්</option></select></div>${pr.when==='date'?`<div class="field"><input type="date" value="${esc(pr.date||today())}" onchange="pr.date=this.value;renderPrice()"></div>`:''}
+    <div class="field"><input type="search" placeholder="🔎 භාණ්ඩය" value="${esc(pr.q)}" oninput="pr.q=this.value;renderPrice();const x=document.querySelector('#priceBody input[type=search]');x.focus();x.setSelectionRange(x.value.length,x.value.length)"></div>
+    <div class="small muted">පරණ බිල් පරණ මිලටම. මේ phone එකේ බිල් වලට අලුත් මිල දැන්ම; PC එකටත් යනවා. තොග මිල — MRP ඕනේ නම් විතරක්.</div></div>
+   ${pend.length?`<div class="card warnbox">⏳ PC එකට තවම නොගිය / අනුමත නොකළ මිල වෙනස් කිරීම් ${pend.length}ක්</div>`:''}
+   ${html}<div class="card"><h3>🕘 මිල ඉතිහාසය (අන්තිම)</h3>${phHtml()}</div><div class="bar" id="prBar"></div>`;prBar(ch.length);}
+function prBar(n){const el=$('prBar');if(!el)return;const from=prFrom();if(n===undefined)n=Object.entries(pr.edit).filter(([pid,x])=>{const p=prod(pid);return p&&((x.p!==undefined&&x.p!==''&&Math.abs(num(x.p)-priceNow(p,from))>0.004)||(x.m!==undefined&&x.m!==''&&Math.abs(num(x.m)-(mrpOf(pid)??-1))>0.004));}).length;
+  el.innerHTML=`<div class="grow"><strong>${n}</strong> වෙනස් කළා</div><button class="btn primary" ${n?'':'disabled'} onclick="prSend()">💾 සුරකින්න ➜</button>`;}
+function phHtml(){const h=(S.cfg&&S.cfg.ph)||[];if(!h.length)return '<div class="small muted">තවම නැහැ</div>';return h.slice(0,25).map(x=>{const p=prod(x[2]);return `<div class="hist ${x[7]?'gone':''}"><div class="grow"><b>${esc(p?p[1]:x[2])}</b> ${x[4]===null?'':`${x[3]===null?'—':money(x[3])} → <b>${money(x[4])}</b>`}${x[9]!==''&&x[9]!==undefined?` · MRP ${x[9]===null?'—':money(x[9])}`:''}<div class="small muted">${esc(x[5])} ඉඳන් · ${x[6]==='phone'?'📱':'💻'} ${esc(x[8]||'')} · ${esc(fmtAt(x[1]))}${x[7]?' · ↩️ ආපහු දැම්මා':''}</div></div>${x[7]||S.cfg.pe===0?'':`<button class="btn sm light" onclick="prUndo('${esc(x[0])}')">↩️</button>`}</div>`;}).join('');}
+async function prSend(){const from=prFrom(),it=[];for(const [pid,x] of Object.entries(pr.edit)){const p=prod(pid);if(!p)continue;const cur=priceNow(p,from),m=mrpOf(pid);let np=null,nm;
+    if(x.p!==undefined&&x.p!==''){np=r2(num(x.p));if(!(np>0)){toast(p[1]+' — මිල වැරදියි','err');return;}if(Math.abs(np-cur)<0.004)np=null;}
+    if(x.m!==undefined&&x.m!==''){const v=r2(num(x.m));if(Math.abs(v-(m??-1))>0.004)nm=v;}
+    if(np!==null||nm!==undefined)it.push([pid,np,nm===undefined?'':nm]);}
+  if(!it.length){toast('වෙනසක් නැහැ','warn');return;}
+  const big=it.filter(x=>{const p=prod(x[0]),c=priceNow(p,from);return x[1]!==null&&c>0&&(x[1]/c>1.5||x[1]/c<0.67);});
+  sheet(`<h3>🏷️ පරණ → අලුත් (${esc(from)} ඉඳන්)</h3>${it.map(x=>{const p=prod(x[0]);return `<div class="rdrow"><span>${esc(p[1])}${big.includes(x)?' <span class="bad">⚠️ ලොකු වෙනසක්</span>':''}</span><strong>${x[1]!==null?money(priceNow(p,from))+' → '+money(x[1]):''}${x[2]!==''?' · MRP '+money(x[2]):''}</strong></div>`;}).join('')}<button class="btn primary block" onclick="prConfirm()">✅ හරි — සුරකින්න</button><button class="btn ghost block" onclick="sheet()">අවලංගු</button>`);
+  prSend.it=it;prSend.from=from;}
+async function prConfirm(){const it=prSend.it,from=prSend.from;if(!it)return;sheet();
+  if(await send('price',{d:today(),from,it},`🏷️ මිල ${it.length}ක් (${from} ඉඳන්)`)){const rec=S.sent[0];S.pPend=(S.pPend||[]).concat([{uid:rec.uid,from,it,at:rec.at}]);pr.edit={};save();toast('✅ මිල සුරැකුවා — මේ phone එකේ දැන්ම, PC එකටත් යනවා');renderPrice();}}
+async function prUndo(id){const x=((S.cfg&&S.cfg.ph)||[]).find(h=>h[0]===id);if(!x)return;const p=prod(x[2]);if(!confirm(`↩️ ${p?p[1]:''} — ${x[5]} ඉඳන් ${money(x[4])} කරපු වෙනස අවලංගු කරන්නද? (කලින් මිල ${x[3]===null?'—':money(x[3])})`))return;
+  if(await send('price',{d:today(),undo:id},`↩️ මිල ආපහු — ${p?p[1]:''}`)){toast('✅ යැව්වා — PC එකේ ආපහු දානවා');renderPrice();}}
+/* bills on this phone use the new price at once */
+(function(){const _cp=custPrice;custPrice=function(c,p){if(c&&c[5]&&c[5][p[0]]!==undefined)return c[5][p[0]];if(p&&!isW(p)){const d=S.drafts&&S.drafts.bill?S.drafts.bill.d:today();return priceNow(p,d);}return _cp(c,p);};})();
+
+/* ---------- 📋 mistakes to act on (from the PC) ---------- */
+const ISK={slip:'📝 කොළේ total',lorry:'📦 ලොරියේ අඩු / වැඩි',load:'📥 පටවද්දී',price:'🏷️ මිල',other:'✍️ වෙනත්'};
+const ISH={shop:'🏪 කඩෙන් ගත්තා / කඩේ ණයට',writer:'👤 ලියපු / ලොරි කෙනාගෙන් ගත්තා',told:'💬 කිව්වා (ආයෙ වෙන්නේ නැහැ)',ok:'✅ ප්‍රශ්නයක් නැහැ / අත්හැරියා',back:'↩️ කඩේට ආපහු දුන්නා',other:'✍️ වෙනත්'};
+function issList(){const done=new Set((S.isDone||[]).map(x=>x.id));return ((S.cfg&&S.cfg.is)||[]).filter(x=>!done.has(x[0]));}
+function renderIss(){const l=issList();$('issBody').innerHTML=l.length?l.map(x=>`<div class="card"><div class="row2"><strong>${ISK[x[1]]||esc(x[1])}</strong><span class="small muted">${esc(x[2])}</span></div><div><b>${esc(x[6])}</b>${x[7]?' · '+money(x[7]):''}</div><div class="small">${esc(x[3]||'')}${x[4]?' · 📒 '+esc(x[4]):''}${x[5]?' · 👤 '+esc(x[5]):''}</div>${x[9]?`<div class="small muted">${esc(x[9])}</div>`:''}<div class="small warn">⏳ ${esc(x[8]||'')}</div><button class="btn sm primary" style="margin-top:6px" onclick="issFixAsk('${esc(x[0])}')">✅ විසඳුවා</button></div>`).join(''):'<div class="card okbox">🎉 විසඳන්න තියෙන වැරදි නැහැ</div>';}
+function issFixAsk(id){const x=issList().find(i=>i[0]===id);if(!x)return;const def=x[1]==='lorry'||x[1]==='load'?'told':'shop';
+  sheet(`<h3>✅ විසඳුවා</h3><p><b>${esc(x[6])}</b>${x[3]?' — '+esc(x[3]):''}</p>${Object.entries(ISH).map(([k,t])=>`<label class="check"><input type="radio" name="ish" value="${k}" ${k===def?'checked':''}> ${t}</label>`).join('')}<div class="field"><label>සටහන</label><input id="ishN" maxlength="200" placeholder="උදා: කඩෙන් 350 ගත්තා"></div><button class="btn primary block" onclick="issFixSend('${esc(id)}')">✅ PC එකට යවන්න</button><button class="btn ghost block" onclick="sheet()">අවලංගු</button>`);}
+async function issFixSend(id){const how=(document.querySelector('input[name=ish]:checked')||{}).value||'ok',note=($('ishN').value||'').trim();sheet();
+  if(await send('isfix',{d:today(),id,how,note},'✅ වැරැද්ද විසඳුවා')){S.isDone=(S.isDone||[]).concat([{id,at:new Date().toISOString()}]).slice(-200);save();toast('✅ යැව්වා');renderIss();}}
+
+/* ---------- home: tiles + low stock ---------- */
+function lowList(){return (S.cfg&&S.cfg.lo)||[];}
+(function(){const _h=renderHome0;renderHome0=function(){_h.apply(this,arguments);if(!S.cfg||!S.cloud)return;const g=document.querySelector('#homeBody .grid2');if(!g)return;const ni=issList().length,lo=lowList();
+  g.insertAdjacentHTML('beforeend',`<button class="tile" onclick="go('iss')"><span>📋</span>වැරදි${ni?` <b class="badge">${ni}</b>`:''}<small>${ni?'බලලා ✅ කරන්න':'දැනට නැහැ'}</small></button><button class="tile" onclick="pr.edit={};go('price')"><span>🏷️</span>මිල වෙනස් කරන්න<small>තොග මිල / MRP · ඉතිහාසය</small></button>`);
+  if(lo.length)g.insertAdjacentHTML('beforebegin',`<button class="notebtn has" onclick="go('stock')"><span>📦 තොගය අඩුයි</span><b class="badge">${lo.length}</b><small>${lo.slice(0,4).map(x=>{const p=prod(x[0]);return esc(p?p[1]:'')+' '+x[1]+'/'+x[2];}).join(' · ')}</small></button>`);};})();
+(function(){const _s=renderStock;renderStock=function(){_s.apply(this,arguments);const lo=lowList();if(!lo.length)return;$('stockBody').insertAdjacentHTML('afterbegin',`<div class="card warnbox"><h3>📦 අවමයට අඩු</h3>${lo.map(x=>{const p=prod(x[0]);return `<div class="rdrow"><span>${x[1]<=0?'🔴':'🟠'} ${esc(p?p[1]:x[0])}</span><strong>${x[1]} / අවම ${x[2]}</strong></div>`;}).join('')}<div class="small muted">ලොරිය + කම්හල − දෙන්න තියෙන ඇණවුම් (PC එකේ අන්තිම ගණන)</div></div>`);};})();
+
+/* ---------- 🏘️ new shop: village ---------- */
+function vilOpts(rid){const rv=(S.cfg&&S.cfg.rv)||{},mine=rv[rid]||[],all=[...new Set(Object.values(rv).flat())];return mine.concat(all.filter(v=>!mine.includes(v))).map(v=>`<option value="${esc(v)}">`).join('');}
+
+/* ---------- 📥 the lorry helper's handover, live ---------- */
+(function(){const _p=ldPull;ldPull=async function(){await _p.apply(this,arguments);const url=ldDoc();if(!url)return;try{const r=await fetch(url,{cache:'no-store'});if(!r.ok){ld.hos={};return;}const j=await r.json();ld.hos={};Object.entries(j.fields||{}).forEach(([k,v])=>{if(k.startsWith('h_')){try{ld.hos[k]=JSON.parse(v.stringValue||'{}');}catch(e){}}});}catch(e){}};})();
+function hoName(pid){for(const f of BF())for(const s of f[4])if(s[3]===pid)return f[0]+' '+s[0];const p=prod(pid);return p?p[1]:pid;}
+(function(){const _d=ldDraw;ldDraw=function(){_d.apply(this,arguments);const box=$('ldList');if(!box||!ld.hos)return;const H=Object.values(ld.hos);if(!H.length){box.insertAdjacentHTML('beforeend','<div class="card small muted">📥 ලොරිය ගෙනියන කෙනා ලොරි app එකේ “📥 භාර ගන්න” එකෙන් ගණන් කළාම මෙතන පේනවා.</div>');return;}
+  box.insertAdjacentHTML('beforeend',H.map(h=>{const diff=(h.rows||[]).filter(r=>r[1]!==r[2]);return `<div class="card ${h.st==='done'?(diff.some(r=>r[3]==='keep')?'warnbox':'okbox'):h.st==='diff'?'warnbox':''}">📥 <strong>${esc(h.by||'')}</strong> — ${h.st==='counting'?'⏳ ගණන් කරමින් (පටවපු ගණන් නොපෙනී)':h.st==='diff'?`⚠️ වෙනස් ${diff.length}ක් — ගණන් කරලා බලන්න`:h.st==='ok'?'✅ ඔක්කොම ගැළපෙනවා':`✅ භාර ගත්තා${diff.length?' — වෙනස් '+diff.length:''}`} <span class="small muted">${esc(fmtAt(h.at).slice(11))}</span>${diff.map(r=>`<div class="small">${esc(hoName(r[0]))}: පැටෙව්වා ${r[1]} · ගණන් කළා ${r[2]}${r[3]==='load'?' → ✏️ පැටවීම හැදුවා':r[3]==='keep'?' → ⚠️ වෙනස ඉතුරුයි':r[3]==='count'?' → 🔁 හරි':''}</div>`).join('')}</div>`;}).join(''));};})();
 
 /* ---------- start ---------- */
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
