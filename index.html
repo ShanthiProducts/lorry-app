@@ -88,6 +88,9 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 .qs-msg{position:absolute;left:0;right:0;bottom:46px;text-align:center;color:#fff;font-weight:700;text-shadow:0 1px 3px #000}.qs-btns{position:absolute;right:8px;bottom:8px;display:flex;gap:6px}
 .row2{display:flex;justify-content:space-between;gap:8px}.hbtns{display:flex;flex-wrap:wrap;gap:6px}
 .seg{display:flex;gap:6px}.seg button{flex:1;border:2px solid #cbd5e1;background:#fff;border-radius:10px;padding:8px;font-weight:700}.seg button.on{border-color:#dc2626;background:#fee2e2;color:#991b1b}
+/* v4.4.3 · 📥 handover */
+.ho-in{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}.ho-in label{display:flex;gap:4px;align-items:center;font-size:13px;font-weight:700}.ho-in input{width:76px;font-size:18px;padding:6px;text-align:center}.ho-in strong{font-size:18px;margin-left:auto}
+.okbox{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:12px;padding:10px 12px}
 </style>
 </head>
 <body>
@@ -95,7 +98,7 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
     <div class="grid2"><button class="tile" onclick="go('inbox')"><span>📥</span>Report / Code දාන්න<small>WhatsApp එකෙන් ආපු message (Cloud නැති වෙලාවට)</small></button><button class="tile" onclick="go('setup')"><span>⚙️</span>සැකසුම්<small>නම, WhatsApp අංකය</small></button></div>
-    <div class="foot">Shanthi Food Products · ලොරි App v4.4 · Internet නැතුවත් වැඩ කරනවා</div></section>
+    <div class="foot">Shanthi Food Products · ලොරි App v4.4.3 · Internet නැතුවත් වැඩ කරනවා</div></section>
 
   <section class="screen" id="s-inbox">
     <div class="card"><h3>📥 WhatsApp message එක දාන්න</h3><p class="muted small">ලොකු මහත්තයා එවන <strong>Report</strong> එක හෝ <strong>භාණ්ඩ ලැයිස්තුව</strong> — WhatsApp එකේ message එක ඔබාගෙන ඉඳලා <strong>Copy</strong> කරලා මෙතන <strong>Paste</strong> කරන්න.</p>
@@ -113,6 +116,8 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
     <div class="card"><div class="field"><label for="loadNote">සටහන (ඕනේ නම්)</label><input type="text" id="loadNote" maxlength="200" onchange="loadDraft().note=this.value;save()"></div></div>
     <div class="bar" id="loadBar"></div>
   </section>
+
+  <section class="screen" id="s-accept"><div id="acceptBody"></div><div class="bar" id="acceptBar"></div></section>
 
   <section class="screen" id="s-count">
     <div id="countHead"></div><div id="countRD"></div>
@@ -198,11 +203,11 @@ function norm(s){return String(s||'').toLocaleLowerCase().replace(/\s+/g,'');}
 
 /* ---------------- navigation ---------------- */
 let screen='home';
-const TITLES={home:'🚛 ලොරි App',load:'📦 ලොරියට පටවන්න',count:'🔢 ලොරිය ගණන් කරන්න',unload:'🏭 Factory එකට බෑවා',inbox:'📥 Report / Code දාන්න',history:'📜 යැවූ ඒවා',setup:'⚙️ සැකසුම්'};
+const TITLES={home:'🚛 ලොරි App',accept:'📥 ලොරිය භාර ගැනීම',load:'📦 ලොරියට පටවන්න',count:'🔢 ලොරිය ගණන් කරන්න',unload:'🏭 Factory එකට බෑවා',inbox:'📥 Report / Code දාන්න',history:'📜 යැවූ ඒවා',setup:'⚙️ සැකසුම්'};
 function go(name){try{QS.close();}catch(e){}ls.scanOn='';screen=name;document.querySelector('header h1').textContent=TITLES[name]||TITLES.home;$('backBtn').style.visibility=name==='home'?'hidden':'visible';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+name));window.scrollTo(0,0);render();try{history.replaceState(null,'','#'+name);}catch(e){}}
 function render(){
   $('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'පළමු වතාවට සකසන්න';
-  ({home:renderHome,load:renderLoad,count:renderCount,unload:renderUnload,inbox:renderInbox,history:renderHistory,setup:renderSetup})[screen]();
+  ({home:renderHome,accept:renderAccept,load:renderLoad,count:renderCount,unload:renderUnload,inbox:renderInbox,history:renderHistory,setup:renderSetup})[screen]();
 }
 
 /* ---------------- home ---------------- */
@@ -290,8 +295,8 @@ function sendLoad(){
   const d=loadDraft();d.d=$('loadDate').value||today();d.note=$('loadNote').value.trim();const ids=Object.keys(d.i);if(!ids.length)return;
   const rev=(d.sentRev||0)+1,items=ids.sort((a,b)=>porder(a)-porder(b)).map(id=>[id,d.i[id],pname(id)]),total=items.reduce((t,x)=>t+x[1],0);
   if(d.sentRev&&!d.unlock){toast('🔒 යැව්වා — නිවැරදි කරන්න නම් “✏️ නිවැරදි කිරීමක්”','warn');return;}
-  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,i:items,why:rev>1?(d.why||''):'',...(btOf(d).length?{bt:btOf(d)}:{})};
-  const text=`📦 *ලොරියට පැටවීම* — ${d.d}\n${rev>1?'✏️ සංශෝධනය '+rev+' (කලින් එක වෙනුවට)':'සංශෝධනය 1'} · පැටවූයේ: ${S.me}\n\n`+items.map(x=>`• ${x[2]} — ${x[1]}`).join('\n')+`\n\nඑකතුව: ${items.length} වර්ග · ${total} පැකට්${d.note?'\nසටහන: '+d.note:''}\n━━━━━━━━━━\n${sbpEncode('load',payload)}`;
+  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,i:items,why:rev>1?(d.why||''):'',...(btOf(d).length?{bt:btOf(d)}:{}),...(hoPayload(d)?{ho:hoPayload(d)}:{})};
+  const text=`📦 *ලොරියට පැටවීම* — ${d.d}\n${rev>1?'✏️ සංශෝධනය '+rev+' (කලින් එක වෙනුවට)':'සංශෝධනය 1'} · පැටවූයේ: ${S.me}${hoDone(d)?`\n📥 භාර ගත්තේ: ${d.ho.by||''}${hoRows(d).some(r=>r[3]==='keep')?' ⚠️ වෙනස් '+hoRows(d).filter(r=>r[3]==='keep').length:' ✅'}`:''}\n\n`+items.map(x=>`• ${x[2]} — ${x[1]}`).join('\n')+`\n\nඑකතුව: ${items.length} වර්ග · ${total} පැකට්${d.note?'\nසටහන: '+d.note:''}\n━━━━━━━━━━\n${sbpEncode('load',payload)}`;
   beforeSend('load',payload,text,t2=>sendOut('📦 පැටවීම යවන්න',t2,'load',payload,()=>{d.sentRev=rev;d.unlock=false;d.why='';S.sent.push({t:'load',uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text:t2,why:payload.why});trimSent();save();renderLoad();}));
 }
 
@@ -905,6 +910,73 @@ function scanLoose(kind){const d=kind==='load'?loadDraft():unloadDraft();const q
   d.sc=(d.sc||[]).concat([{k:'',pid:pick[0],no,q,at:new Date().toISOString(),kind:'x',own:1,by:S.me}]);d.i[pick[0]]=(d.i[pick[0]]||0)+q;save();if(kind==='load')lsPush(d);if(ls.scanOn===kind){if(kind==='load')loadTotals();else unloadBar();scanSumDraw(kind);const row=document.querySelector(`[data-lin="${CSS.escape(pick[0])}"]`);if(row)row.value=d.i[pick[0]]||'';}else render();}
 function btOf(d){const m={};(d.sc||[]).forEach(x=>{if(!x.no||!(num(x.q)>0))return;const k=x.pid+'|'+x.no;m[k]=(m[k]||0)+num(x.q);});return Object.entries(m).map(([k,q])=>{const [pid,no]=k.split('|');return [pid,no,q];});}
 function lsWatch(){clearInterval(ls.timer);if(screen!=='load'||!S.cloud||!batOn())return;const run=async()=>{if(screen!=='load'){clearInterval(ls.timer);return;}const d=loadDraft();await lsPush(d);const n=await lsPull(d);if(n){toast(`📷 අනිත් phone එකේ scan ${n}ක් එකතු වුණා`);if(!ls.scanOn)renderLoad();else{loadTotals();scanSumDraw('load');}}else scanSumDraw('load');};run();ls.timer=setInterval(run,15000);}
+
+
+/* ---------------- v4.4.3 · 📥 ලොරිය භාර ගැනීම — පටවපු කෙනා ≠ ගණන් කරන කෙනා ----------------
+   The person who takes the lorry counts what is on it WITHOUT seeing the loaded numbers (blind), then the app compares.
+   Differences: 🔁 count again · ✏️ the count is right (fix the load list) · ⚠️ leave it (goes to the owner's “📋 වැරදි” list).
+   The result goes to the PC with the load, and live (Firebase) to the owner's factory app. */
+function hoOn(){return !!(S.cfg&&S.cfg.ho);}
+function hoBlind(){return !(S.cfg&&S.cfg.hb===0);}
+function hoBund(pid){const b=S.cfg&&S.cfg.bn?Number(S.cfg.bn[pid]):0;return b>0?b:0;}
+function hoOf(d){if(!d.ho||d.ho.d!==d.d||d.ho.uid!==d.uid)d.ho={d:d.d,uid:d.uid,by:S.me,c:{},res:{},orig:{},at:'',done:false,note:'',step:'count',snap:''};return d.ho;}
+function hoIds(d){const h=hoOf(d);return [...new Set(Object.keys(d.i).filter(k=>num(d.i[k])>0).concat(Object.keys(h.c)))].sort((a,b)=>porder(a)-porder(b));}
+function hoCnt(h,pid){const x=h.c[pid];if(!x)return null;return num(x.b)*hoBund(pid)+num(x.l);}
+function hoLoaded(d,pid){const h=hoOf(d);return h.orig[pid]!==undefined?h.orig[pid]:num(d.i[pid]);}
+function hoSnap(d){return JSON.stringify(sortObj(Object.fromEntries(Object.entries(d.i).filter(([,v])=>num(v)>0))));}
+function hoStale(d){const h=d.ho;return !!(h&&h.done&&h.snap&&h.snap!==hoSnap(d));}
+function hoDone(d){const h=d.ho;return !!(h&&h.done&&!hoStale(d)&&h.d===d.d&&h.uid===d.uid);}
+function hoDiffs(d){const h=hoOf(d);return hoIds(d).filter(pid=>{const c=hoCnt(h,pid);return (c===null?0:c)!==hoLoaded(d,pid);});}
+function hoLoaders(d){const s=new Set();(d.sc||[]).forEach(x=>{if(x.by)s.add(x.by);});const scanned={};(d.sc||[]).forEach(x=>{scanned[x.pid]=(scanned[x.pid]||0)+num(x.q);});if(Object.keys(d.i).some(k=>num(d.i[k])>(scanned[k]||0)))s.add(d.by||S.me);return [...s].filter(Boolean).slice(0,6);}
+function hoRows(d){const h=hoOf(d);return hoIds(d).map(pid=>{const L=hoLoaded(d,pid),C=hoCnt(h,pid)??0;return [pid,L,C,L===C?(h.res[pid]==='count'?'count':'ok'):(h.res[pid]||'keep')];});}
+function hoPayload(d){if(!hoDone(d))return null;const h=hoOf(d);return {by:h.by||S.me,at:h.at,ld:hoLoaders(d),rows:hoRows(d),note:h.note||'',blind:hoBlind()?1:0};}
+/* live status for the owner's factory app (same Firebase document as the scans) */
+async function hoPush(d,st){const url=lsDoc(d.d);if(!url)return;const h=hoOf(d),f='h_'+ensureDev().replace(/[^A-Za-z0-9_]/g,'_');
+  const body=JSON.stringify({by:h.by||S.me,at:new Date().toISOString(),st,rows:st==='counting'?[]:hoRows(d)});
+  try{await fetch(`${url}?updateMask.fieldPaths=code&updateMask.fieldPaths=${f}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:'SBP1:lscan:0:00000000'},[f]:{stringValue:body}}})});}catch(e){}}
+function hoStart(){const d=loadDraft();if(!Object.keys(d.i).some(k=>num(d.i[k])>0)){toast('පටවපු බඩු ලැයිස්තුවක් නැහැ — මුලින් පටවන්න / scan කරන්න','warn');return;}
+  const h=hoOf(d);if(hoStale(d)){const old=JSON.parse(h.snap||'{}');Object.keys(d.i).concat(Object.keys(old)).forEach(pid=>{if(num(old[pid])!==num(d.i[pid])){delete h.c[pid];delete h.res[pid];delete h.orig[pid];}});h.done=false;h.step='count';save();toast('පැටවීම වෙනස් වුණු භාණ්ඩ ටික ආයෙ ගණන් කරන්න','warn');}
+  if(!h.by)h.by=S.me;go('accept');hoPush(d,'counting');}
+function hoSet(pid,f,v){const d=loadDraft(),h=hoOf(d);const x=h.c[pid]||(h.c[pid]={b:0,l:0});x[f]=Math.max(0,Math.floor(num(v)));if(!x.b&&!x.l&&v==='')delete h.c[pid];if(h.step!=='count'&&h.res[pid]==='count'){}save();const el=document.querySelector(`[data-hot="${CSS.escape(pid)}"]`);if(el)el.textContent=hoCnt(h,pid)===null?'':'= '+hoCnt(h,pid);hoBar();}
+function hoRowHtml(d,pid){const h=hoOf(d),b=hoBund(pid),x=h.c[pid]||{},c=hoCnt(h,pid),L=hoLoaded(d,pid),show=!hoBlind()||h.step!=='count';const diff=c!==null&&c!==L;
+  return `<div class="crow ${show?(c===null?'':diff?'bad':'ok'):''}" data-horow="${esc(pid)}"><div class="ctop"><div class="lbl">${esc(pname(pid))}</div>${show?`<span class="chip ${diff?'bad':'ok'}">පැටෙව්වා ${L}</span>`:''}</div>
+   <div class="ho-in">${b?`<label>📦 බණ්ඩල <input type="number" inputmode="numeric" min="0" value="${x.b||''}" placeholder="0" onfocus="this.select()" oninput="hoSet('${esc(pid)}','b',this.value)"></label><span>× ${b} +</span><label>ලිහිල් <input type="number" inputmode="numeric" min="0" value="${x.l||''}" placeholder="0" onfocus="this.select()" oninput="hoSet('${esc(pid)}','l',this.value)"></label>`:`<label>පැකට් <input type="number" inputmode="numeric" min="0" value="${x.l||''}" placeholder="0" onfocus="this.select()" oninput="hoSet('${esc(pid)}','l',this.value)"></label>`}<strong data-hot="${esc(pid)}">${c===null?'':'= '+c}</strong></div></div>`;}
+function renderAccept(){const d=loadDraft(),h=hoOf(d),ids=hoIds(d),blind=hoBlind();
+  if(h.step==='count'){
+    $('acceptBody').innerHTML=`<div class="card infobox">📥 <strong>${esc(d.d)}</strong> — ලොරියේ තියෙන බඩු <strong>ඔයාම ගණන් කරලා</strong> දාන්න.${blind?' 🙈 පටවපු ගණන් පේන්නේ ගණන් කළාට පස්සේ (හරියට ගණන් කරන්න).':''}<div class="field" style="margin-top:8px"><label for="hoBy">ගණන් කරන්නේ (භාර ගන්නේ)</label><input id="hoBy" maxlength="40" value="${esc(h.by||S.me)}" onchange="hoOf(loadDraft()).by=this.value.trim();save()"></div></div>
+     ${ids.map(pid=>hoRowHtml(d,pid)).join('')}
+     <button class="btn light block" onclick="hoAddExtra()">＋ ලැයිස්තුවේ නැති භාණ්ඩයක් ලොරියේ තියෙනවා</button>
+     <div class="card"><div class="field"><label for="hoNote">සටහන (ඕනේ නම්)</label><input id="hoNote" maxlength="200" value="${esc(h.note||'')}" onchange="hoOf(loadDraft()).note=this.value;save()"></div></div>`;}
+  else{const diffs=hoDiffs(d);
+    $('acceptBody').innerHTML=`<div class="card ${diffs.length?'warnbox':'okbox'}">${diffs.length?`⚠️ <strong>වෙනස් ${diffs.length}ක්</strong> — එකින් එක බලලා තෝරන්න. ලොකු මහත්තයාගේ phone එකටත් පේනවා.`:'✅ පටවපු ගණන් සහ ගණන් කළ ගණන් <strong>ඔක්කොම ගැළපෙනවා</strong>.'}</div>
+     ${diffs.map(pid=>{const L=hoLoaded(d,pid),C=hoCnt(h,pid)??0,r=h.res[pid];return `<div class="card"><div class="row2"><strong>${esc(pname(pid))}</strong><span class="chip bad">පැටෙව්වා ${L} · ගණන් කළා ${C} (${C<L?'අඩු '+(L-C):'වැඩි '+(C-L)})</span></div>
+       <div class="hbtns" style="margin-top:8px"><button class="btn sm light" onclick="hoRecount('${esc(pid)}')">🔁 ආයෙ ගණන් කළා</button><button class="btn sm ${r==='load'?'primary':'light'}" onclick="hoFixLoad('${esc(pid)}')">✏️ ගණන් කළ ${C} හරි — පැටවීම හදන්න</button><button class="btn sm ${r==='keep'?'primary':'light'}" onclick="hoKeep('${esc(pid)}')">⚠️ වෙනස එහෙමම</button></div>${r==='keep'?'<div class="small muted">⚠️ ලොකු මහත්තයාගේ “📋 වැරදි” ලැයිස්තුවට යනවා</div>':''}</div>`;}).join('')}
+     ${Object.keys(h.res).filter(pid=>h.res[pid]==='load'&&!diffs.includes(pid)).map(pid=>`<div class="card small">✏️ ${esc(pname(pid))}: පැටවීම ${h.orig[pid]} → ${d.i[pid]||0} (ගණන් කළ ගණනට)</div>`).join('')}
+     <div class="card"><h3>✓ ගැළපුණු ඒවා</h3>${hoIds(d).filter(pid=>!diffs.includes(pid)).map(pid=>`<div class="rdrow"><span>${esc(pname(pid))}</span><strong>${hoCnt(h,pid)??0}</strong></div>`).join('')||'<div class="small muted">—</div>'}<button class="btn sm light" style="margin-top:8px" onclick="hoBack()">✏️ ගණන් වෙනස් කරන්න</button></div>`;}
+  hoBar();}
+function hoBar(){const d=loadDraft(),h=hoOf(d),ids=hoIds(d),done=ids.filter(pid=>hoCnt(h,pid)!==null).length;
+  if(h.step==='count')$('acceptBar').innerHTML=`<div class="grow"><strong>${done}/${ids.length}</strong> ගණන් කළා</div><button class="btn primary" onclick="hoCompare()" ${done?'':'disabled'}>✅ සසඳන්න ➜</button>`;
+  else{const open=hoDiffs(d).filter(pid=>!h.res[pid]);$('acceptBar').innerHTML=`<div class="grow">${open.length?`තෝරන්න තියෙනවා <strong>${open.length}</strong>`:'✅ ලෑස්තියි'}</div><button class="btn primary" onclick="hoAccept()" ${open.length?'disabled':''}>📥 භාර ගත්තා ➜</button>`;}}
+function hoCompare(){const d=loadDraft(),h=hoOf(d),ids=hoIds(d),todo=ids.filter(pid=>hoCnt(h,pid)===null);
+  const go2=()=>{todo.forEach(pid=>{h.c[pid]={b:0,l:0};});h.step='diff';Object.keys(h.res).forEach(pid=>{if(h.res[pid]==='keep'||h.res[pid]==='count')delete h.res[pid];});save();renderAccept();window.scrollTo(0,0);hoPush(d,hoDiffs(d).length?'diff':'ok');};
+  if(todo.length)sheet('ගණන් නොකළ ඒවා',`<p>${todo.map(pid=>esc(pname(pid))).join(', ')} — ගණන් කළේ නැහැ. ලොරියේ නැත්නම් (0) ලෙස සසඳන්නද?</p>`,[{t:'ආපහු — ගණන් කරන්න',c:'light',f:closeSheet},{t:'ඔව්, 0 ලෙස',c:'primary',f:()=>{closeSheet();go2();}}]);else go2();}
+function hoBack(){const d=loadDraft(),h=hoOf(d);h.step='count';save();renderAccept();}
+function hoRecount(pid){const d=loadDraft(),h=hoOf(d),b=hoBund(pid);const v=prompt(`🔁 ${pname(pid)} — ආයෙ ගණන් කරපු මුළු පැකට් ගණන${b?` (බණ්ඩලයක ${b})`:''}:`,'');if(v===null||v.trim()==='')return;const n=Math.max(0,Math.floor(num(v)));h.c[pid]={b:0,l:n};h.res[pid]=n===hoLoaded(d,pid)?'count':undefined;if(!h.res[pid])delete h.res[pid];save();renderAccept();hoPush(d,hoDiffs(d).length?'diff':'ok');toast(n===hoLoaded(d,pid)?'✅ දැන් ගැළපෙනවා':'⚠️ තවමත් වෙනස්','warn');}
+function hoFixLoad(pid){const d=loadDraft(),h=hoOf(d),C=hoCnt(h,pid)??0;if(h.orig[pid]===undefined)h.orig[pid]=num(d.i[pid]);if(C>0)d.i[pid]=C;else delete d.i[pid];h.res[pid]='load';save();renderAccept();hoPush(d,hoDiffs(d).length?'diff':'ok');toast('✏️ පැටවීම ගණන් කළ ගණනට හැදුවා');}
+function hoKeep(pid){const d=loadDraft(),h=hoOf(d);h.res[pid]='keep';save();renderAccept();}
+function hoAddExtra(){const q0=prompt('ලොරියේ තියෙන, ලැයිස්තුවේ නැති භාණ්ඩය — නම type කරන්න:');if(!q0)return;const hits=products().filter(p=>norm(p[1]).includes(norm(q0)));if(!hits.length){toast('හම්බ වුණේ නැහැ','warn');return;}let pick=hits[0];
+  if(hits.length>1){const n=prompt(hits.slice(0,15).map((p,i)=>`${i+1}. ${p[1]}`).join('\n')+'\n\nඅංකය:','1');const k=Number(n)-1;if(!(k>=0&&k<hits.length))return;pick=hits[k];}
+  const h=hoOf(loadDraft());if(!h.c[pick[0]])h.c[pick[0]]={b:0,l:0};save();renderAccept();setTimeout(()=>{const el=document.querySelector(`[data-horow="${CSS.escape(pick[0])}"] input`);if(el)el.focus();},50);}
+function hoAccept(){const d=loadDraft(),h=hoOf(d);if(hoDiffs(d).some(pid=>!h.res[pid])){toast('වෙනස් ඒවා ඔක්කොම තෝරන්න','err');return;}
+  h.done=true;h.at=new Date().toISOString();h.by=(h.by||S.me).trim()||S.me;h.snap=hoSnap(d);save();hoPush(d,'done');
+  const keep=hoRows(d).filter(r=>r[3]==='keep').length;toast(keep?`📥 භාර ගත්තා — වෙනස් ${keep}ක් ලොකු මහත්තයාට`:'📥 භාර ගත්තා ✅');go('load');}
+/* the load screen: status + the 📥 button; sending asks when nobody accepted it */
+function hoInfoHtml(d){if(!hoOn()||isLocked(d))return '';if(hoDone(d)){const r=hoRows(d),k=r.filter(x=>x[3]==='keep').length,f=r.filter(x=>x[3]==='load').length;return `<div class="card okbox">📥 <strong>භාර ගත්තා</strong> — ${esc(d.ho.by||'')} · ${esc(fmtAt(d.ho.at).slice(11))}${f?` · ✏️ හැදුවා ${f}`:''}${k?` · ⚠️ වෙනස් ${k}`:' · ✅ ගැළපුණා'} <button class="btn sm light" onclick="hoStart()">බලන්න</button></div>`;}
+  if(hoStale(d))return `<div class="card warnbox">📥 භාර ගත්තාට පස්සේ පැටවීම වෙනස් වුණා — වෙනස් ඒවා ආයෙ ගණන් කරන්න. <button class="btn sm primary" onclick="hoStart()">📥 භාර ගන්න</button></div>`;
+  return Object.keys(d.i).length?`<div class="card infobox">📥 පටවලා ඉවර නම්, ලොරිය ගෙනියන කෙනා <strong>ගණන් කරලා භාර ගන්න</strong> (පටවපු ගණන් නොපෙනී). <button class="btn sm primary" onclick="hoStart()">📥 භාර ගන්න</button></div>`:'';}
+(function(){const _t=loadTotals;loadTotals=function(){_t.apply(this,arguments);const d=loadDraft();if(!hoOn()||isLocked(d))return;const bar=$('loadBar'),b=bar&&bar.querySelector('button.btn.primary');if(b&&!hoDone(d)&&Object.keys(d.i).length&&!bar.querySelector('.ho-btn'))b.insertAdjacentHTML('beforebegin','<button class="btn light ho-btn" onclick="hoStart()">📥 භාර ගන්න</button>');};})();
+(function(){const _r=renderLoad;renderLoad=function(){_r.apply(this,arguments);try{const d=loadDraft(),el=$('loadInfo');if(el&&!isLocked(d))el.insertAdjacentHTML('beforeend',hoInfoHtml(d));}catch(e){}};})();
+(function(){const _s=sendLoad;sendLoad=function(){const d=loadDraft();if(hoOn()&&!hoDone(d)&&!(d.sentRev&&!d.unlock)&&!sendLoad.skipHo){sheet('📥 තවම භාර ගත්තේ නැහැ',`<p>ලොරිය ගෙනියන කෙනා බඩු <strong>ගණන් කරලා භාර ගත්තේ නැහැ</strong>. පටවපු කෙනයි ගණන් කරන කෙනයි වෙනස් නම් මුලින් භාර ගන්න — පස්සේ අඩුවක් ආවොත් කාගෙද කියලා දැනගන්න පුළුවන්.</p>`,[{t:'📥 භාර ගන්න',c:'primary',f:()=>{closeSheet();hoStart();}},{t:'ඒත් යවන්න',c:'light',f:()=>{closeSheet();sendLoad.skipHo=true;try{_s();}finally{sendLoad.skipHo=false;}}}]);return;}return _s.apply(this,arguments);};})();
 
 </script>
 </body>
