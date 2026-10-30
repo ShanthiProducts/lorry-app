@@ -437,7 +437,7 @@ function applyCodes(codes,silent){
       const same=S.rep&&S.rep.d===r.d;S.rep={d:r.d,at:r.at,route:r.route||'',sig:r.sig||'',rows:r.rows,rd:Array.isArray(r.rd)?r.rd:[],cfg:{blind:!!(r.cfg&&r.cfg.blind)}};
       S.reps=[S.rep,...S.reps.filter(x=>x.d!==r.d)].slice(0,10);msg.push(`📤 ${r.d} Report එක${same?' (අලුත් කළා)':''}`);}
     if(c.type==='bat'){const g=c.data;if(!g||typeof g.fc!=='object')continue;if(S.bat&&S.bat.at===g.at)continue;S.bat={at:String(g.at||''),fc:g.fc,b:Array.isArray(g.b)?g.b:[],h:Array.isArray(g.h)?g.h:[],f:g.f&&typeof g.f==='object'?g.f:{}};continue;}
-    if(c.type==='ord'){const g=c.data;if(!g||!Array.isArray(g.o))continue;if(S.ord&&S.ord.at===g.at)continue;S.ord={at:String(g.at||''),o:g.o.filter(x=>Array.isArray(x)&&x[0]&&Array.isArray(x[3]))};msg.push(`📋 දෙන්න තියෙන ඇණවුම් ${S.ord.o.length}`);continue;}
+    if(c.type==='ord'){const g=c.data;if(!g||!Array.isArray(g.o))continue;if(S.ord&&S.ord.at===g.at)continue;S.ord={at:String(g.at||''),o:g.o.filter(x=>Array.isArray(x)&&x[0]&&Array.isArray(x[3])),pre:g.pre&&typeof g.pre==='object'?g.pre:{}};msg.push(`📋 දෙන්න තියෙන ඇණවුම් ${S.ord.o.length}`);continue;}
     if(c.type==='sug'){const g=c.data;if(!g||!/^\d{4}-\d{2}-\d{2}$/.test(String(g.d||''))||!Array.isArray(g.i))continue;
       if(S.sug&&S.sug.at===g.at)continue;
       S.sug={d:g.d,route:String(g.route||''),at:String(g.at||''),i:Object.fromEntries(g.i.filter(x=>Array.isArray(x)&&x[0]&&Number(x[1])>0).map(x=>[String(x[0]),Math.floor(Number(x[1]))]))};
@@ -1000,7 +1000,15 @@ function preDraft(){let d=S.drafts.pre;
   if(!d||(d.sentRev&&d.d<today())||(!d.sentRev&&d.d<today()&&!Object.keys(d.i||{}).length)){d=S.drafts.pre={uid:uid(),d:nextTrip(),pre:1,rev:0,sentRev:0,by:S.me,i:{},note:''};save();}
   if(!d.pre)d.pre=1;return d;}
 /* quantities set aside (sent) for a trip date — latest revision of every pre-load */
-function preFor(date){const m={};S.sent.filter(x=>x.t==='load'&&x.pre&&x.d===date).forEach(x=>{m[x.uid]=x;});const q={};Object.values(m).forEach(x=>Object.entries(x.i||{}).forEach(([k,v])=>{if(num(v)>0)q[k]=(q[k]||0)+num(v);}));return q;}
+function dayOf(iso){try{const p={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(iso)).forEach(x=>p[x.type]=x.value);return `${p.year}-${p.month}-${p.day}`;}catch(e){return String(iso||'').slice(0,10);}}
+/* quantities set aside for a trip date: this phone's own (latest revision) + the ones the main system sent (other phones), once per uid */
+function preFor(date){const m={};S.sent.filter(x=>x.t==='load'&&x.pre&&x.d===date).forEach(x=>{m[x.uid]=x.i||{};});
+  const srv=(S.ord&&S.ord.pre)||{};Object.keys(srv).forEach(u=>{const v=srv[u];if(m[u]||!Array.isArray(v)||v[0]!==date||!Array.isArray(v[1]))return;const i={};v[1].forEach(r=>{if(!Array.isArray(r)||!r[0])return;let k=r[0];if(!products().some(p=>p[0]===k)&&r[2]){const hit=products().find(p=>norm(p[1])===norm(r[2]));if(hit)k=hit[0];}i[k]=(i[k]||0)+num(r[1]);});m[u]=i;});
+  const q={};Object.values(m).forEach(i=>Object.entries(i).forEach(([k,v])=>{if(num(v)>0)q[k]=(q[k]||0)+num(v);}));return q;}
+/* a load sent before its trip day IS a set-aside (also the ones sent with a changed date before v4.4.5) */
+function preMigrate(){let ch=false;S.sent.forEach(x=>{if(x.t==='load'&&!x.pre&&x.at&&x.d>dayOf(x.at)){x.pre=1;ch=true;}});
+  const L=S.drafts.load;if(L&&L.sentRev&&!L.pre&&S.sent.some(x=>x.uid===L.uid&&x.pre)){const P=S.drafts.pre;if(!P||!Object.keys(P.i||{}).length||(P.sentRev&&P.d<=L.d))S.drafts.pre={...L,pre:1};S.drafts.load=null;ch=true;}
+  if(ch)save();}
 function preTot(q){return Object.values(q).reduce((a,b)=>a+num(b),0);}
 function preUnsent(date){const d=S.drafts.pre;return d&&!d.sentRev&&d.d===date&&Object.keys(d.i||{}).length?d:null;}
 function preOk(d){return !d.pre&&preTot(preFor(d.d))>0&&hoDone(d);}
@@ -1008,6 +1016,7 @@ function tripDoneToday(){const t=today();return !!(lastSent('count',t)||S.sent.s
 function goPre(){loadMode='pre';_preNext=true;go('load');}
 function goLoad(){loadMode='load';go('load');}
 (function(){
+  const _rd=render;render=function(){try{preMigrate();}catch(e){}return _rd.apply(this,arguments);};
   const _go=go;go=function(name){if(name==='load'&&!_preNext)loadMode='load';_preNext=false;_go.apply(this,arguments);if(name==='load'&&loadMode==='pre')document.querySelector('header h1').textContent='🌙 හෙට ගමනට වෙන් කරන්න';};
   const _ls=lastSent;lastSent=function(t,d){if(t!=='load')return _ls.apply(this,arguments);return S.sent.filter(x=>x.t==='load'&&!x.pre&&(!d||x.d===d)).slice(-1)[0]||null;};
   const _ld=loadDraft;loadDraft=function(){return loadMode==='pre'?preDraft():_ld();};
