@@ -91,6 +91,15 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 /* v4.4.3 · 📥 handover */
 .ho-in{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}.ho-in label{display:flex;gap:4px;align-items:center;font-size:13px;font-weight:700}.ho-in input{width:76px;font-size:18px;padding:6px;text-align:center}.ho-in strong{font-size:18px;margin-left:auto}
 .okbox{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:12px;padding:10px 12px}
+
+/* v4.4.5 · 🌙 */
+.pre-hero{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(135deg,#1e1b4b,#312e81);color:#eef2ff;border:0}.pre-hero .big{font-size:30px;line-height:1}.pre-hero .small{color:#c7d2fe}.pre-hero .btn.light{background:#ffffff1f;color:#fff;border-color:#ffffff40}
+.prec{font-size:12px;font-weight:800;color:#3730a3;background:#e0e7ff;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.pre-step .num{background:#e0e7ff;color:#3730a3}.pre-step.hot{border:2px solid #6366f1;box-shadow:0 8px 22px #4f46e522;animation:preGlow 2.4s ease-in-out infinite}
+
+.bar.has-pre{flex-wrap:wrap;row-gap:6px}.pre-sum{flex:1 0 100%;font-size:13.5px;color:#3730a3;background:#eef2ff;border-radius:10px;padding:6px 10px}.bar .grow{min-width:96px}
+@keyframes preGlow{0%,100%{box-shadow:0 8px 22px #4f46e522}50%{box-shadow:0 8px 28px #4f46e544}}
+@media(prefers-reduced-motion:reduce){.pre-step.hot{animation:none}}
 </style>
 </head>
 <body>
@@ -98,7 +107,7 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
     <div class="grid2"><button class="tile" onclick="go('inbox')"><span>📥</span>Report / Code දාන්න<small>WhatsApp එකෙන් ආපු message (Cloud නැති වෙලාවට)</small></button><button class="tile" onclick="go('setup')"><span>⚙️</span>සැකසුම්<small>නම, WhatsApp අංකය</small></button></div>
-    <div class="foot">Shanthi Food Products · ලොරි App v4.4.3 · Internet නැතුවත් වැඩ කරනවා</div></section>
+    <div class="foot">Shanthi Food Products · ලොරි App v4.4.5 · Internet නැතුවත් වැඩ කරනවා</div></section>
 
   <section class="screen" id="s-inbox">
     <div class="card"><h3>📥 WhatsApp message එක දාන්න</h3><p class="muted small">ලොකු මහත්තයා එවන <strong>Report</strong> එක හෝ <strong>භාණ්ඩ ලැයිස්තුව</strong> — WhatsApp එකේ message එක ඔබාගෙන ඉඳලා <strong>Copy</strong> කරලා මෙතන <strong>Paste</strong> කරන්න.</p>
@@ -224,8 +233,8 @@ function hmNow(){try{const p={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hou
 /* checks before sending, then (if asked) the place, then send */
 function beforeSend(type,payload,text,go){
   const h=S.cfg&&S.cfg.hours,hm=hmNow();
-  if(h&&hm&&(hm<h.from||hm>h.to)&&!confirm(`දැන් වෙලාව ${hm} — වැඩ කරන වෙලාවෙන් (${h.from}–${h.to}) පිට. මේක ලොකු මහත්තයාට විශේෂයෙන් පෙන්වනවා. ඒත් යවන්නද?`))return;
-  if(type!=='count'&&payload.d!==today()&&!confirm(`දිනය ${payload.d} — අද (${today()}) නෙවෙයි. හරිද?`))return;
+  if(h&&hm&&(hm<h.from||hm>h.to)&&!payload.pre&&!confirm(`දැන් වෙලාව ${hm} — වැඩ කරන වෙලාවෙන් (${h.from}–${h.to}) පිට. මේක ලොකු මහත්තයාට විශේෂයෙන් පෙන්වනවා. ඒත් යවන්නද?`))return;
+  if(type!=='count'&&payload.d!==today()&&!(payload.pre&&payload.d>today())&&!confirm(`දිනය ${payload.d} — අද (${today()}) නෙවෙයි. හරිද?`))return;
   payload.dev=ensureDev();
   const done=()=>{const old=text.split('\n').pop();go(text.slice(0,text.length-old.length)+sbpEncode(type,payload));};
   if(!(S.cfg&&S.cfg.gps)||!navigator.geolocation){done();return;}
@@ -292,12 +301,12 @@ function renderLoad(){
   loadTotals();
 }
 function sendLoad(){
-  const d=loadDraft();d.d=$('loadDate').value||today();d.note=$('loadNote').value.trim();const ids=Object.keys(d.i);if(!ids.length)return;
+  const d=loadDraft();d.d=$('loadDate').value||today();d.note=$('loadNote').value.trim();const ids=Object.keys(d.i);if(!ids.length&&!preOk(d))return;
   const rev=(d.sentRev||0)+1,items=ids.sort((a,b)=>porder(a)-porder(b)).map(id=>[id,d.i[id],pname(id)]),total=items.reduce((t,x)=>t+x[1],0);
   if(d.sentRev&&!d.unlock){toast('🔒 යැව්වා — නිවැරදි කරන්න නම් “✏️ නිවැරදි කිරීමක්”','warn');return;}
-  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,i:items,why:rev>1?(d.why||''):'',...(btOf(d).length?{bt:btOf(d)}:{}),...(hoPayload(d)?{ho:hoPayload(d)}:{})};
-  const text=`📦 *ලොරියට පැටවීම* — ${d.d}\n${rev>1?'✏️ සංශෝධනය '+rev+' (කලින් එක වෙනුවට)':'සංශෝධනය 1'} · පැටවූයේ: ${S.me}${hoDone(d)?`\n📥 භාර ගත්තේ: ${d.ho.by||''}${hoRows(d).some(r=>r[3]==='keep')?' ⚠️ වෙනස් '+hoRows(d).filter(r=>r[3]==='keep').length:' ✅'}`:''}\n\n`+items.map(x=>`• ${x[2]} — ${x[1]}`).join('\n')+`\n\nඑකතුව: ${items.length} වර්ග · ${total} පැකට්${d.note?'\nසටහන: '+d.note:''}\n━━━━━━━━━━\n${sbpEncode('load',payload)}`;
-  beforeSend('load',payload,text,t2=>sendOut('📦 පැටවීම යවන්න',t2,'load',payload,()=>{d.sentRev=rev;d.unlock=false;d.why='';S.sent.push({t:'load',uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text:t2,why:payload.why});trimSent();save();renderLoad();}));
+  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,i:items,why:rev>1?(d.why||''):'',...(d.pre?{pre:1}:{}),...(btOf(d).length?{bt:btOf(d)}:{}),...(hoPayload(d)?{ho:hoPayload(d)}:{})};
+  const text=`${d.pre?'🌙 *ගමනට කලින් වෙන් කළා*':'📦 *ලොරියට පැටවීම*'} — ${d.d}${d.pre?' ('+wday(d.d)+' ගමනට)':''}\n${rev>1?'✏️ සංශෝධනය '+rev+' (කලින් එක වෙනුවට)':'සංශෝධනය 1'} · පැටවූයේ: ${S.me}${hoDone(d)?`\n📥 භාර ගත්තේ: ${d.ho.by||''}${hoRows(d).some(r=>r[3]==='keep')?' ⚠️ වෙනස් '+hoRows(d).filter(r=>r[3]==='keep').length:' ✅'}`:''}\n\n`+items.map(x=>`• ${x[2]} — ${x[1]}`).join('\n')+`\n\nඑකතුව: ${items.length} වර්ග · ${total} පැකට්${d.note?'\nසටහන: '+d.note:''}\n━━━━━━━━━━\n${sbpEncode('load',payload)}`;
+  beforeSend('load',payload,text,t2=>sendOut('📦 පැටවීම යවන්න',t2,'load',payload,()=>{d.sentRev=rev;d.unlock=false;d.why='';S.sent.push({t:'load',...(d.pre?{pre:1}:{}),uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text:t2,why:payload.why});trimSent();save();renderLoad();}));
 }
 
 /* ---------------- COUNT ---------------- */
@@ -508,7 +517,7 @@ function ordGive(id){const x=((S.ord&&S.ord.o)||[]).find(o=>o[0]===id);if(!x)ret
 /* ---------------- HISTORY ---------------- */
 const TT={load:'📦 පැටවීම',count:'🔢 ගණන් කිරීම',unload:'🏭 Factory එකට','count-draft':'📝 නොයැවූ ගණන් කිරීම'};
 function trimSent(){if(S.sent.length>80)S.sent=S.sent.slice(-80);}
-function renderHistory(){const list=S.sent.slice().reverse();$('histList').innerHTML=list.length?list.map((x,i)=>`<div class="card hist"><div class="grow"><strong>${TT[x.t]||x.t}</strong> · ${esc(x.d)}${x.rev?' · සංශෝධනය '+x.rev:''}<div class="small muted">${esc(fmtAt(x.at))}${x.total?' · පැකට් '+x.total:''}${x.cloudId?(x.cloudAt?' · ☁️ ගියා':' · ⏳ යවන්න බලාගෙන'):''}</div></div>${x.text?`<button class="btn light sm" onclick="resend(${S.sent.length-1-i})">ආයෙත් යවන්න</button>`:''}</div>`).join(''):'<div class="empty">තවම කිසිවක් යැව්වේ නැහැ</div>';}
+function renderHistory(){const list=S.sent.slice().reverse();$('histList').innerHTML=list.length?list.map((x,i)=>`<div class="card hist"><div class="grow"><strong>${x.pre?'🌙 ගමනට වෙන් කළා':(TT[x.t]||x.t)}</strong> · ${esc(x.d)}${x.rev?' · සංශෝධනය '+x.rev:''}<div class="small muted">${esc(fmtAt(x.at))}${x.total?' · පැකට් '+x.total:''}${x.cloudId?(x.cloudAt?' · ☁️ ගියා':' · ⏳ යවන්න බලාගෙන'):''}</div></div>${x.text?`<button class="btn light sm" onclick="resend(${S.sent.length-1-i})">ආයෙත් යවන්න</button>`:''}</div>`).join(''):'<div class="empty">තවම කිසිවක් යැව්වේ නැහැ</div>';}
 function resend(i){const x=S.sent[i];if(x&&x.text)shareSheet('ආයෙත් යවන්න',x.text,null);}
 
 /* ---------------- SETUP ---------------- */
@@ -868,9 +877,9 @@ function scanPid(p){const b=batInfo(p.no);if(b){const s=b[5].find(x=>String(x[1]
 function lsDoc(d){return S.cloud?`${fsBase()}/out/ld-${d}`:'';}
 function lsField(){return 's_'+ensureDev().replace(/[^A-Za-z0-9_]/g,'_');}
 let ls={timer:0,pulled:'',others:{},scanOn:'',mode:'b'};
-async function lsPush(d){const url=lsDoc(d.d);if(!url)return;const own=(d.sc||[]).filter(x=>x.own);const body=JSON.stringify({by:S.me,at:new Date().toISOString(),sc:own.map(({k,pid,no,q,at,kind})=>({k,pid,no,q,at,kind}))});if(d.lsSent===body)return;
+async function lsPush(d){const url=lsDoc(d.d+(d.pre?'-p':''));if(!url)return;const own=(d.sc||[]).filter(x=>x.own);const body=JSON.stringify({by:S.me,at:new Date().toISOString(),sc:own.map(({k,pid,no,q,at,kind})=>({k,pid,no,q,at,kind}))});if(d.lsSent===body)return;
   try{const r=await fetch(`${url}?updateMask.fieldPaths=code&updateMask.fieldPaths=${lsField()}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:'SBP1:lscan:0:00000000'},[lsField()]:{stringValue:body}}})});if(r.ok){d.lsSent=body;save();}}catch(e){}}
-async function lsPull(d){const url=lsDoc(d.d);if(!url)return 0;let n=0;if(!isLocked(d))d.pend=0;try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)return 0;const j=await r.json(),me=lsField();ls.others={};
+async function lsPull(d){const url=lsDoc(d.d+(d.pre?'-p':''));if(!url)return 0;let n=0;if(!isLocked(d))d.pend=0;try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)return 0;const j=await r.json(),me=lsField();ls.others={};
   Object.entries(j.fields||{}).forEach(([k,v])=>{if(!k.startsWith('s_')||k===me)return;let o;try{o=JSON.parse(v.stringValue||'{}');}catch(e){return;}ls.others[k]=o;
     (o.sc||[]).forEach(x=>{const id=x.kind==='b'?x.k:(o.by||k)+'|'+x.at;if((d.skip||[]).includes(id))return;if((d.sc||[]).some(y=>(y.kind==='b'&&x.kind==='b'?y.k===x.k:(y.id||'')===id)))return;
       if(isLocked(d)){d.pend=(d.pend||0)+1;return;}d.sc=(d.sc||[]).concat([{...x,id,by:o.by||'',own:0}]);d.i[x.pid]=(d.i[x.pid]||0)+num(x.q);n++;});});
@@ -977,6 +986,78 @@ function hoInfoHtml(d){if(!hoOn()||isLocked(d))return '';if(hoDone(d)){const r=h
 (function(){const _t=loadTotals;loadTotals=function(){_t.apply(this,arguments);const d=loadDraft();if(!hoOn()||isLocked(d))return;const bar=$('loadBar'),b=bar&&bar.querySelector('button.btn.primary');if(b&&!hoDone(d)&&Object.keys(d.i).length&&!bar.querySelector('.ho-btn'))b.insertAdjacentHTML('beforebegin','<button class="btn light ho-btn" onclick="hoStart()">📥 භාර ගන්න</button>');};})();
 (function(){const _r=renderLoad;renderLoad=function(){_r.apply(this,arguments);try{const d=loadDraft(),el=$('loadInfo');if(el&&!isLocked(d))el.insertAdjacentHTML('beforeend',hoInfoHtml(d));}catch(e){}};})();
 (function(){const _s=sendLoad;sendLoad=function(){const d=loadDraft();if(hoOn()&&!hoDone(d)&&!(d.sentRev&&!d.unlock)&&!sendLoad.skipHo){sheet('📥 තවම භාර ගත්තේ නැහැ',`<p>ලොරිය ගෙනියන කෙනා බඩු <strong>ගණන් කරලා භාර ගත්තේ නැහැ</strong>. පටවපු කෙනයි ගණන් කරන කෙනයි වෙනස් නම් මුලින් භාර ගන්න — පස්සේ අඩුවක් ආවොත් කාගෙද කියලා දැනගන්න පුළුවන්.</p>`,[{t:'📥 භාර ගන්න',c:'primary',f:()=>{closeSheet();hoStart();}},{t:'ඒත් යවන්න',c:'light',f:()=>{closeSheet();sendLoad.skipHo=true;try{_s();}finally{sendLoad.skipHo=false;}}}]);return;}return _s.apply(this,arguments);};})();
+
+
+/* ---------------- v4.4.5 · 🌙 හෙට ගමනට වෙන් කිරීම ----------------
+   බඩු අයිති “ගමනට” — පටවපු / වෙන් කරපු දවසට නෙවෙයි. කලින් දවසේ වෙන් කරන (පෙට්ටියට / ලොරියටම) බඩු = ඊළඟ ගමනේ පැටවීමක් (pre:1).
+   උදේ “📦 පටවන්න” එකේ දාන්නේ අලුත් බඩු විතරයි — වෙන් කළ ඒවා ඉබේම ගමනට එකතුයි (main system එකේත් එකම දිනයට එකතු වෙනවා). */
+let loadMode='load',_preNext=false;
+function addDays(d,n){const x=new Date(d+'T12:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10);}
+const WDAY=['ඉරිදා','සඳුදා','අඟහරුවාදා','බදාදා','බ්‍රහස්පතින්දා','සිකුරාදා','සෙනසුරාදා'];
+function wday(d){try{return WDAY[new Date(d+'T12:00:00Z').getUTCDay()];}catch(e){return '';}}
+function nextTrip(){return addDays(today(),1);}
+function preDraft(){let d=S.drafts.pre;
+  if(!d||(d.sentRev&&d.d<today())||(!d.sentRev&&d.d<today()&&!Object.keys(d.i||{}).length)){d=S.drafts.pre={uid:uid(),d:nextTrip(),pre:1,rev:0,sentRev:0,by:S.me,i:{},note:''};save();}
+  if(!d.pre)d.pre=1;return d;}
+/* quantities set aside (sent) for a trip date — latest revision of every pre-load */
+function preFor(date){const m={};S.sent.filter(x=>x.t==='load'&&x.pre&&x.d===date).forEach(x=>{m[x.uid]=x;});const q={};Object.values(m).forEach(x=>Object.entries(x.i||{}).forEach(([k,v])=>{if(num(v)>0)q[k]=(q[k]||0)+num(v);}));return q;}
+function preTot(q){return Object.values(q).reduce((a,b)=>a+num(b),0);}
+function preUnsent(date){const d=S.drafts.pre;return d&&!d.sentRev&&d.d===date&&Object.keys(d.i||{}).length?d:null;}
+function preOk(d){return !d.pre&&preTot(preFor(d.d))>0&&hoDone(d);}
+function tripDoneToday(){const t=today();return !!(lastSent('count',t)||S.sent.some(x=>x.t==='unload'&&x.d===t));}
+function goPre(){loadMode='pre';_preNext=true;go('load');}
+function goLoad(){loadMode='load';go('load');}
+(function(){
+  const _go=go;go=function(name){if(name==='load'&&!_preNext)loadMode='load';_preNext=false;_go.apply(this,arguments);if(name==='load'&&loadMode==='pre')document.querySelector('header h1').textContent='🌙 හෙට ගමනට වෙන් කරන්න';};
+  const _ls=lastSent;lastSent=function(t,d){if(t!=='load')return _ls.apply(this,arguments);return S.sent.filter(x=>x.t==='load'&&!x.pre&&(!d||x.d===d)).slice(-1)[0]||null;};
+  const _ld=loadDraft;loadDraft=function(){return loadMode==='pre'?preDraft():_ld();};
+  const _nl=newLoad;newLoad=function(){if(loadMode!=='pre')return _nl.apply(this,arguments);const d=S.drafts.pre;if(d&&!d.sentRev&&Object.keys(d.i||{}).length&&!confirm('දැනට දාපු (තවම නොයැවූ) වෙන් කිරීම මකලා අලුතින් පටන් ගන්නද?'))return;S.drafts.pre=null;preDraft();renderLoad();};
+  const _dr=draftOf;draftOf=function(k){return k==='load'?loadDraft():_dr.apply(this,arguments);};
+  /* 📥 handover: what is on the lorry = set aside earlier + loaded now */
+  const _hl=hoLoaded;hoLoaded=function(d,pid){return _hl(d,pid)+(d.pre?0:num(preFor(d.d)[pid]));};
+  const _hi=hoIds;hoIds=function(d){const a=_hi(d);if(d.pre)return a;const p=Object.keys(preFor(d.d));return [...new Set(a.concat(p))].sort((x,y)=>porder(x)-porder(y));};
+  const _hs=hoSnap;hoSnap=function(d){return _hs(d)+(d.pre?'':'|'+JSON.stringify(sortObj(preFor(d.d))));};
+  hoFixLoad=function(pid){const d=loadDraft(),h=hoOf(d),C=hoCnt(h,pid)??0,P=d.pre?0:num(preFor(d.d)[pid]);if(h.orig[pid]===undefined)h.orig[pid]=num(d.i[pid]);const n=Math.max(0,C-P);if(n>0)d.i[pid]=n;else delete d.i[pid];h.res[pid]='load';save();renderAccept();hoPush(d,hoDiffs(d).length?'diff':'ok');toast(P&&C<P?`✏️ හැදුවා — ⚠️ ගණන් කළේ වෙන් කළ ${P}ටත් අඩුයි`:'✏️ පැටවීම ගණන් කළ ගණනට හැදුවා',P&&C<P?'warn':'');};
+  const _hst=hoStart;hoStart=function(){const d=loadDraft();if(d.pre){toast('🌙 වෙන් කළ බඩු භාර ගන්නේ ගමන් දවසේ උදේ — අලුත් බඩු එක්කම','warn');return;}
+    if(!Object.keys(d.i).some(k=>num(d.i[k])>0)&&preTot(preFor(d.d))>0){const h=hoOf(d);if(!h.by)h.by=S.me;go('accept');hoPush(d,'counting');return;}return _hst.apply(this,arguments);};
+  const _sl=sendLoad;sendLoad=function(){const d=loadDraft();if(d.pre){sendLoad.skipHo=true;try{return _sl.apply(this,arguments);}finally{sendLoad.skipHo=false;}}return _sl.apply(this,arguments);};
+  const _hih=hoInfoHtml;hoInfoHtml=function(d){if(d&&d.pre)return '';return _hih.apply(this,arguments);};
+  /* the load screen */
+  const _rl=renderLoad;renderLoad=function(){const r=_rl.apply(this,arguments);try{preDecorate();}catch(e){console.warn('pre',e);}return r;};
+  const _lt=loadTotals;loadTotals=function(){const r=_lt.apply(this,arguments);try{preBar();}catch(e){}return r;};
+  const _rh=renderHome0;renderHome0=function(){const r=_rh.apply(this,arguments);try{preHome();}catch(e){console.warn('pre home',e);}return r;};
+  const _rc=renderCount;renderCount=function(){const r=_rc.apply(this,arguments);try{preCountNote();}catch(e){}return r;};
+})();
+function preRowsHtml(q){const ids=Object.keys(q);return ids.length?groupHtml(ids,(id,label)=>`<div class="rdrow"><span>${esc(label)}</span><strong>${q[id]}</strong></div>`):'<div class="small muted">—</div>';}
+function preShow(date){const q=preFor(date);sheet(`🌙 ${date} ගමනට වෙන් කළ බඩු`,`<p class="small">පැකට් <strong>${preTot(q)}</strong> · වර්ග ${Object.keys(q).length} — මේවා ගමනට දැනටමත් එකතුයි (ආයෙ පටවන්න එකේ දාන්න එපා).</p>${preRowsHtml(q)}`,[{t:'✏️ වෙනස් කරන්න',c:'light',f:()=>{closeSheet();goPre();}},{t:'හරි',c:'primary',f:closeSheet}]);}
+function preDecorate(){const d=loadDraft(),lbl=document.querySelector('label[for="loadDate"]');
+  if(loadMode==='pre'){if(lbl)lbl.textContent='📅 ගමන් දිනය (ලොරිය බඩු අරන් යන දවස)';
+    const t=d.d===nextTrip()?'හෙට':d.d===today()?'අද':'';
+    $('loadInfo').insertAdjacentHTML('afterbegin',`<div class="card pre-hero"><div class="big">🌙</div><div><strong>${esc(d.d)} ${esc(wday(d.d))}${t?' ('+t+')':''} ගමනට වෙන් කරනවා</strong><div class="small">පෙට්ටියට වෙන් කරන / ලොරියට කලින් දාන බඩු. ගමන් දවසේ උදේ <strong>📦 පටවන්න</strong> එකේ දාන්නේ <strong>අලුත් බඩු විතරයි</strong> — මේවා ඉබේම එකතු වෙනවා.${d.d<=today()&&!d.sentRev?'<br>⚠️ දිනය අද / කලින් — හරිද බලන්න.':''}</div></div></div>`);
+    return;}
+  if(lbl)lbl.textContent='📅 ගමන් දිනය';
+  const q=preFor(d.d),n=preTot(q),un=preUnsent(d.d);
+  if(un)$('loadInfo').insertAdjacentHTML('afterbegin',`<div class="card warnbox">🌙 ${esc(d.d)} ගමනට වෙන් කළ ලිස්ට් එක (පැකට් ${preTot(un.i)}) <strong>තවම යැව්වේ නැහැ</strong>. <button class="btn sm primary" onclick="goPre()">🌙 බලලා යවන්න</button></div>`);
+  if(n){$('loadInfo').insertAdjacentHTML('afterbegin',`<div class="card pre-hero"><div class="big">🌙</div><div><strong>කලින් වෙන් කළා — පැකට් ${n}</strong> (වර්ග ${Object.keys(q).length}) මේ ගමනට දැනටමත් එකතුයි.<div class="small">මෙතන දාන්න <strong>අලුතින් පටවන බඩු විතරයි</strong>. එක එක භාණ්ඩය ළඟ 🌙 = වෙන් කළ ගණන.</div><button class="btn sm light" style="margin-top:6px" onclick="preShow('${esc(d.d)}')">👀 වෙන් කළ ලිස්ට් එක</button></div></div>`);
+    document.querySelectorAll('#loadList [data-lrow]').forEach(row=>{const id=row.dataset.lrow,p=num(q[id]);if(!p)return;const l=row.querySelector('.lbl');if(l&&!l.querySelector('.prec'))l.insertAdjacentHTML('beforeend',` <span class="prec">🌙 ${p}</span>`);const s=l&&l.querySelector('.sug');if(s){const m=/(\d+)/.exec(s.textContent);if(m){const left=Math.max(0,Number(m[1])-p);s.textContent=left?`💡 තව ${left}`:'💡 ✓';s.title=`යෝජනාව ${m[1]} − වෙන් කළ ${p}`;}}});}
+  else if(tripDoneToday()&&d.d===today()&&!d.sentRev&&!Object.keys(d.i).length)
+    $('loadInfo').insertAdjacentHTML('afterbegin',`<div class="card infobox">🌙 අද ගමන ඉවරයි වගේ (ගණන් කරලා යැව්වා). <strong>හෙට ගමනට</strong> නම් මෙතන නෙවෙයි — <button class="btn sm primary" onclick="goPre()">🌙 හෙට ගමනට වෙන් කරන්න</button></div>`);}
+/* 💡 fill = what is still needed after what was set aside */
+(function(){const _sf=sugFill;sugFill=function(){const d=loadDraft(),q=d.pre?{}:preFor(d.d);if(!preTot(q))return _sf.apply(this,arguments);const g=sugFor(d.d);if(!g)return;if(isLocked(d)){toast('🔒 යැව්වා — වෙනස් කරන්න බැහැ','warn');return;}
+  if(Object.keys(d.i).length&&!confirm('දැනට දාපු ප්‍රමාණ යෝජනාවෙන් මාරු කරන්නද? (වෙන් කළ ගණන අඩු කරලා)'))return;let n=0;Object.entries(g.i).forEach(([k,v])=>{if(!products().some(p=>p[0]===k))return;const left=Math.max(0,num(v)-num(q[k]));if(left){d.i[k]=left;n++;}else delete d.i[k];});save();renderLoad();toast(`💡 යෝජනාවෙන් වෙන් කළ ගණන අඩු කරලා දැම්මා (${n})`);};})();
+function preBar(){const d=loadDraft(),bar=$('loadBar');if(!bar)return;bar.classList.remove('has-pre');const old=bar.querySelector('.pre-sum');if(old)old.remove();
+  if(d.pre){const hb=bar.querySelector('.ho-btn');if(hb)hb.remove();const b=bar.querySelector('button.primary');if(b&&!isLocked(d)&&!d.sentRev)b.textContent='🌙 වෙන් කළා — යවන්න ➜';bar.classList.add('has-pre');bar.insertAdjacentHTML('afterbegin',`<div class="pre-sum">🌙 <strong>${esc(d.d)} ${esc(wday(d.d))}</strong> ගමනට වෙන් කරනවා</div>`);return;}
+  const q=preFor(d.d),n=preTot(q);if(!n)return;const now=Object.values(d.i).reduce((a,b)=>a+num(b),0);bar.classList.add('has-pre');bar.insertAdjacentHTML('afterbegin',`<div class="pre-sum">අලුතින් <strong>${now}</strong> + 🌙 වෙන් කළා <strong>${n}</strong> = ගමනට <strong>${now+n}</strong> පැකට්</div>`);
+  if(!bar.querySelector('.ho-btn')&&hoOn()&&!hoDone(d)&&!isLocked(d)){const b=bar.querySelector('button.primary');if(b)b.insertAdjacentHTML('beforebegin','<button class="btn light ho-btn" onclick="hoStart()">📥 භාර ගන්න</button>');}
+  const b=bar.querySelector('button.primary');if(b&&b.disabled&&preOk(d)){b.disabled=false;b.textContent='📥 භාර ගැනීම යවන්න ➜';}}
+function preHome(){if(!S.cfg||!S.me||screen!=='home')return;const body=$('homeBody');if(!body)return;const steps=body.querySelectorAll('.card.step');const after=steps[steps.length-1];if(!after)return;
+  const nt=nextTrip(),pd=S.drafts.pre,sentN=preTot(preFor(pd&&pd.sentRev&&pd.d>today()?pd.d:nt)),dd=pd&&pd.d>today()?pd.d:nt,un=preUnsent(dd);
+  const hot=tripDoneToday()||(hmNow()||'')>='14:00';
+  after.insertAdjacentHTML('afterend',`<div class="card step pre-step ${sentN?'done':''} ${hot&&!sentN?'hot':''}"><div class="num">${sentN?'✓':'🌙'}</div><div class="grow"><h3>🌙 හෙට ගමනට වෙන් කරන්න</h3><div class="muted">${sentN?`${esc(dd)} ${esc(wday(dd))} ගමනට වෙන් කළා · පැකට් ${sentN}`:un?`වෙන් කරමින්… (පැකට් ${preTot(un.i)}) — තවම යැව්වේ නැහැ`:'කලින් දවසේ පෙට්ටියට / ලොරියට දාන බඩු'}</div></div><button class="btn ${hot&&!sentN?'primary':'light'}" onclick="goPre()">${sentN?'බලන්න':'වෙන් කරන්න'}</button></div>`);
+  /* trip morning: say the set-aside goods are already in */
+  const tq=preFor(today()),tn=preTot(tq);if(tn&&steps[2]){const m=steps[2].querySelector('.muted');if(m)m.insertAdjacentHTML('beforeend',`<br>🌙 ඊයේ වෙන් කළා ${tn} — අලුත් බඩු විතරක් දාන්න`);}}
+function preCountNote(){const r=S.rep;if(!r)return;const dd=addDays(r.d,1),q=preFor(dd),un=S.drafts.pre&&!S.drafts.pre.sentRev&&S.drafts.pre.d===dd?S.drafts.pre.i:{},n=preTot(q)+preTot(un);if(!n)return;const h=$('countHead');if(!h||h.querySelector('.pre-note'))return;
+  h.insertAdjacentHTML('beforeend',`<div class="card warnbox pre-note">🌙 <strong>${esc(dd)} ගමනට වෙන් කළ බඩු (පැකට් ${n})</strong> මේ ගණනට <strong>එකතු කරන්න එපා</strong> — ඒවා හෙට ගමනේ. ලොරියේ තියෙනවා නම් වෙනම තියලා ගණන් කරන්න. <button class="btn sm light" onclick="preShow('${esc(dd)}')">👀 ලිස්ට් එක</button></div>`);}
 
 </script>
 </body>
