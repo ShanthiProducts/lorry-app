@@ -124,7 +124,7 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
     <div class="grid2"><button class="tile" onclick="go('inbox')"><span>📥</span>Report / Code දාන්න<small>WhatsApp එකෙන් ආපු message (Cloud නැති වෙලාවට)</small></button><button class="tile" onclick="go('setup')"><span>⚙️</span>සැකසුම්<small>නම, WhatsApp අංකය</small></button></div>
-    <div class="foot">Shanthi Food Products · ලොරි App v4.4.5 · Internet නැතුවත් වැඩ කරනවා</div></section>
+    <div class="foot">Shanthi Food Products · ලොරි App v4.5.2 · Internet නැතුවත් වැඩ කරනවා</div></section>
 
   <section class="screen" id="s-inbox">
     <div class="card"><h3>📥 WhatsApp message එක දාන්න</h3><p class="muted small">ලොකු මහත්තයා එවන <strong>Report</strong> එක හෝ <strong>භාණ්ඩ ලැයිස්තුව</strong> — WhatsApp එකේ message එක ඔබාගෙන ඉඳලා <strong>Copy</strong> කරලා මෙතන <strong>Paste</strong> කරන්න.</p>
@@ -1201,6 +1201,88 @@ function lrChip(k){const el=document.querySelector(`#loadList [data-lrow="${CSS.
   c.className='lr-on'+(q?' lr-up':'');c.innerHTML=n?(q?`🚚 ලොරියේ <b>${n}</b> → <b>${n+q}</b>`:`🚚 ලොරියේ <b>${n}</b>`):`🆕 ලොරියේ නැහැ → පැටෙව්වම <b>${q}</b>`;}
 (function(){const _s=loadSet;loadSet=function(id){const r=_s.apply(this,arguments);try{if(loadMode!=='pre'&&!isLocked(loadDraft()))lrChip(id);}catch(e){}return r;};})();
 
+
+/* ================= v4.5.2 · 🕓 04:00 වැඩ දවස · 🔐 encrypt (lx) · 📋 කම්හලේ අලුත් ඇණවුම් + 🔴 hold live · 🔄 update තීරුව ================= */
+const LA_VER='4.52';
+/* 🕓 "today" = the work day (PC setting, e.g. before 04:00 = yesterday) — same rule as the PC and the factory app */
+const _calToday=today;
+today=function(){const t=_calToday();try{const de=String((S.cfg&&S.cfg.de)||'00:00');if(!/^\d\d:\d\d$/.test(de)||de==='00:00')return t;
+  const p={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);
+  const hm=`${String(p.hour).padStart(2,'0')}:${String(p.minute).padStart(2,'0')}`;if(hm<de){const d=new Date(t+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);}}catch(e){}return t;};
+/* keep the PC's extra settings (work-day end, newest app version) that the old cfg reader drops */
+(function(){const _ac=applyCodes;applyCodes=function(codes){const ex=(codes||[]).map(c=>c&&!c.error&&(c.type==='cfg'?c.data:(c.type==='rep'&&c.data?c.data.cfg:null))).filter(x=>x&&typeof x==='object').pop();
+  const r=_ac.apply(this,arguments);try{if(ex&&S.cfg){if(ex.de!==undefined)S.cfg.de=String(ex.de).slice(0,5);if(ex.lv!==undefined)S.cfg.lv=String(ex.lv).slice(0,8);save();laVerBar();}}catch(e){}return r;};})();
+/* a count button on a row that is no longer on the screen does nothing (was an error) */
+(function(){const _ca=countAdd;countAdd=function(id){if(!document.querySelector(`[data-cin="${CSS.escape(String(id))}"]`))return;return _ca.apply(this,arguments);};})();
+
+/* ---------- 🔐 encryption: the PC's link carries a key (#c=project~box~key); messages to the PC go sealed (AES-GCM) ---------- */
+let _lxk={k:'',v:null};
+function lxUn64(s){const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
+function lxB64(u){let b='';for(let i=0;i<u.length;i+=0x8000)b+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));return btoa(b);}
+function lxOn(){return !!(S.cloud&&S.cloud.k&&window.crypto&&crypto.subtle);}
+async function lxKey(){const k=S.cloud&&S.cloud.k;if(!k)throw new Error('no key');if(_lxk.k===k)return _lxk.v;let s=k.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';_lxk={k,v:await crypto.subtle.importKey('raw',lxUn64(s),'AES-GCM',false,['encrypt','decrypt'])};return _lxk.v;}
+async function lxSealObj(obj){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},await lxKey(),new TextEncoder().encode(JSON.stringify(obj))));return {v:1,iv:lxB64(iv),ct:lxB64(ct)};}
+async function lxOpenObj(box){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:lxUn64(box.iv)},await lxKey(),lxUn64(box.ct));return JSON.parse(new TextDecoder().decode(pt));}
+async function lxWrap(code){const box=await lxSealObj({c:code});box.av=LA_VER;box.dev=ensureDev();return sbpEncode('lx',box);}
+function lxSetKey(k){if(!S.cloud||!/^[A-Za-z0-9_-]{43}$/.test(String(k||'')))return false;if(S.cloud.k!==k){S.cloud.k=k;_lxk={k:'',v:null};save();}return true;}
+useLink=function(t){const m=/[#&]c=([a-z0-9-]+)~([A-Za-z0-9_-]+?)(?:~([A-Za-z0-9_-]{43}))?(?=$|[&\s])/.exec(String(t||'').trim());
+  if(!m||!cloudSetCfg(m[1],m[2])){toast('මේක ලොරි app link එක නෙවෙයි. PC එකෙන් එවපු “📱 ලොරි app link” එකම copy කරන්න.','err');return false;}
+  if(m[3])lxSetKey(m[3]);toast('☁️ ඉබේම යැවීම සකස් කළා ✅'+(m[3]?' 🔐':''));cloudSync(true);render();return true;};
+(function(){try{const h=decodeURIComponent((location.hash||'').slice(1)),m=/^c=([a-z0-9-]+)~([A-Za-z0-9_-]+)~([A-Za-z0-9_-]{43})$/.exec(h);
+  if(m&&cloudSetCfg(m[1],m[2])){lxSetKey(m[3]);toast('☁️ ඉබේම යැවීම සකස් කළා ✅ 🔐');try{history.replaceState(null,'','#home');}catch(e){}cloudSync(false);go('home');}}catch(e){}})();
+/* the outbox keeps the plain code on the phone; what goes to Firebase is sealed (a retry seals again — same document id) */
+cloudFlush=async function(){
+  if(!S.cloud||!S.outbox.length)return true;
+  for(const m of S.outbox.slice()){
+    let code=m.code;if(lxOn()){try{code=await lxWrap(m.code);}catch(e){code=m.code;}}
+    let r;try{r=await fetch(`${fsBase()}/in?documentId=${encodeURIComponent(m.id)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:code},at:{stringValue:m.at}}})});}
+    catch(e){S.cloudErr='Internet නැහැ — signal ආපු ගමන් ඉබේම යනවා';save();return false;}
+    if(r.ok||r.status===409){S.outbox=S.outbox.filter(x=>x.id!==m.id);const h=S.sent.find(x=>x.cloudId===m.id);if(h)h.cloudAt=new Date().toISOString();S.cloudErr='';S.cloudOk=new Date().toISOString();save();}
+    else{let j={};try{j=await r.json();}catch(e){}S.cloudErr=cloudErrText(r.status,j);save();return false;}
+  }
+  return true;
+};
+
+/* ---------- 📋 / 🔴 live doc (boxes/<box>/out/live): the factory app writes new orders + hold / release, the lorry writes what it gave.
+   Works while the PC is off; the PC's own lists win once they are newer. Sealed with the same key. ---------- */
+function liveUrl(){return S.cloud?`${fsBase()}/out/live`:'';}
+function liveField(){return 'l_'+String(ensureDev()).replace(/[^A-Za-z0-9_]/g,'_');}
+async function livePull(){if(!lxOn())return false;const url=liveUrl();if(!url)return false;
+  try{const r=await fetch(url,{cache:'no-store'});if(r.status===404){S.live={o:[],h:[],at:new Date().toISOString()};return false;}if(!r.ok)return false;const j=await r.json(),o=[],h=[];
+    for(const [k,v] of Object.entries(j.fields||{})){if(!k.startsWith('f_'))continue;try{const x=await lxOpenObj(JSON.parse(v.stringValue||'{}'));(x.o||[]).forEach(e=>{if(Array.isArray(e)&&e[0]&&Array.isArray(e[3]))o.push(e);});(x.h||[]).forEach(e=>{if(Array.isArray(e)&&e[0])h.push(e);});}catch(e){}}
+    const sig=JSON.stringify([o,h]),ch=sig!==JSON.stringify([(S.live||{}).o||[],(S.live||{}).h||[]]);S.live={o,h,at:new Date().toISOString()};save();return ch;}catch(e){return false;}}
+async function livePush(){if(!lxOn())return;const url=liveUrl();if(!url)return;const since=new Date(Date.now()-3*864e5).toISOString();
+  const od=Object.entries(S.ordDone||{}).map(([id,u])=>[id,(S.ordAt||{})[id]||'']).filter(x=>!x[1]||x[1]>=since).slice(-80);
+  const body=JSON.stringify(od);if(S.liveSent===body)return;
+  try{const box=await lxSealObj({at:new Date().toISOString(),by:S.me||'',od});const f=liveField();
+    const r=await fetch(`${url}?updateMask.fieldPaths=${f}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{[f]:{stringValue:JSON.stringify(box)}}})});if(r.ok){S.liveSent=body;save();}}catch(e){}}
+/* a batch held / released on the factory phone after the PC's last list counts at once */
+(function(){const _bh=batHold;batHold=function(no){try{const pcAt=(S.bat&&S.bat.at)||'';const l=((S.live&&S.live.h)||[]).filter(e=>e[0]===no&&String(e[2]||'')>pcAt).sort((a,b)=>String(a[2]).localeCompare(String(b[2]))).pop();if(l)return l[1]==='hold';}catch(e){}return _bh.apply(this,arguments);};})();
+/* new orders taken on the factory phone (the PC has not seen them yet) — to load and to know; ✓ comes once the PC list has them */
+(function(){const _oh=ordHome;ordHome=function(){let h=_oh.apply(this,arguments);try{const have=new Set(((S.ord&&S.ord.o)||[]).map(x=>x[0])),L=((S.live&&S.live.o)||[]).filter(x=>!have.has(x[0]));
+  if(L.length)h+=`<div class="card"><h3>📱 කම්හලේ අලුත් ඇණවුම් (${L.length})</h3><p class="small muted">කම්හල් phone එකෙන් දැන් ගත්තා — PC එකට ගියාම “✓ දුන්නා” බොත්තම එනවා. පටවද්දී මතක තියාගන්න.</p>${L.map(x=>`<div class="row" style="padding:8px 0;border-bottom:1px solid #eee"><div class="grow"><strong>${esc(x[1])}</strong> <span class="small muted">${esc(x[2]||'')}${x[4]?' · '+esc(x[4]):''}</span><div class="small">${x[3].map(i=>esc(i[1])+' <strong>'+esc(String(i[2]))+'</strong>').join(', ')}</div></div><span class="small muted">📱</span></div>`).join('')}</div>`;}catch(e){}return h;};})();
+(function(){const _og=ordGive;ordGive=function(id){const before=JSON.stringify(S.ordDone||{});const r=_og.apply(this,arguments);try{if(JSON.stringify(S.ordDone||{})!==before){S.ordAt=S.ordAt||{};S.ordAt[id]=new Date().toISOString();save();livePush();}}catch(e){}return r;};})();
+(function(){const _cp=cloudPull;cloudPull=async function(){const r=await _cp.apply(this,arguments);try{const ch=await livePull();await livePush();if(ch&&screen==='home')render();}catch(e){}laVerBar();return r;};})();
+
+/* ---------- 🔄 the PC says a newer lorry app exists ---------- */
+function laVerBar(){try{const want=S.cfg&&S.cfg.lv,newer=want&&parseFloat(want)>parseFloat(LA_VER);let b=document.getElementById('laVerBar');
+  if(!newer){if(b)b.remove();return;}
+  if(!b){b=document.createElement('div');b.id='laVerBar';b.style.cssText='position:sticky;top:0;z-index:999;background:#fef3c7;color:#78350f;border-bottom:2px solid #f59e0b;padding:8px 12px;font-weight:700;font-size:14px';document.body.prepend(b);}
+  b.innerHTML='🔄 App එකේ අලුත් version එකක් තියෙනවා (v'+String(want).replace(/[^0-9.]/g,'')+') — internet එක්ක app එක <u>සම්පූර්ණයෙන් වහලා</u> ආයෙත් අරින්න. <button type="button" style="margin-left:6px;padding:4px 10px;border-radius:8px;border:1px solid #b45309;background:#fff;font-weight:700" onclick="laUpdateNow()">🔄 දැන්</button>';}catch(e){}}
+async function laUpdateNow(){try{if(S.outbox&&S.outbox.length)await cloudFlush();}catch(e){}try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r)await r.update();}catch(e){}location.reload();}
+setTimeout(laVerBar,800);
+/* 🔐 shown in the setup screen */
+(function(){const _rs=renderSetup;renderSetup=function(){_rs.apply(this,arguments);try{const el=$('cloudSetup');if(el&&S.cloud)el.insertAdjacentHTML('beforeend',`<div class="small" style="margin-top:6px">${lxOn()?'🔐 PC එකට යවන පණිවිඩ encrypt කරලා යනවා':'🔓 Encrypt නැහැ — PC එකෙන් අලුත් “📱 ලොරි app link” එක අරන් open කරන්න'} · App v${LA_VER}</div>`);}catch(e){}};})();
+
+/* ---------- ↩️ a scan another phone took back disappears here too (before: it stayed and the load count was too high) ---------- */
+lsPull=async function(d){const url=lsDoc(d.d+(d.pre?'-p':''));if(!url)return 0;let n=0;if(!isLocked(d))d.pend=0;
+  try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)return 0;const j=await r.json(),me=lsField();ls.others={};
+    Object.entries(j.fields||{}).forEach(([k,v])=>{if(!k.startsWith('s_')||k===me)return;let o;try{o=JSON.parse(v.stringValue||'{}');}catch(e){return;}ls.others[k]=o;const ids=new Set();
+      (o.sc||[]).forEach(x=>{const id=x.kind==='b'?x.k:(o.by||k)+'|'+x.at;ids.add(id);if((d.skip||[]).includes(id))return;if((d.sc||[]).some(y=>(y.kind==='b'&&x.kind==='b'?y.k===x.k:(y.id||'')===id)))return;
+        if(isLocked(d)){d.pend=(d.pend||0)+1;return;}d.sc=(d.sc||[]).concat([{...x,id,by:o.by||'',own:0,src:k}]);d.i[x.pid]=(d.i[x.pid]||0)+num(x.q);n++;});
+      if(!isLocked(d)){const gone=(d.sc||[]).filter(y=>!y.own&&y.src===k&&!ids.has(y.id));
+        if(gone.length){gone.forEach(y=>{d.i[y.pid]=Math.max(0,(d.i[y.pid]||0)-num(y.q));});d.sc=d.sc.filter(y=>!gone.includes(y));n++;}}});
+    ls.pulled=new Date().toISOString();save();}catch(e){}return n;};
 </script>
 </body>
 </html>

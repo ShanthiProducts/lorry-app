@@ -155,7 +155,7 @@ textarea.ntext{min-height:90px;font:16px/1.4 system-ui,"Noto Sans Sinhala",sans-
 <header><button class="back" id="backBtn" onclick="go('home')" aria-label="ආපසු">⌂</button><div><h1>🏭 කම්හල් App</h1><p id="hdrSub"></p></div></header>
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
-    <div class="foot">Shanthi Food Products · කම්හල් App v4.5.1 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
+    <div class="foot">Shanthi Food Products · කම්හල් App v4.5.2 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
   <section class="screen" id="s-bill"><div id="billBody"></div></section>
   <section class="screen" id="s-pay"><div id="payBody"></div></section>
   <section class="screen" id="s-ret"><div id="retBody"></div></section>
@@ -1275,7 +1275,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='4.51';
+const FA_VER='4.52';
 function faVerBar(){
   try{const want=S.cfg&&S.cfg.faVer,newer=want&&parseFloat(want)>parseFloat(FA_VER);let b=document.getElementById('faVerBar');
     if(!newer){if(b)b.remove();return;}
@@ -1290,6 +1290,79 @@ async function faUpdateNow(){
 }
 (function(){const _p=pull;pull=async function(){const r=await _p.apply(this,arguments);faVerBar();return r;};})();
 setTimeout(faVerBar,800);
+
+/* ================= v4.5.2 · 📦 live තොගය (ආසන්න) · 💳 live ණය · 📋 / 🔴 live doc (ලොරි app එක්ක) · 📸 ලොකු පණිවිඩ IndexedDB · guards ================= */
+/* a camera box that is not on the screen any more → nothing (was an error) */
+(function(){try{const _qo=QS.open;QS.open=function(el){if(!el)return;return _qo.apply(QS,arguments);};}catch(e){}})();
+
+/* ---------- what the PC has not processed yet (not in its ✓ list, not rejected) — the base of every "live" number ---------- */
+function pendSent(k,days){const ok=okSet(),rj=rjMap(),since=Date.now()-(days||14)*864e5;return S.sent.filter(x=>x.k===k&&!x.gone&&!ok.has(x.uid)&&!rj.has(x.uid)&&new Date(x.at).getTime()>since);}
+
+/* 💳 a shop's debt = the PC's number + bills / payments sent from this phone that the PC has not taken yet */
+function liveDueDelta(cid){let d=0;pendSent('bill',21).forEach(x=>{const r=x.rec||{};if(r.c!==cid||r.staff)return;const net=num(r.est),paid=r.pay?num(r.pay.amt):0;d+=Math.max(0,net-paid);});
+  pendSent('pay',21).forEach(x=>{const r=x.rec||{};if(r.c===cid)d-=num(r.amt);});return r2(d);}
+(function(){const _cr=custRow;custRow=function(k,c){let h=_cr.apply(this,arguments);try{const dd=liveDueDelta(c[0]);if(Math.abs(dd)>0.004){const now=r2(num(c[3])+dd);h=h.replace(/<\/button>$/,`<small style="display:block;text-align:right;color:#b45309">📱 දැන් ≈ ${money(now)}</small></button>`);}}catch(e){}return h;};})();
+
+/* 📦 factory stock now (estimate) = the PC's count + batches packed on this phone − bills / moves from this phone − lorry loads scanned today
+   (only what the PC has not counted yet) */
+function stockDelta(){const D={},add=(pid,q,why)=>{if(!pid||!q)return;const e=D[pid]||(D[pid]={b:0,s:0,l:0});e[why]+=q;};
+  const ok=okSet();
+  myB().forEach(b=>{if(!b||b.st==='void')return;const known={};S.sent.filter(x=>x.k==='batch'&&x.rec&&x.rec.bid===b.bid&&ok.has(x.uid)).forEach(x=>{(x.rec.sz||[]).forEach(z=>{known[z[0]]=Math.max(known[z[0]]||0,num(z[1]));});});
+    (b.sz||[]).forEach(z=>{const extra=num(z[1])-(known[z[0]]||0);if(extra>0)add(z[0],extra,'b');});});
+  pendSent('bill',14).forEach(x=>{(x.rec&&x.rec.it||[]).forEach(i=>{const p=prod(i[0]);if(p&&isW(p))return;add(i[0],num(i[1])+num(i[2]),'s');});});
+  pendSent('move',14).forEach(x=>{(x.rec&&x.rec.it||[]).forEach(i=>add(i[0],num(i[1]),'s'));});
+  const pcAt=(S.stk&&S.stk.at)||'';try{ldAll().forEach(x=>{if(x.pid&&String(x.at||'')>pcAt)add(x.pid,num(x.q),'l');});}catch(e){}
+  return D;}
+(function(){const _rs=renderStock;renderStock=function(){_rs.apply(this,arguments);try{if(!S.stk)return;const D=stockDelta(),keys=Object.keys(D);if(!keys.length)return;
+  const pcQ=pid=>(((S.stk.f||[]).find(r=>r[0]===pid)||[0,[]])[1]||[]).reduce((t,x)=>t+num(x[1]),0);
+  const nm=pid=>{const p=prod(pid);if(p&&p[1])return p[1];for(const f of BF())for(const x of f[4])if(x[3]===pid)return f[0]+' '+x[0];return pid;};
+  const rows=keys.map(pid=>{const e=D[pid],pc=pcQ(pid),now=pc+e.b-e.s-e.l;return `<tr><td>${esc(nm(pid))}</td><td class="num">${pc}</td><td class="num">${e.b?'+'+e.b:''}</td><td class="num">${e.s?'−'+e.s:''}</td><td class="num">${e.l?'−'+e.l:''}</td><td class="num"><b${now<0?' class="bad"':''}>${now}</b></td></tr>`;}).join('');
+  $('stockBody').insertAdjacentHTML('afterbegin',`<div class="card"><h3 style="margin:0 0 6px">📱 දැන් කම්හලේ (ආසන්න)</h3><div class="small muted">PC ගණනට පස්සේ මේ phone එකෙන් හදපු / විකුණපු ඒවා + අද ලොරියට scan කරපු ඒවා. PC එක on වුණාම නිවැරදි ගණන එනවා.</div>
+    <div style="overflow-x:auto"><table class="tbl" style="width:100%;font-size:13px;border-collapse:collapse"><thead><tr><th style="text-align:left">භාණ්ඩය</th><th class="num">PC</th><th class="num">🏷️ හැදුවා</th><th class="num">🧾 ගියා</th><th class="num">🚚 ලොරියට</th><th class="num">≈ දැන්</th></tr></thead><tbody>${rows}</tbody></table></div></div>`);}catch(e){console.warn('live stock',e);}};})();
+(function(){const _go=go;go=function(s){const r=_go.apply(this,arguments);try{if(s==='stock')ldPull().then(()=>{if(screen==='stock')renderStock();});}catch(e){}return r;};})();
+
+/* ---------- 📋 / 🔴 live doc in the lorry mailbox (sealed with the lorry key from the PC) ---------- */
+let _lk={k:'',v:null};
+async function lkKey(){const k=S.cfg&&S.cfg.lk;if(!k)throw new Error('no lorry key');if(_lk.k===k)return _lk.v;_lk={k,v:await crypto.subtle.importKey('raw',urlKey(k),'AES-GCM',false,['encrypt','decrypt'])};return _lk.v;}
+async function lkSeal(obj){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},await lkKey(),new TextEncoder().encode(JSON.stringify(obj))));return {v:1,iv:b64(iv),ct:b64(ct)};}
+async function lkOpen(box){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(box.iv)},await lkKey(),unb64(box.ct));return JSON.parse(new TextDecoder().decode(pt));}
+function liveUrlF(){return S.cfg&&S.cfg.lk&&S.cfg.lb&&S.cloud?`${FS}${S.cfg.lp||S.cloud.p}/databases/(default)/documents/boxes/${S.cfg.lb}/out/live`:'';}
+function liveMine(){
+  const o=pendSent('order',7).map(x=>{const r=x.rec||{},c=cust(r.c);return [x.uid,c?c[1]:(r.cn||''),c?(c[2]||''):'',(r.it||[]).map(i=>{const p=prod(i[0]);return [i[0],p?p[1]:String(i[0]),num(i[1])];}),r.prom||''];});
+  const since=Date.now()-7*864e5,h=S.sent.filter(x=>x.k==='bst'&&!x.gone&&x.rec&&new Date(x.at).getTime()>since).map(x=>[x.rec.no,x.rec.st,x.at]);
+  return {o,h};}
+async function liveSync(){const url=liveUrlF();if(!url||!window.crypto||!crypto.subtle)return;
+  try{const m=liveMine(),body=JSON.stringify(m);if(S.liveSentF!==body){const f='f_'+String(ensureDev()).replace(/[^A-Za-z0-9_]/g,'_');const box=await lkSeal({at:new Date().toISOString(),by:S.me||'',...m});
+      const r=await fetch(`${url}?updateMask.fieldPaths=${f}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{[f]:{stringValue:JSON.stringify(box)}}})});if(r.ok){S.liveSentF=body;save();}}
+    const r=await fetch(url,{cache:'no-store'});if(!r.ok)return;const j=await r.json(),od={};
+    for(const [k,v] of Object.entries(j.fields||{})){if(!k.startsWith('l_'))continue;try{const x=await lkOpen(JSON.parse(v.stringValue||'{}'));(x.od||[]).forEach(e=>{if(Array.isArray(e)&&e[0])od[e[0]]={at:e[1]||x.at||'',by:x.by||''};});}catch(e){}}
+    S.lorryOd=od;save();}catch(e){}}
+(function(){const _p=pull;pull=async function(){const r=await _p.apply(this,arguments);try{await liveSync();if(screen==='orders')renderOrders();}catch(e){}return r;};})();
+/* orders the lorry already gave (PC not yet) → shown, and the ✓ button asks first */
+(function(){const _ro=renderOrders;renderOrders=function(){_ro.apply(this,arguments);try{const od=S.lorryOd||{};(S.cfg.o||[]).forEach(x=>{const g=od[x[0]];if(!g)return;const btn=[...document.querySelectorAll('#ordersBody button')].find(b=>(b.getAttribute('onclick')||'')===`sendDeliver('${x[0]}')`);
+  if(btn)btn.insertAdjacentHTML('beforebegin',`<div class="small" style="color:#047857;margin:6px 0">🚚 ලොරියෙන් දුන්නා${g.by?' ('+esc(g.by)+')':''}${g.at?' · '+esc(fmtAt(g.at,true)):''} — PC එක තවම නැහැ. ආයෙත් ✓ කරන්න ඕනේ නැහැ.</div>`);});}catch(e){}};})();
+
+/* ---------- 📸 big messages (cheque photos) wait in IndexedDB, not in the small phone storage (5 MB) ---------- */
+const OB_BIG=60000;let _obdb=null;
+function obOpen(){return new Promise(res=>{if(_obdb)return res(_obdb);try{const r=indexedDB.open('sbpFactoryOut',1);r.onupgradeneeded=()=>{r.result.createObjectStore('o',{keyPath:'id'});};r.onsuccess=()=>{_obdb=r.result;res(_obdb);};r.onerror=()=>res(null);}catch(e){res(null);}});}
+async function obPut(id,code){const db=await obOpen();if(!db)return false;return new Promise(res=>{try{const t=db.transaction('o','readwrite');t.objectStore('o').put({id,code});t.oncomplete=()=>res(true);t.onerror=()=>res(false);}catch(e){res(false);}});}
+async function obGet(id){const db=await obOpen();if(!db)return null;return new Promise(res=>{try{const q=db.transaction('o','readonly').objectStore('o').get(id);q.onsuccess=()=>res(q.result?q.result.code:null);q.onerror=()=>res(null);}catch(e){res(null);}});}
+async function obDel(id){const db=await obOpen();if(!db)return;try{db.transaction('o','readwrite').objectStore('o').delete(id);}catch(e){}}
+async function obSpill(){let ch=0;for(const m of S.outbox){if(!m.idb&&m.code&&m.code.length>OB_BIG){if(await obPut(m.id,m.code)){m.idb=1;m.len=m.code.length;m.code='';ch++;}}}if(ch)save();return ch;}
+(function(){const _s=send;send=async function(){const r=await _s.apply(this,arguments);try{await obSpill();}catch(e){}return r;};})();
+(function(){const _r=resend;resend=async function(){const r=await _r.apply(this,arguments);try{await obSpill();}catch(e){}return r;};})();
+flush0=async function(){
+  if(!S.cloud||!S.outbox.length)return true;
+  for(const m of S.outbox.slice()){const id=m.id;let code=m.code;
+    if(m.idb){code=await obGet(id);if(!code){S.cloudErr='📸 ලොකු පණිවිඩයක් phone එකේ හොයාගන්න බැහැ ('+id+')';save();continue;}}
+    let r;try{r=await fetch(`${fsBase()}/in?documentId=${encodeURIComponent(id)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:code},at:{stringValue:m.at}}})});}
+    catch(e){S.cloudErr='Internet නැහැ — signal ආපු ගමන් ඉබේම යනවා';save();return false;}
+    if(r.ok||r.status===409){S.outbox=S.outbox.filter(x=>!(x===m||(x.id===id&&x.code===m.code&&!!x.idb===!!m.idb)));if(m.idb)obDel(id);const h=S.sent.find(x=>x.uid===m.uid);if(h&&!S.outbox.some(x=>x.uid===m.uid))h.up=new Date().toISOString();S.cloudErr='';S.cloudOk=new Date().toISOString();save();}
+    else{let j={};try{j=await r.json().catch(()=>({}));}catch(e){}S.cloudErr=cloudErrText(r.status,j);save();return false;}
+  }
+  return true;
+};
+setTimeout(()=>{obSpill().catch(()=>{});},1500);
 </script>
 </body>
 </html>
