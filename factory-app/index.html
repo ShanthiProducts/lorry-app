@@ -155,7 +155,7 @@ textarea.ntext{min-height:90px;font:16px/1.4 system-ui,"Noto Sans Sinhala",sans-
 <header><button class="back" id="backBtn" onclick="go('home')" aria-label="ආපසු">⌂</button><div><h1>🏭 කම්හල් App</h1><p id="hdrSub"></p></div></header>
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
-    <div class="foot">Shanthi Food Products · කම්හල් App v4.5.2 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
+    <div class="foot">Shanthi Food Products · කම්හල් App v4.5.3 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
   <section class="screen" id="s-bill"><div id="billBody"></div></section>
   <section class="screen" id="s-pay"><div id="payBody"></div></section>
   <section class="screen" id="s-ret"><div id="retBody"></div></section>
@@ -234,7 +234,7 @@ async function pull(){
   if(!S.cloud)return;let r;try{r=await fetch(`${fsBase()}/out/fcfg`,{cache:'no-store'});}catch(e){S.cloudErr='Internet නැහැ';save();return;}
   if(r.status===404){S.cloudErr=S.cfg?'⚠️ මේ phone එකේ link එක පරණයි (PC එකෙන් අලුත් යතුරක් හැදුවා). PC එකෙන් අලුත් link එක අරන් open කරන්න. තවම නොගිය බිල් phone එකේ ආරක්ෂිතයි.':'PC එකෙන් තවම ලැයිස්තුව ආවේ නැහැ (PC එකේ “🏭 කම්හල් App” පිටුව එක පාරක් open කරන්න)';save();return;}
   if(!r.ok){let j={};try{j=await r.json();}catch(e){}S.cloudErr=cloudErrText(r.status,j);save();return;}
-  const j=await r.json(),f=j.fields||{},at=(f.at||{}).stringValue||'',code=(f.code||{}).stringValue||'';
+  let j;try{j=await r.json();}catch(e){S.cloudErr='Internet එකෙන් හරි උත්තරයක් ආවේ නැහැ (Wi-Fi login පිටුවක්ද?)';save();return;}const f=j.fields||{},at=(f.at||{}).stringValue||'',code=(f.code||{}).stringValue||'';
   if(code&&(!S.cfg||S.cfg.pushAt!==at)){try{const c=await unseal(code,'fcfg');c.pushAt=at;S.cfg=c;Object.entries(c.bl||{}).forEach(([k,v])=>{if(!S.bookLast[k]||S.bookLast[k].d<v.d||(S.bookLast[k].d===v.d&&S.bookLast[k].n<v.n))S.bookLast[k]=v;});}catch(e){S.cloudErr='PC එකෙන් ආපු ලැයිස්තුව කියවන්න බැහැ — link එක පරණද? (PC එකෙන් අලුත් link එක ගන්න)';save();return;}}
   S.cloudErr='';S.cloudOk=new Date().toISOString();S.pulledAt=new Date().toISOString();save();
   try{await pullBatches();}catch(e){console.warn('batches',e);}
@@ -875,10 +875,10 @@ async function btLoad(){(await idbAll()).forEach(t=>BT.set(t.n,t));}
 btLoad();
 async function pullBatches(){/* out/fbat: what changed (or everything, in parts) — then ✓ to the PC */
   if(!S.cloud||!bOn())return;let r;try{r=await fetch(`${fsBase()}/out/fbat`,{cache:'no-store'});}catch(e){return;}if(!r.ok)return;
-  const j=await r.json(),f=j.fields||{},at=(f.at||{}).stringValue||'',code=(f.code||{}).stringValue||'';if(!code||S.fbatAt===at)return;
+  let j;try{j=await r.json();}catch(e){return;}const f=j.fields||{},at=(f.at||{}).stringValue||'',code=(f.code||{}).stringValue||'';if(!code||S.fbatAt===at)return;
   let p;try{p=await unseal(code,'fbat');}catch(e){return;}
   let list=p.b||[];
-  if(p.full){for(let i=0;i<(p.parts||0);i++){let rr;try{rr=await fetch(`${fsBase()}/out/fb${i}`,{cache:'no-store'});}catch(e){return;}if(!rr.ok)return;const jj=await rr.json(),cc=((jj.fields||{}).code||{}).stringValue||'';try{const pp=await unseal(cc,'fbat');if(pp.ts!==p.ts)return;list=list.concat(pp.b||[]);}catch(e){return;}}}
+  if(p.full){for(let i=0;i<(p.parts||0);i++){let rr;try{rr=await fetch(`${fsBase()}/out/fb${i}`,{cache:'no-store'});}catch(e){return;}if(!rr.ok)return;let jj;try{jj=await rr.json();}catch(e){return;}const cc=((jj.fields||{}).code||{}).stringValue||'';try{const pp=await unseal(cc,'fbat');if(pp.ts!==p.ts)return;list=list.concat(pp.b||[]);}catch(e){return;}}}
   if(!(await idbPut(list))&&list.length){S.cloudErr='⚠️ Phone එකේ batch විස්තර සුරකින්න බැහැ (ඉඩ?)';save();return;}
   list.forEach(t=>{if(t.s==='void')BT.delete(t.n);else BT.set(t.n,t);});
   if(p.stk)S.stk=p.stk;S.fbatAt=at;S.bsync=p.ts;S.bcount=BT.size;save();
@@ -1275,7 +1275,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='4.52';
+const FA_VER='4.53';
 function faVerBar(){
   try{const want=S.cfg&&S.cfg.faVer,newer=want&&parseFloat(want)>parseFloat(FA_VER);let b=document.getElementById('faVerBar');
     if(!newer){if(b)b.remove();return;}
@@ -1363,6 +1363,10 @@ flush0=async function(){
   return true;
 };
 setTimeout(()=>{obSpill().catch(()=>{});},1500);
+
+/* ================= v4.5.3 · කම්හල් app ================= */
+/* P5 · the daily report is kept once (in the 30-day list), not twice (list + settings) → less phone storage */
+(function(){const _rs=rpStore;rpStore=function(){const r=_rs.apply(this,arguments);try{if(S.cfg&&S.cfg.rp){const rp=S.cfg.rp;if(Array.isArray(S.reps)&&S.reps.some(x=>x.d===rp.d&&x.at>=rp.at)){delete S.cfg.rp;save();}}}catch(e){}return r;};try{rpStore();}catch(e){}})();
 </script>
 </body>
 </html>
