@@ -155,7 +155,7 @@ textarea.ntext{min-height:90px;font:16px/1.4 system-ui,"Noto Sans Sinhala",sans-
 <header><button class="back" id="backBtn" onclick="go('home')" aria-label="ආපසු">⌂</button><div><h1>🏭 කම්හල් App</h1><p id="hdrSub"></p></div></header>
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
-    <div class="foot">Shanthi Food Products · කම්හල් App v4.4.9 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
+    <div class="foot">Shanthi Food Products · කම්හල් App v4.5.1 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
   <section class="screen" id="s-bill"><div id="billBody"></div></section>
   <section class="screen" id="s-pay"><div id="payBody"></div></section>
   <section class="screen" id="s-ret"><div id="retBody"></div></section>
@@ -1233,6 +1233,63 @@ async function rpPdf(){const r=(S.reps||[]).find(x=>x.d===rpSel);if(!r||rpPdfBus
 (function(){const _rr=renderRpt;renderRpt=function(){const r=_rr.apply(this,arguments);try{const sv=S.rpSaved||{};document.querySelectorAll('#rptBody .rp-days .chip-btn').forEach(b=>{const m=/rpSel='([^']+)'/.exec(b.getAttribute('onclick')||'');if(m&&sv[m[1]])b.insertAdjacentHTML('beforeend',' ✓');});
   const d=rpSel,L=Array.isArray(S.reps)?S.reps:[];const info=$('rpSaveInfo');if(info)info.textContent=sv[d]?`✓ ${d} save කළා · phone එකේ app එකේ දවස් ${L.length}ක වාර්තා තියෙනවා (දවස් 30ක් තියාගන්නවා)`:`app එකේ දවස් ${L.length}ක වාර්තා තියෙනවා (දවස් 30ක්) · save කරපු PDF Downloads folder එකේ සදහටම`;}catch(e){}return r;};})();
 
+/* ---------- v4.5.0 · audit fixes (2026-11-02) ---------- */
+/* P3 · uid can never repeat even if the saved counter rolls back (restore / failed save) */
+const _uidTail=()=>Date.now().toString(36).slice(-4)+Math.random().toString(36).slice(2,5);
+/* P2 · switching the key while bills are unsent: “No” really means no */
+function applyFLink(t){const m=/[#&]f=([a-z][a-z0-9-]{4,29})~([A-Za-z0-9_-]{20,64})~([A-Za-z0-9_-]{40,60})/.exec(String(t||''));if(!m)return false;const c={p:m[1],b:m[2],k:m[3]};
+  if(!S.cloud||S.cloud.b!==c.b||S.cloud.k!==c.k){if(S.outbox.length&&S.cloud&&!confirm('⚠️ තවම PC එකට නොගිය දේවල් '+S.outbox.length+'ක් තියෙනවා. අලුත් link එකට මාරු වුණොත් ඒවා PC එකට කියවන්න බැරි වෙනවා. ඒවා ගියාට පස්සේ මාරු වෙන්න — දැන්ම මාරු වෙන්නද?')){toast('මාරු කළේ නැහැ — කලින් තියෙන '+S.outbox.length+' යවලා ආයෙත් link එක open කරන්න','warn');return true;}S.cloud=c;S.cfg=null;ckey=null;save();}return true;}
+/* P1 · an edit (rev 2) is never lost: each revision is its own cloud document, and flush only removes the exact
+   outbox entry it posted (not one that was replaced while the POST was in flight) */
+let _flushP=null,_flushAgain=false;
+async function flush(){if(_flushP){_flushAgain=true;return _flushP;}_flushP=(async()=>{let ok=true;do{_flushAgain=false;ok=await flush0();}while(_flushAgain&&ok);return ok;})();try{return await _flushP;}finally{_flushP=null;}}
+async function flush0(){
+  if(!S.cloud||!S.outbox.length)return true;
+  for(const m of S.outbox.slice()){const id=m.id,code=m.code;
+    let r;try{r=await fetch(`${fsBase()}/in?documentId=${encodeURIComponent(id)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:code},at:{stringValue:m.at}}})});}
+    catch(e){S.cloudErr='Internet නැහැ — signal ආපු ගමන් ඉබේම යනවා';save();return false;}
+    if(r.ok||r.status===409){S.outbox=S.outbox.filter(x=>!(x.id===id&&x.code===code));const h=S.sent.find(x=>x.uid===m.uid);if(h&&!S.outbox.some(x=>x.uid===m.uid))h.up=new Date().toISOString();S.cloudErr='';S.cloudOk=new Date().toISOString();save();}
+    else{let j={};try{j=await r.json().catch(()=>({}));}catch(e){}S.cloudErr=cloudErrText(r.status,j);save();return false;}
+  }
+  return true;
+}
+async function resend(uid,body,label){const o=S.outbox.find(x=>x.uid===uid),h=S.sent.find(x=>x.uid===uid);if(!o||!h){toast('මේක දැනටමත් PC එකට ගියා — “✏️” ආයෙත් ඔබන්න (ඉල්ලීමක් විදිහට යනවා)','warn');return false;}
+  const rec={...h.rec,...body,uid,rev:(h.rec.rev||1)+1,at:new Date().toISOString(),pv:S.cfg.pv||''};let code;try{code=await seal('fx',rec);}catch(e){toast('Encrypt කරන්න බැරි වුණා','err');return false;}
+  if(!S.outbox.some(x=>x.uid===uid)){toast('මේ අතරේ PC එකට ගියා — ඉල්ලීමක් විදිහට යවන්න','warn');return false;}
+  S.outbox=S.outbox.filter(x=>x.uid!==uid);S.outbox.push({id:'fx_'+uid.replace(/[^A-Za-z0-9_-]/g,'_')+'_r'+rec.rev,uid,code,at:rec.at});
+  const keep=JSON.parse(JSON.stringify(rec));if(keep.pay&&keep.pay.ph)keep.pay.ph=1;h.rec=keep;h.label=label+' ✏️';h.at=rec.at;h.d=rec.d;save();flush().then(()=>{if(['home','history'].includes(screen))render();});return true;}
+async function send(k,body,label,quiet){
+  if(!S.cloud||!S.cfg){toast('PC එකෙන් ලැයිස්තුව තවම ආවේ නැහැ.','err');return false;}
+  if((body.d||'')>today()){toast('අනාගත දිනයක් දාන්න බැහැ — දිනය හරි කරන්න.','err');return false;}
+  const rec={uid:ensureDev()+'-'+(++S.seq)+'-'+_uidTail(),rev:1,k,d:body.d||workDay(),at:new Date().toISOString(),by:S.me||'',pv:S.cfg.pv||'',...body};
+  let code;try{code=await seal('fx',rec);}catch(e){toast('Encrypt කරන්න බැරි වුණා: '+e.message,'err');return false;}
+  S.outbox.push({id:'fx_'+rec.uid.replace(/[^A-Za-z0-9_-]/g,'_'),uid:rec.uid,code,at:rec.at});
+  if(!quiet){const keep=JSON.parse(JSON.stringify(rec));if(keep.ph)keep.ph=1;if(keep.pay&&keep.pay.ph)keep.pay.ph=1;S.sent.unshift({uid:rec.uid,k,d:rec.d,at:rec.at,label,rec:keep});S.sent=S.sent.slice(0,400);}save();
+  flush().then(()=>{if(['home','history'].includes(screen))render();}).catch(()=>{});return true;
+}
+/* P7 · a double tap on “send” never makes two bills / two batches */
+(function(){const guard=(name)=>{const f=window[name];if(typeof f!=='function')return;let busy=false;window[name]=async function(){if(busy){toast('යවමින්…','warn');return;}busy=true;try{return await f.apply(this,arguments);}finally{busy=false;}};};
+  ['sendBill','bSave','sendPay','sendRet','sendMove','sendTake','sendOrder','rawSave','bStatus'].forEach(guard);})();
+/* P9 · a captive portal / bad JSON never leaves an unhandled rejection */
+window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැරැද්දක්: '+String(e.reason&&e.reason.message||e.reason||'').slice(0,80);save();}catch(x){}e.preventDefault&&e.preventDefault();});
+
+
+/* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
+const FA_VER='4.51';
+function faVerBar(){
+  try{const want=S.cfg&&S.cfg.faVer,newer=want&&parseFloat(want)>parseFloat(FA_VER);let b=document.getElementById('faVerBar');
+    if(!newer){if(b)b.remove();return;}
+    if(!b){b=document.createElement('div');b.id='faVerBar';b.style.cssText='position:sticky;top:0;z-index:999;background:#fef3c7;color:#78350f;border-bottom:2px solid #f59e0b;padding:8px 12px;font-weight:700;font-size:14px';document.body.prepend(b);}
+    b.innerHTML='🔄 App එකේ අලුත් version එකක් තියෙනවා (v'+String(want).replace(/[^0-9.]/g,'')+') — internet එක්ක app එක <u>සම්පූර්ණයෙන් වහලා</u> ආයෙත් අරින්න. <button type="button" style="margin-left:6px;padding:4px 10px;border-radius:8px;border:1px solid #b45309;background:#fff;font-weight:700" onclick="faUpdateNow()">🔄 දැන්</button>';
+  }catch(e){}
+}
+async function faUpdateNow(){
+  try{if(S.outbox&&S.outbox.length){await flush();}}catch(e){}
+  try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r)await r.update();}catch(e){}
+  location.reload();
+}
+(function(){const _p=pull;pull=async function(){const r=await _p.apply(this,arguments);faVerBar();return r;};})();
+setTimeout(faVerBar,800);
 </script>
 </body>
 </html>
