@@ -126,13 +126,36 @@ textarea.ntext{min-height:90px;font:16px/1.4 system-ui,"Noto Sans Sinhala",sans-
 /* v4.4.3 */
 .prow{display:grid;grid-template-columns:1fr 104px 84px;gap:6px;align-items:center;padding:6px 0;border-top:1px solid #eef2f7}.prow input{padding:8px;font-size:16px;text-align:center}.prow .pn{font-weight:800}
 .hist.gone{opacity:.55}.okbox{background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;border-radius:12px;padding:10px 12px}
+
+/* v4.4.8 · 📒 දෛනික වාර්තාව */
+.rp-tile{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1.5px solid #fcd34d;background:linear-gradient(135deg,#fffbeb,#fff);cursor:pointer;font:inherit;color:inherit}
+.rp-tile .grow{flex:1}.rp-tile b{display:block;font-size:16px}.rp-tile small{display:block;color:#64748b;font-size:12.5px;margin-top:2px}.rp-ic{font-size:28px}.rp-go{font-size:26px;color:#d97706}
+.rp-new{font-style:normal;font-size:11px;background:#dc2626;color:#fff;border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:middle}
+.rp-days{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px}.chip-btn{flex:none;border:1px solid #e2e8f0;background:#fff;border-radius:999px;padding:7px 12px;font:inherit;font-weight:700;font-size:13px}.chip-btn.on{background:#1c1917;color:#fde68a;border-color:#1c1917}
+.rp-acts{display:grid;grid-template-columns:2fr 1.4fr .6fr;gap:8px;margin-bottom:10px}
+.rp-doc{background:#fff;border-radius:16px;padding:12px;border:1px solid #e2e8f0}
+.rp-biz{font-size:12px;font-weight:800;color:#b45309;letter-spacing:.3px}.rp-head h2{font-size:17px;margin:2px 0}
+.rp-ks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.rp-k{border:1px solid #e2e8f0;border-radius:12px;padding:9px 10px;background:#f8fafc}.rp-k span{display:block;font-size:12px;color:#64748b}.rp-k b{display:block;font-size:16px;margin-top:2px}.rp-k small{display:block;font-size:11px;color:#64748b;margin-top:2px;line-height:1.35}
+.rp-k.gold{background:linear-gradient(135deg,#fef3c7,#fffbeb);border-color:#fcd34d}.rp-k.ok b{color:#15803d}.rp-k.warn b{color:#b45309}.rp-k.bad b{color:#b91c1c}
+.rp-sec{border-top:1px solid #eef2f7;padding:6px 0}.rp-sec summary{cursor:pointer;padding:8px 2px;font-size:15px;list-style:none}.rp-sec summary::-webkit-details-marker{display:none}.rp-sec summary::before{content:'▸';display:inline-block;margin-right:6px;transition:transform .2s;color:#d97706}.rp-sec[open] summary::before{transform:rotate(90deg)}
+.rp-c{font-size:12px;background:#f1f5f9;border-radius:999px;padding:1px 8px;margin-left:4px;color:#475569}
+.rp-rt{font-weight:800;font-size:13.5px;margin:10px 0 4px;color:#92400e}.rp-rt small{font-weight:600;color:#64748b}.rp-st{font-weight:800;font-size:13px;margin:10px 0 4px}
+.rp-tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid #eef2f7;border-radius:10px}
+.rp-t{border-collapse:collapse;width:100%;font-size:12.5px;white-space:nowrap}.rp-t th{background:#fef3c7;color:#78350f;font-weight:800;padding:6px 7px;text-align:left;position:sticky;top:0}.rp-t td{padding:6px 7px;border-top:1px solid #f1f5f9}.rp-t .n{text-align:right;font-variant-numeric:tabular-nums}
+.rp-t tbody tr:nth-child(even) td{background:#fafafa}.rp-t tfoot td{background:#fffbeb;font-weight:800;border-top:2px solid #fcd34d}
+.rp-line{display:flex;justify-content:space-between;padding:6px 2px;border-bottom:1px dashed #e2e8f0}.rp-line.bad b{color:#b91c1c}
+.neg{color:#b91c1c}.pos{color:#b45309}.okc{color:#15803d}.rp-ul{margin:4px 0;padding-left:18px}.rp-ul li{margin:4px 0}
+@media print{body *{visibility:hidden!important}#rpDoc,#rpDoc *{visibility:visible!important}#rpDoc{position:absolute;left:0;top:0;width:100%;border:0;padding:0}
+ .rp-sec{break-inside:auto}.rp-sec summary::before{content:''}.rp-tw{overflow:visible;border:0}.rp-t{font-size:10px;white-space:normal}.rp-t th{background:#eee!important;color:#000!important}.rp-k,.rp-k.gold,.rp-t tfoot td{background:#fff!important}
+ details.rp-sec>*{display:block}.rp-ks{grid-template-columns:repeat(3,1fr)}.rp-t td:first-child,.rp-t td.n{white-space:nowrap}@page{size:A4;margin:10mm}}
 </style>
 </head>
 <body>
 <header><button class="back" id="backBtn" onclick="go('home')" aria-label="ආපසු">⌂</button><div><h1>🏭 කම්හල් App</h1><p id="hdrSub"></p></div></header>
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
-    <div class="foot">Shanthi Food Products · කම්හල් App v4.4.3 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
+    <div class="foot">Shanthi Food Products · කම්හල් App v4.4.9 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
   <section class="screen" id="s-bill"><div id="billBody"></div></section>
   <section class="screen" id="s-pay"><div id="payBody"></div></section>
   <section class="screen" id="s-ret"><div id="retBody"></div></section>
@@ -1078,6 +1101,138 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync(false
 window.addEventListener('online',()=>sync(false));
 setInterval(()=>{if(!document.hidden)sync(false);},5*60*1000);
 go(S.me||!S.cloud?'home':'setup');sync(false).then(()=>{if(screen==='home')render();});
+
+/* ================= v4.4.8 · 📒 දෛනික ගිණුම් වාර්තාව (PC එකෙන් ඉබේම — දින 30ක් phone එකේ, internet නැතුවත් බලන්න) ================= */
+TITLES.rpt='📒 දෛනික වාර්තාව';let rpSel='';
+function rpStore(){const r=S.cfg&&S.cfg.rp;if(!r||!r.d||!r.s)return false;S.reps=Array.isArray(S.reps)?S.reps:[];const i=S.reps.findIndex(x=>x.d===r.d);
+  if(i>=0&&S.reps[i].at>=r.at)return false;if(i>=0)S.reps[i]=r;else S.reps.push(r);S.reps.sort((a,b)=>b.d.localeCompare(a.d));S.reps=S.reps.slice(0,30);S.rpNew=r.d;save();return true;}
+const rpM=n=>n===''||n===null||n===undefined?'':'රු. '+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const rpN=n=>n===''||n===null||n===undefined?'':Number(n).toLocaleString('en-US',{maximumFractionDigits:2});
+function rpToday(){try{return new Intl.DateTimeFormat('en-CA',{timeZone:TZ}).format(new Date());}catch(e){return new Date().toISOString().slice(0,10);}}
+function rpTable(head,rows,numCols,foot){if(!rows.length)return '';return `<div class="rp-tw"><table class="rp-t"><thead><tr>${head.map((h,i)=>`<th class="${numCols.includes(i)?'n':''}">${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${numCols.includes(i)?'n':''}">${c}</td>`).join('')}</tr>`).join('')}</tbody>${foot?`<tfoot><tr>${foot.map((c,i)=>`<td class="${numCols.includes(i)?'n':''}">${c}</td>`).join('')}</tr></tfoot>`:''}</table></div>`;}
+function rpSec(id,ic,t,n,body,open){if(!body)return '';return `<details class="rp-sec" ${open?'open':''}><summary>${ic} <b>${t}</b>${n!==''?` <span class="rp-c">${n}</span>`:''}</summary>${body}</details>`;}
+function rpHtml(r){const s=r.s,dd=v=>v===null?'—':(v>0?'+':'')+rpM(v);
+  const k=(ic,t,v,sub,cls)=>`<div class="rp-k ${cls||''}"><span>${ic} ${t}</span><b>${v}</b>${sub?`<small>${sub}</small>`:''}</div>`;
+  let html=`<div class="rp-head"><div><div class="rp-biz">${esc(r.biz||'')}</div><h2>📒 දෛනික ගිණුම් වාර්තාව — ${esc(r.d)}</h2><div class="small muted">හැදුවේ ${esc(r.by||'')} · ${esc(new Date(r.at).toLocaleString('en-GB',{timeZone:TZ,day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:false}))}</div></div></div>
+  <div class="rp-ks">${k('🧾','අද විකුණුම්',rpM(s.net),`බිල් ${s.bills} · 🚚 ${rpM(s.lor[0])} · 🏭 ${rpM(s.fac[0])}`,'gold')}${k('💵','Cash ලැබුණා',rpM(s.cash),`චෙක් / බැංකු ${rpM(s.chq)}`)}${k('📒','ණයට ගියා',rpM(s.credit),s.cn?`Credit note ${rpM(s.cn)}`:'')}${k('💰','පරණ ණය ලැබුණා',rpM(s.coll),'')}${k('🧾','වියදම්',rpM(s.exp),'')}${k('🔢','මුදල් ගණන',s.counted===null?'ගණන් කළේ නැහැ':rpM(s.counted),s.counted===null?'':`තියෙන්න ඕනේ ${rpM(s.should)} · වෙනස ${dd(s.diff)}`,s.diff===null?'':Math.abs(s.diff)>0.5?(s.diff<0?'bad':'warn'):'ok')}${k('👤','අද ගත්තා / බැංකුවට',rpM(safeN(s.taken)+safeN(s.out)),'')}${k('📅','මේ මාසේ දක්වා',rpM(s.mt[0]),`බිල් ${s.mt[1]}${s.lm?` · පහුගිය මාසේ මේ දවස් වලට ${rpM(s.lm)}`:''}`)}${k('🏪','මුළු ණය',rpM(s.dClose),`දවස පටන් ගද්දී ${rpM(s.dOpen)}`)}</div>
+  ${s.lzSent===false&&s.lor[1]?'<div class="warnbox">🚛 මේ දවසට ලොරි Report එක ලොරි app එකට යැව්වේ නැහැ.</div>':''}`;
+  /* 1. sales by bill, grouped by route */
+  const hasCn=r.b.some(x=>Number(x[15])>0);const byR={};r.b.forEach(x=>(byR[x[0]]=byR[x[0]]||[]).push(x));const tot=i=>r.b.reduce((t,x)=>t+(Number(x[i])||0),0);
+  let sb='';Object.keys(byR).forEach(rt=>{const L=byR[rt];sb+=`<div class="rp-rt">🛣️ ${esc(rt)} <small>${L.length} බිල් · ${rpM(L.reduce((t,x)=>t+x[8],0))}</small></div>`+rpTable(['📒 පොත','ගම','කඩය','අද බිල','Return','Damage','Discount','ශුද්ධ','පෙර හිඟ','💵 Cash','🏦 චෙක් / බැංකු',...(hasCn?['🎟 Credit note']:[]),'📒 ණයට','ඉතිරි ණය'],L.map(x=>[esc(x[1])+(x[14]==='F'?' 🏭':''),esc(x[2]),esc(x[3]),rpN(x[4]),rpN(x[5]||''),rpN(x[6]||''),rpN(x[7]||''),`<b>${rpN(x[8])}</b>`,rpN(x[9]),rpN(x[10]||''),rpN(x[11]||''),...(hasCn?[rpN(x[15]||'')]:[]),rpN(x[12]||''),rpN(x[13])]),hasCn?[3,4,5,6,7,8,9,10,11,12,13]:[3,4,5,6,7,8,9,10,11,12]);});
+  if(r.b.length)sb+=`<div class="rp-st">එකතුව</div>`+rpTable(['අද බිල','Return','Damage','Discount','ශුද්ධ','💵 Cash','🏦 චෙක් / බැංකු',...(hasCn?['🎟 Credit note']:[]),'📒 ණයට'],[[rpN(tot(4)),rpN(tot(5)),rpN(tot(6)),rpN(tot(7)),`<b>${rpN(tot(8))}</b>`,`<b>${rpN(tot(10))}</b>`,`<b>${rpN(tot(11))}</b>`,...(hasCn?[`<b>${rpN(tot(15))}</b>`]:[]),`<b>${rpN(tot(12))}</b>`]],[0,1,2,3,4,5,6,7,8]);
+  html+=rpSec('b','🧾','දවසේ විකුණුම් (බිල් අනුව)',r.b.length,sb,true);
+  const ct=i=>r.c.reduce((t,x)=>t+(Number(x[i])||0),0);
+  html+=rpSec('c','📒','ණය — අද අලුතින් ගත්තා / ලැබුණා',r.c.length,rpTable(['Route','ගම','කඩය','පෙර හිඟ','➕ අද අලුතින් ණයට','➖ අද ලැබුණා (පරණ ණයට)','ක්‍රමය','ඉතිරි ණය'],r.c.map(x=>[esc(x[0]),esc(x[1]),esc(x[2]),rpN(x[3]),x[4]?`<b class="neg">${rpN(x[4])}</b>`:'',x[5]?`<b class="okc">${rpN(x[5])}</b>`:'',esc(x[6]),`<b>${rpN(x[7])}</b>`]),[3,4,5,7],['','','<b>එකතුව</b>',rpN(ct(3)),`<b>${rpN(ct(4))}</b>`,`<b>${rpN(ct(5))}</b>`,'',`<b>${rpN(ct(7))}</b>`]),true);
+  const q=r.q||{};const qb=(q.in.length?'<div class="rp-st">📥 අද ලැබුණු චෙක්</div>'+rpTable(['අංකය','බැංකුව','චෙක් දිනය','මුදල','කඩය'],q.in.map(x=>[esc(x[0]),esc(x[1]),esc(x[2]),rpN(x[3]),esc(x[4])]),[3]):'')+(q.due.length?'<div class="rp-st">🏦 අද / හෙට බැංකුගත කරන්න</div>'+rpTable(['චෙක් දිනය','මුදල','කඩය','අංකය'],q.due.map(x=>[esc(x[0]),rpN(x[1]),esc(x[2]),esc(x[3])]),[1]):'')+(q.my.length?'<div class="rp-st">✍️ මම ලියපු චෙක් (දින 3 ඇතුළත)</div>'+rpTable(['දිනය','කාටද','මුදල','අංකය'],q.my.map(x=>[esc(x[0]),esc(x[1]),rpN(x[2]),esc(x[3])]),[2]):'')+(q.ret.length?'<div class="rp-st">↩️ ආපසු ආපු චෙක්</div>'+rpTable(['චෙක් දිනය','මුදල','කඩය','අංකය'],q.ret.map(x=>[esc(x[0]),rpN(x[1]),esc(x[2]),esc(x[3])]),[1]):'');
+  html+=rpSec('q','🏦','චෙක්',q.in.length+q.due.length+q.my.length+q.ret.length,qb,false);
+  if(r.cc){const den=Object.entries(r.cc.den||{}).filter(([,v])=>Number(v)>0).sort((a,b)=>Number(b[0])-Number(a[0]));html+=rpSec('cc','💵','මුදල් ගණන','',`<div class="rp-line"><span>තියෙන්න ඕනේ</span><b>${rpM(r.cc.should)}</b></div><div class="rp-line"><span>ගණන් කළා</span><b>${rpM(r.cc.counted)}</b></div><div class="rp-line ${Math.abs(r.cc.diff)>0.5?'bad':''}"><span>වෙනස</span><b>${dd(r.cc.diff)}</b></div>`+(den.length?rpTable(['නෝට්ටුව / කාසිය','ගණන','වටිනාකම'],den.map(([n,c])=>['රු. '+n,c,rpN(n*c)]),[1,2]):''),false);}
+  html+=rpSec('exp','🧾','අද වියදම්',r.exp.length,rpTable(['විස්තරය','මුදල'],r.exp.map(x=>[esc(x[0]),rpN(x[1])]),[1],['<b>එකතුව</b>',rpN(r.exp.reduce((t,x)=>t+x[1],0))]),false);
+  html+=rpSec('rd','↩️','Return / Damage',r.rd.length,rpTable(['කඩය','භාණ්ඩය','වර්ගය','ගණන','මුදල'],r.rd.map(x=>[esc(x[0]),esc(x[1]),esc(x[2]),rpN(x[3]),rpN(x[4])]),[3,4]),false);
+  html+=rpSec('er','⚠️','වැරදුණු බිල් / ප්‍රශ්න',r.er.length,rpErHtml(r.er),r.er.length>0);
+  html+=rpSec('tk','👤','අද ගත්ත / බැංකුවට දැම්ම මුදල',r.tk.length,rpTable(['විස්තරය','මුදල'],r.tk.map(x=>[esc(x[0]),rpN(x[1])]),[1]),false);
+  html+=rpSec('lz','🚛','ලොරි තොගය — අඩු / වැඩි',r.lz.length,rpTable(['භාණ්ඩය','තියෙන්න ඕනේ','ගණන් කළා','වෙනස'],r.lz.map(x=>[esc(x[0]),x[1],x[2],`<b class="${x[3]<0?'neg':'pos'}">${x[3]>0?'+':''}${x[3]}</b>`]),[1,2,3]),r.lz.length>0);
+  html+=rpSec('od','📅','දින 60ට වැඩි ණය (ඉහළම 10)',r.od.length,rpTable(['කඩය','ගම','ණය','දින'],r.od.map(x=>[esc(x[0]),esc(x[1]),rpN(x[2]),x[3]]),[2,3]),false);
+  html+=rpSec('tm','🔔','හෙට කරන්න ඕනේ',r.tm.length,r.tm.length?`<ul class="rp-ul">${r.tm.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`:'',r.tm.length>0);
+  return html;}
+function safeN(v){const n=Number(v);return Number.isFinite(n)?n:0;}
+function rpShareText(r){const s=r.s;return `📒 *${r.biz||''}* — දෛනික වාර්තාව ${r.d}\n🧾 විකුණුම් ${rpM(s.net)} (බිල් ${s.bills})\n🚚 ලොරිය ${rpM(s.lor[0])} · 🏭 Factory ${rpM(s.fac[0])}\n💵 Cash ${rpM(s.cash)} · 📒 ණයට ${rpM(s.credit)}\n💰 පරණ ණය ලැබුණා ${rpM(s.coll)}\n🧾 වියදම් ${rpM(s.exp)}\n🔢 මුදල් ගණන ${s.counted===null?'ගණන් කළේ නැහැ':rpM(s.counted)+' (වෙනස '+(s.diff>0?'+':'')+rpM(s.diff)+')'}\n🏪 මුළු ණය ${rpM(s.dClose)}`;}
+function renderRpt(){const box=$('rptBody');const L=Array.isArray(S.reps)?S.reps:[];if(!L.length){box.innerHTML=`<div class="card hero"><div class="big">📒</div><h2>තවම වාර්තාවක් නැහැ</h2><p>PC එකේ මුදල් ගණන සුරැකුවාම දවසේ ගිණුම් වාර්තාව ඉබේම මෙතනට එනවා.</p><button class="btn primary block" onclick="sync(true).then(()=>{rpStore();renderRpt();})">🔄 දැන් ගන්න</button></div>`;return;}
+  if(!rpSel||!L.some(x=>x.d===rpSel))rpSel=L[0].d;const r=L.find(x=>x.d===rpSel);if(S.rpNew===r.d){S.rpNew='';save();}
+  box.innerHTML=`<div class="rp-days no-print">${L.map(x=>`<button class="chip-btn ${x.d===rpSel?'on':''}" onclick="rpSel='${x.d}';renderRpt()">${x.d.slice(5).replace('-','/')}</button>`).join('')}</div>
+   <button class="btn primary block big no-print" onclick="rpPdf()">📥 Phone එකේ save කරන්න (PDF)</button><div class="small muted no-print" id="rpSaveInfo" style="margin:4px 2px 8px"></div><div class="rp-acts no-print"><button class="btn light" onclick="window.print()">🖨️ Print</button><button class="btn light" onclick="rpShare()">💬 WhatsApp</button><button class="btn light" onclick="sync(true).then(()=>{rpStore();renderRpt();})">🔄</button></div>
+   <div id="rpDoc" class="rp-doc">${rpHtml(r)}</div>`;}
+function rpShare(){const r=(S.reps||[]).find(x=>x.d===rpSel);if(!r)return;const t=rpShareText(r);if(navigator.share){navigator.share({text:t}).catch(()=>{});}else window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');}
+(function(){
+  const main=document.querySelector('main');if(main&&!$('s-rpt'))main.insertAdjacentHTML('beforeend','<section class="screen" id="s-rpt"><div id="rptBody"></div></section>');
+  const _r=render;render=function(){if(screen==='rpt'){$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'';try{document.querySelectorAll('details.rp-sec').forEach(d=>{});}catch(e){}return renderRpt();}return _r.apply(this,arguments);};
+  const _s=sync;sync=async function(){const r=await _s.apply(this,arguments);try{if(rpStore()){toast('📒 දෛනික වාර්තාව ආවා ('+S.rpNew+')');if(screen==='home'||screen==='rpt')render();}}catch(e){}return r;};
+  const _h=renderHome0;renderHome0=function(){const r=_h.apply(this,arguments);try{if(!S.cfg)return r;rpStore();const L=Array.isArray(S.reps)?S.reps:[],t=rpToday(),last=L[0],late=new Date().toLocaleTimeString('en-GB',{timeZone:TZ,hour12:false})>='21:00';
+    const g=$('homeBody')&&$('homeBody').querySelector('.grid2');const html=`<button class="card rp-tile" onclick="go('rpt')"><span class="rp-ic">📒</span><span class="grow"><b>දෛනික ගිණුම් වාර්තාව${S.rpNew?' <em class="rp-new">අලුත්</em>':''}</b><small>${last?`අන්තිම: ${esc(last.d)} · විකුණුම් ${rpM(last.s.net)}`:'තවම නැහැ — PC එකේ මුදල් ගණන සුරැකුවාම එනවා'}${late&&(!last||last.d<t)?' · ⏰ අද වාර්තාව තවම ආවේ නැහැ':''}</small></span><span class="rp-go">›</span></button>`;
+    if(g)g.insertAdjacentHTML('beforebegin',html);}catch(e){console.warn('rp home',e);}return r;};
+  try{rpStore();}catch(e){}
+})();
+window.addEventListener('beforeprint',()=>document.querySelectorAll('#rpDoc details').forEach(d=>{d.dataset.o=d.open?'1':'0';d.open=true;}));
+window.addEventListener('afterprint',()=>document.querySelectorAll('#rpDoc details').forEach(d=>{if(d.dataset.o==='0')d.open=false;}));
+
+/* ---------- v4.4.9 · ➕ තව පැක් කළා (කලින් ගණන + අලුත් ගණන) · 🟡 ගණන දාලා නැති batch මතක් කිරීම ---------- */
+function bTot(b){return (b&&b.sz||[]).reduce((s,x)=>s+num(x[1]),0);}
+function bMore(bid){bEdit(bid);if(!bd||bd.bid!==bid)return;bd.more=1;bd.base={...bd.sz};bd.add={};render();}
+function bMoreAdd(pid){return Math.max(0,Math.floor(num(bd&&bd.add?bd.add[pid]:0)));}
+function bMoreWhy(){if(!bd||!bd.more)return '';const l=sizeLines(bd.fam).filter(s=>bMoreAdd(s[3])>0).map(s=>`${s[0]} +${bMoreAdd(s[3])}`);return '➕ තව පැක් කළා: '+l.join(', ');}
+function bMorePre(pid){const b0=num(bd.base[pid]),a=bMoreAdd(pid);return `කලින් <b>${b0}</b>${a?` + අලුත් <b>${a}</b> = <b class="okc">${b0+a}</b>`:''}`;}
+function bMoreIn(pid,t,n,v){bd.add[pid]=v;bd.sz[pid]=num(bd.base[pid])+bMoreAdd(pid);const p=$('bm_'+pid);if(p)p.innerHTML=bMorePre(pid);bCalc(null,pid,t,n);const w=$('bdWhy');if(w)w.value=bMoreWhy();}
+function bMoreCard(){return `<h3>➕ තව පැක් කළ ගණන <span class="small muted">— කලින් ගණනට ඉබේම එකතු වෙනවා</span></h3>
+  ${sizeLines(bd.fam).map(([size,t,n,pid])=>`<div class="irow"><label><strong>${esc(size)}</strong><small class="muted">${t==='b'?'බණ්ඩලයට '+n:t==='c'?'කාඩ්':'තනි'}</small></label><input type="number" inputmode="numeric" min="0" placeholder="+0" value="${esc(bd.add[pid]||'')}" oninput="bMoreIn('${esc(pid)}','${esc(t)}',${num(n)},this.value)"><div class="bcalc small"><span id="bm_${esc(pid)}">${bMorePre(pid)}</span> · <span id="bc_${esc(pid)}">${bCalcText(t,n,bd.sz[pid],bd.rem[pid],pid)}</span></div></div>`).join('')}
+  <div class="small muted" style="margin-top:6px">🏷️ Stickers රෑ PC එකෙන් print කරද්දී <b>මුළු එකතුවටම</b> හැදෙනවා (බණ්ඩල 1/n … n/n ඔක්කොම අලුතින්). Batch අංකය / stamp එක වෙනස් නැහැ.</div>`;}
+(function(){
+  const _rb=renderBNew;renderBNew=function(){const r=_rb.apply(this,arguments);try{if(bd&&bd.more&&bd.fam){
+      const h=[...document.querySelectorAll('#bnewBody h3')].find(x=>x.textContent.indexOf('📦 හදපු පැකට් ගණන')===0);if(h)h.parentElement.innerHTML=bMoreCard();
+      const w=$('bdWhy');if(w){w.value=bMoreWhy();const f=w.closest('.field');if(f)f.style.display='none';}}}catch(e){console.warn('bMore',e);}return r;};
+  const _bs=bSave;bSave=async function(){if(bd&&bd.more){if(!sizeLines(bd.fam).some(s=>bMoreAdd(s[3])>0)){toast('අලුතින් පැක් කළ ගණනක් දාන්න','err');return;}const w=$('bdWhy');if(w)w.value=bMoreWhy();}return _bs.apply(this,arguments);};
+  const _rl=renderBatches;renderBatches=function(){const r=_rl.apply(this,arguments);try{const box=$('batchesBody');if(!box)return r;
+      box.querySelectorAll('button[onclick^="bEdit("]').forEach(btn=>{const m=/bEdit\('([^']+)'\)/.exec(btn.getAttribute('onclick')||'');const b=m&&myB().find(x=>x.bid===m[1]);if(!b)return;
+        if(b.st==='making'){btn.className='btn sm primary';btn.closest('.card').classList.add('bmk');}
+        else if(bTot(b)>0)btn.insertAdjacentHTML('beforebegin',`<button class="btn sm primary" onclick="bMore('${esc(b.bid)}')">➕ තව පැක් කළා</button>`);});
+      const mk=bMaking();if(mk.length)box.insertAdjacentHTML('afterbegin',bMakingBox(mk,false));}catch(e){console.warn('bList',e);}return r;};
+  const _h=renderHome0;renderHome0=function(){const r=_h.apply(this,arguments);try{const mk=bMaking(),hb=$('homeBody');if(mk.length&&hb)hb.insertAdjacentHTML('afterbegin',bMakingBox(mk,true));}catch(e){console.warn('bHome',e);}return r;};
+})();
+/* batches whose packet count is still not entered (last 3 days) */
+function bMaking(){const d=workDay();return myB().filter(b=>b.st==='making'&&b.d>=addDays(d,-3)&&b.d<=d);}
+function bLate(){return new Date().toLocaleTimeString('en-GB',{timeZone:TZ,hour12:false})>='16:00';}
+function bMakingBox(mk,home){const d=workDay(),late=bLate()||mk.some(b=>b.d<d);
+  return `<div class="${late?'warnbox':'okbox'}" style="margin-bottom:10px">🟡 <b>Batch ${mk.length}ක පැකට් ගණන තවම දාලා නැහැ</b> — ${mk.map(b=>esc(b.no)).join(', ')}<br><span class="small">${late?'දවස ඉවර වෙන්න කලින් ගණන් කරලා දාන්න (stickers රෑ print කරන්න ඕනේ).':'පැක් කරලා ඉවර වුණාම ගණන් කරලා දාන්න.'}</span>${home?`<div style="margin-top:6px"><button class="btn sm primary" onclick="go('batches')">✏️ ගණන දාන්න</button></div>`:''}</div>`;}
+/* 📒 වාර්තාව — ⚠️ වැරදුණු බිල් / ප්‍රශ්න: බිල් අංකය · කඩය · ගම · කවුද · කරන්න ඕනේ දේ (පරණ වාර්තා [title,amount,st] ත් පේනවා) */
+function rpErHtml(L){if(!L||!L.length)return '<div class="muted small">ප්‍රශ්න නැහැ ✅</div>';
+  return L.map(x=>{const [t,a,st,bk,vil,shop,det,who,kind,todo,rt]=x;const where=[bk?`🧾 <b>${esc(bk)}</b>`:'',shop?`🏪 <b>${esc(shop)}</b>${vil?' <span class="muted">('+esc(vil)+')</span>':''}`:'',rt?`🛣️ ${esc(rt)}`:''].filter(Boolean).join(' · ');
+    return `<div class="rp-er ${st==='✅'?'done':''}"><div class="rp-er-h"><b>${st?st+' ':''}${esc(t||'')}</b>${a!==''&&a!==undefined&&a!==null&&+a?`<span class="rp-er-a">${rpN(a)}</span>`:''}</div>
+      ${where?`<div class="small">${where}</div>`:''}${det?`<div class="small muted">${esc(det)}</div>`:''}${who||kind?`<div class="small muted">${kind?esc(kind):''}${who?' · 👤 '+esc(who):''}</div>`:''}${todo?`<div class="small rp-er-todo">👉 ${esc(todo)}</div>`:''}</div>`;}).join('');}
+/* 📥 දෛනික වාර්තාව → PDF ගොනුවක් phone එකේ Downloads folder එකට (internet ඕනේ නැහැ — app එක ඇතුළේම හදනවා) */
+const RP_W=760,RP_PX=0.7092,RP_M=28,RP_PH=Math.floor((842-2*RP_M-14)/RP_PX);/* A4 595×842pt · content 539pt wide */
+function rpPdfCuts(doc,total){const top=doc.getBoundingClientRect().top,ends=[];
+  doc.querySelectorAll('tr,.rp-er,.rp-k,.rp-ks,.rp-line,summary,.rp-rt,.rp-st,.rp-head,li,.rp-sec,.rp-tw,p').forEach(e=>{const r=e.getBoundingClientRect();ends.push(Math.round(r.bottom-top));});
+  ends.sort((a,b)=>a-b);const cuts=[0];let s=0;while(total-s>RP_PH){let c=0;for(const e of ends){if(e>s+RP_PH*0.45&&e<=s+RP_PH)c=e;}if(!c)c=s+RP_PH;cuts.push(c);s=c;}cuts.push(total);return cuts;}
+function rpPdfImg(svg){return new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(new Error('පින්තූරය හදන්න බැරි වුණා'));im.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);});}
+function rpPdfBytes(pages,foot){/* pages: [{jpg:Uint8Array,w,h (px),hpt}] → minimal PDF (JPEG images + Helvetica footer) */
+  const enc=new TextEncoder(),parts=[],offs=[];let len=0;const put=x=>{const b=typeof x==='string'?enc.encode(x):x;parts.push(b);len+=b.length;};
+  const n=pages.length,obj=(i,body)=>{offs[i]=len;put(`${i} 0 obj\n`);body();put('\nendobj\n');};
+  put('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  obj(1,()=>put('<< /Type /Catalog /Pages 2 0 R >>'));
+  obj(2,()=>put(`<< /Type /Pages /Count ${n} /Kids [${pages.map((p,i)=>`${4+i*3} 0 R`).join(' ')}] >>`));
+  obj(3,()=>put('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'));
+  pages.forEach((p,i)=>{const pg=4+i*3,im=pg+1,ct=pg+2,y=842-RP_M-p.hpt;
+    const ft=`${foot}  -  ${i+1}/${n}`.replace(/[()\\]/g,'');
+    const cs=`q 539 0 0 ${p.hpt.toFixed(2)} ${RP_M} ${y.toFixed(2)} cm /Im0 Do Q\nBT /F1 8 Tf 0.4 g ${RP_M} 16 Td (${ft}) Tj ET`;
+    obj(pg,()=>put(`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /XObject << /Im0 ${im} 0 R >> /Font << /F1 3 0 R >> >> /Contents ${ct} 0 R >>`));
+    obj(im,()=>{put(`<< /Type /XObject /Subtype /Image /Width ${p.w} /Height ${p.h} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${p.jpg.length} >>\nstream\n`);put(p.jpg);put('\nendstream');});
+    obj(ct,()=>{const b=enc.encode(cs);put(`<< /Length ${b.length} >>\nstream\n`);put(b);put('\nendstream');});});
+  const xref=len,N=4+n*3;put(`xref\n0 ${N}\n0000000000 65535 f \n`);for(let i=1;i<N;i++)put(String(offs[i]).padStart(10,'0')+' 00000 n \n');
+  put(`trailer\n<< /Size ${N} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+  const out=new Uint8Array(len);let o=0;parts.forEach(b=>{out.set(b,o);o+=b.length;});return out;}
+let rpPdfBusy=false;
+async function rpPdf(){const r=(S.reps||[]).find(x=>x.d===rpSel);if(!r||rpPdfBusy)return;rpPdfBusy=true;toast('📥 PDF හදනවා…');let host=null;
+  try{host=document.createElement('div');host.style.cssText=`position:fixed;left:-20000px;top:0;width:${RP_W}px;background:#fff;color:#0f172a;font-family:system-ui,'Noto Sans Sinhala','Iskoola Pota',sans-serif;font-size:14px;line-height:1.45`;
+    host.innerHTML=`<div id="rpDocPdf" class="rp-doc" style="border:0;border-radius:0;padding:0 2px">${rpHtml(r).replace(/<details/g,'<details open')}</div>`;document.body.appendChild(host);
+    const doc=host.firstElementChild;doc.querySelectorAll('.rp-tw').forEach(x=>{x.style.overflow='visible';});doc.querySelectorAll('.rp-t').forEach(x=>{x.style.whiteSpace='normal';});doc.querySelectorAll('.rp-t th').forEach(x=>{x.style.position='static';});doc.querySelectorAll('.rp-t').forEach(x=>{x.style.fontSize='11px';});doc.querySelectorAll('.rp-t td').forEach(c=>{if(c.textContent.trim().length<=14)c.style.whiteSpace='nowrap';c.style.padding='4px 4px';});doc.querySelectorAll('.rp-t th').forEach(c=>{c.style.whiteSpace='normal';c.style.padding='4px 4px';});doc.querySelectorAll('.rp-t').forEach(t=>{const w=t.scrollWidth;if(w>RP_W-6)t.style.zoom=((RP_W-6)/w).toFixed(3);});
+    await new Promise(z=>setTimeout(z,60));const total=Math.ceil(doc.getBoundingClientRect().height)+4,cuts=rpPdfCuts(doc,total);
+    const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
+    const xh=new XMLSerializer().serializeToString(doc),SC=2,pages=[];
+    for(let i=0;i<cuts.length-1;i++){const s=cuts[i],h=cuts[i+1]-s;
+      const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${RP_W}" height="${h}"><foreignObject x="0" y="0" width="${RP_W}" height="${h}"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${RP_W}px;height:${h}px;overflow:hidden;background:#fff;color:#0f172a;font-family:system-ui,'Noto Sans Sinhala','Iskoola Pota',sans-serif;font-size:14px;line-height:1.45"><style>${css.replace(/<\/style/gi,'')}
+/* v4.4.9 වැරදි */
+.rp-er{border:1px solid #fde68a;border-left:4px solid #d97706;border-radius:10px;padding:8px 10px;margin:6px 0;background:#fffdf5}.rp-er.done{border-left-color:#16a34a;opacity:.8}.rp-er-h{display:flex;justify-content:space-between;gap:8px}.rp-er-a{font-weight:800;color:#b91c1c;white-space:nowrap}.rp-er .small{margin-top:3px;line-height:1.4}.rp-er-todo{color:#92400e;font-weight:600}
+@media print{.rp-er{background:#fff!important;break-inside:avoid}}
+</style><div style="margin-top:${-s}px">${xh}</div></div></foreignObject></svg>`;
+      const im=await rpPdfImg(svg),cv=document.createElement('canvas');cv.width=RP_W*SC;cv.height=Math.max(1,Math.round(h*SC));const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);g.scale(SC,SC);g.drawImage(im,0,0);
+      const bin=atob(cv.toDataURL('image/jpeg',0.82).split(',')[1]),u=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);
+      pages.push({jpg:u,w:cv.width,h:cv.height,hpt:h*RP_PX});}
+    const pdf=rpPdfBytes(pages,`Shanthi Food Products - Daily report ${r.d}`),name=`Shanthi_Report_${r.d}.pdf`,blob=new Blob([pdf],{type:'application/pdf'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);
+    S.rpSaved=S.rpSaved||{};S.rpSaved[r.d]=new Date().toISOString();save();toast(`✅ ${name} — phone එකේ Downloads folder එකට save වුණා (පිටු ${pages.length})`);renderRpt();
+  }catch(e){console.warn('rpPdf',e);toast('PDF හදන්න බැරි වුණා — 🖨️ Print → “Save as PDF” පාවිච්චි කරන්න ('+e.message+')','err');}
+  finally{if(host)host.remove();rpPdfBusy=false;}}
+(function(){const _rr=renderRpt;renderRpt=function(){const r=_rr.apply(this,arguments);try{const sv=S.rpSaved||{};document.querySelectorAll('#rptBody .rp-days .chip-btn').forEach(b=>{const m=/rpSel='([^']+)'/.exec(b.getAttribute('onclick')||'');if(m&&sv[m[1]])b.insertAdjacentHTML('beforeend',' ✓');});
+  const d=rpSel,L=Array.isArray(S.reps)?S.reps:[];const info=$('rpSaveInfo');if(info)info.textContent=sv[d]?`✓ ${d} save කළා · phone එකේ app එකේ දවස් ${L.length}ක වාර්තා තියෙනවා (දවස් 30ක් තියාගන්නවා)`:`app එකේ දවස් ${L.length}ක වාර්තා තියෙනවා (දවස් 30ක්) · save කරපු PDF Downloads folder එකේ සදහටම`;}catch(e){}return r;};})();
+
 </script>
 </body>
 </html>
