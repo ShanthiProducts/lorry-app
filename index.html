@@ -124,7 +124,7 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
     <div class="grid2"><button class="tile" onclick="go('inbox')"><span>📥</span>Report / Code දාන්න<small>WhatsApp එකෙන් ආපු message (Cloud නැති වෙලාවට)</small></button><button class="tile" onclick="go('setup')"><span>⚙️</span>සැකසුම්<small>නම, WhatsApp අංකය</small></button></div>
-    <div class="foot">Shanthi Food Products · ලොරි App v4.5.3 · Internet නැතුවත් වැඩ කරනවා</div></section>
+    <div class="foot">Shanthi Food Products · ලොරි App v4.5.6 · Internet නැතුවත් වැඩ කරනවා</div></section>
 
   <section class="screen" id="s-inbox">
     <div class="card"><h3>📥 WhatsApp message එක දාන්න</h3><p class="muted small">ලොකු මහත්තයා එවන <strong>Report</strong> එක හෝ <strong>භාණ්ඩ ලැයිස්තුව</strong> — WhatsApp එකේ message එක ඔබාගෙන ඉඳලා <strong>Copy</strong> කරලා මෙතන <strong>Paste</strong> කරන්න.</p>
@@ -1203,7 +1203,7 @@ function lrChip(k){const el=document.querySelector(`#loadList [data-lrow="${CSS.
 
 
 /* ================= v4.5.2 · 🕓 04:00 වැඩ දවස · 🔐 encrypt (lx) · 📋 කම්හලේ අලුත් ඇණවුම් + 🔴 hold live · 🔄 update තීරුව ================= */
-const LA_VER='4.53';
+const LA_VER='4.56';
 /* 🕓 "today" = the work day (PC setting, e.g. before 04:00 = yesterday) — same rule as the PC and the factory app */
 const _calToday=today;
 today=function(){const t=_calToday();try{const de=String((S.cfg&&S.cfg.de)||'00:00');if(!/^\d\d:\d\d$/.test(de)||de==='00:00')return t;
@@ -1289,6 +1289,34 @@ lsPull=async function(d){const url=lsDoc(d.d+(d.pre?'-p':''));if(!url)return 0;l
 (function(){const _sl=sendLoad;let at=0;sendLoad=function(){const n=Date.now();if(n-at<2500){toast('යවමින්…','warn');return;}at=n;return _sl.apply(this,arguments);};})();
 /* P9 · a captive portal / broken reply never leaves an unhandled rejection */
 window.addEventListener('unhandledrejection',e=>{try{console.warn('sync',e.reason);S.cloudErr='Sync වැරැද්දක්: '+String(e.reason&&e.reason.message||e.reason||'').slice(0,80);save();}catch(x){}try{e.preventDefault();}catch(x){}});
+/* ================= v4.5.6 · ලොරි app (පෙනුම වෙනසක් නැහැ) ================= */
+/* M4 · a sent (🔒) load / unload keeps its date: the date box is locked until “✏️ නිවැරදි කිරීමක්” */
+(function(){const lock=(id,d)=>{const el=$(id);if(!el||!d)return;const L=isLocked(d);el.disabled=L;if(L&&d.d)el.value=d.d;};
+  const _rl=renderLoad;renderLoad=function(){const r=_rl.apply(this,arguments);try{lock('loadDate',loadDraft());}catch(e){}return r;};
+  const _ru=renderUnload;renderUnload=function(){const r=_ru.apply(this,arguments);try{lock('unloadDate',unloadDraft());}catch(e){}return r;};
+  const _sl=sendLoad;sendLoad=function(){try{const d=loadDraft(),el=$('loadDate');if(el&&isLocked(d)&&d.d)el.value=d.d;}catch(e){}return _sl.apply(this,arguments);};
+  const _su=sendUnload;sendUnload=function(){try{const d=unloadDraft(),el=$('unloadDate');if(el&&isLocked(d)&&d.d)el.value=d.d;}catch(e){}return _su.apply(this,arguments);};})();
+
+/* M3 · two open copies (Home-screen app + Chrome tab) never wipe each other's unsent messages:
+   save() first merges the other copy's new outbox items / history; an item one copy already sent is remembered (S.obDone). */
+let _v456Base=new Set((Array.isArray(S.outbox)?S.outbox:[]).map(o=>o&&o.id));
+function v456Track(){if(!Array.isArray(S.outbox))S.outbox=[];const now=new Set(S.outbox.map(o=>o&&o.id)),done=new Set(Array.isArray(S.obDone)?S.obDone:[]);let add=false;
+  _v456Base.forEach(id=>{if(id&&!now.has(id)&&!done.has(id)){done.add(id);add=true;}});if(add)S.obDone=[...done].slice(-300);_v456Base=now;}
+function v456Merge(){let X;try{X=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){return false;}if(!X||typeof X!=='object')return false;let ch=false;
+  if(!Array.isArray(S.outbox))S.outbox=[];if(!Array.isArray(S.sent))S.sent=[];
+  const tomb=new Set((Array.isArray(S.obDone)?S.obDone:[]).concat(Array.isArray(X.obDone)?X.obDone:[]));
+  if(tomb.size!==(Array.isArray(S.obDone)?S.obDone.length:0)){S.obDone=[...tomb].slice(-300);ch=true;}
+  const key=h=>[h.t,h.uid,h.rev,h.pre?1:0].join('|'),have=new Set(S.sent.map(h=>h&&key(h)));
+  const add=(Array.isArray(X.sent)?X.sent:[]).filter(h=>h&&h.uid&&!have.has(key(h)));
+  if(add.length){S.sent=S.sent.concat(add).sort((a,b)=>String(a.at||'').localeCompare(String(b.at||'')));trimSent();ch=true;}
+  const n0=S.outbox.length;S.outbox=S.outbox.filter(o=>o&&!tomb.has(o.id));if(S.outbox.length!==n0)ch=true;
+  (Array.isArray(X.outbox)?X.outbox:[]).forEach(o=>{if(!o||!o.id||tomb.has(o.id)||S.outbox.some(y=>y.id===o.id))return;S.outbox.push(o);ch=true;});
+  _v456Base=new Set(S.outbox.map(o=>o&&o.id));
+  return ch;}
+(function(){const _sv=save;save=function(){try{v456Track();v456Merge();}catch(e){console.warn('merge',e);}return _sv.apply(this,arguments);};
+  const again=()=>{try{v456Track();if(v456Merge()){_sv();if(screen==='home'||screen==='setup')render();}}catch(x){}};
+  window.addEventListener('storage',e=>{if(e.key===KEY)again();});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)again();});})();
 </script>
 </body>
 </html>

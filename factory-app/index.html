@@ -155,7 +155,7 @@ textarea.ntext{min-height:90px;font:16px/1.4 system-ui,"Noto Sans Sinhala",sans-
 <header><button class="back" id="backBtn" onclick="go('home')" aria-label="ආපසු">⌂</button><div><h1>🏭 කම්හල් App</h1><p id="hdrSub"></p></div></header>
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
-    <div class="foot">Shanthi Food Products · කම්හල් App v4.5.3 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
+    <div class="foot">Shanthi Food Products · කම්හල් App v4.5.7 · Internet නැතුවත් වැඩ කරනවා · දත්ත Encrypt කරලා යවන්නේ</div></section>
   <section class="screen" id="s-bill"><div id="billBody"></div></section>
   <section class="screen" id="s-pay"><div id="payBody"></div></section>
   <section class="screen" id="s-ret"><div id="retBody"></div></section>
@@ -1100,7 +1100,7 @@ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}c
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync(false);});
 window.addEventListener('online',()=>sync(false));
 setInterval(()=>{if(!document.hidden)sync(false);},5*60*1000);
-go(S.me||!S.cloud?'home':'setup');sync(false).then(()=>{if(screen==='home')render();});
+go(S.me||!S.cloud?'home':'setup');setTimeout(()=>{sync(false).then(()=>{if(screen==='home')render();});},0);
 
 /* ================= v4.4.8 · 📒 දෛනික ගිණුම් වාර්තාව (PC එකෙන් ඉබේම — දින 30ක් phone එකේ, internet නැතුවත් බලන්න) ================= */
 TITLES.rpt='📒 දෛනික වාර්තාව';let rpSel='';
@@ -1275,7 +1275,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='4.53';
+const FA_VER='4.57';
 function faVerBar(){
   try{const want=S.cfg&&S.cfg.faVer,newer=want&&parseFloat(want)>parseFloat(FA_VER);let b=document.getElementById('faVerBar');
     if(!newer){if(b)b.remove();return;}
@@ -1367,6 +1367,183 @@ setTimeout(()=>{obSpill().catch(()=>{});},1500);
 /* ================= v4.5.3 · කම්හල් app ================= */
 /* P5 · the daily report is kept once (in the 30-day list), not twice (list + settings) → less phone storage */
 (function(){const _rs=rpStore;rpStore=function(){const r=_rs.apply(this,arguments);try{if(S.cfg&&S.cfg.rp){const rp=S.cfg.rp;if(Array.isArray(S.reps)&&S.reps.some(x=>x.d===rp.d&&x.at>=rp.at)){delete S.cfg.rp;save();}}}catch(e){}return r;};try{rpStore();}catch(e){}})();
+
+/* ================= v4.5.4 · 📒 දෛනික වාර්තාව — “දවසේ විකුණුම් + ලැබුණු ණය” සහ “එක් එක් කෙනාගේ ණය” ================= */
+(function(){const _h=rpHtml;rpHtml=function(r){if(!r||!Array.isArray(r.t1))return _h.apply(this,arguments);
+  const base=_h.call(this,Object.assign({},r,{b:[],c:[]})),N=v=>v===''||v===null||v===undefined?'':rpN(v);
+  /* 1 · today's sales + credit received */
+  const T=r.t1,sum=i=>T.reduce((t,x)=>t+(Number(x[i])||0),0),byR={};T.forEach(x=>(byR[x[12]]=byR[x[12]]||[]).push(x));
+  const H1=['දිනය','වෙළඳසැල','ගම','B.No','වටිනාකම','Return','වට්ටම්','පැරණි හිඟ','මුළු මුදල','අද ලැබුණු මුදල','චෙක් වලින් ලැබීම්'],n1=[4,5,6,7,8,9,10];
+  let b1='';Object.keys(byR).forEach(rt=>{const L=byR[rt];b1+=`<div class="rp-rt">🛣️ ${esc(rt)} <small>${L.filter(x=>x[3]!==''||x[4]!=='').length} බිල්</small></div>`+rpTable(H1,L.map(x=>[esc(x[0]),esc(x[1]),esc(x[2]),esc(x[3])+(x[13]==='F'?' 🏭':''),N(x[4]),N(x[5]||''),N(x[6]||''),N(x[7]),`<b>${N(x[8])}</b>`,N(x[9]||'')+(Number(x[11])>0?`<br><small>🎟 ${N(x[11])}</small>`:''),N(x[10]||'')]),n1);});
+  if(T.length)b1+='<div class="rp-st">එකතුව</div>'+rpTable(['වටිනාකම','Return','වට්ටම්','අද ලැබුණු මුදල','චෙක් වලින් ලැබීම්'],[[`<b>${N(sum(4))}</b>`,N(sum(5)),N(sum(6)),`<b>${N(sum(9))}</b>`,`<b>${N(sum(10))}</b>`]],[0,1,2,3,4]);
+  /* 2 · each shop's credit, bill by bill */
+  const P=Array.isArray(r.pc)?r.pc:[],H2=['දිනය','B.No','වටිනාකම','Return','වට්ටම්','පැරණි හිඟ','මුළු මුදල','මුදල් ලැබීම්','චෙක් ලැබීම්','හිඟ මුදල'];
+  let b2='';P.forEach(x=>{b2+=`<div class="rp-rt">🏪 ${esc(x.s)}${x.v?' — '+esc(x.v):''} <small>${esc(x.r)} · ඉතිරි ණය <b>${N(x.c)}</b>${x.more?` · කලින් පේළි ${x.more}ක් තව`:''}</small></div>`+rpTable(H2,x.rows.map(y=>[esc(y[0]),esc(y[1]),N(y[2]),N(y[3]),N(y[4]),N(y[5]),N(y[6]),N(y[7]),N(y[8]),`<b>${N(y[9])}</b>`]),[2,3,4,5,6,7,8,9]);});
+  const add=rpSec('t1','🧾','දවසේ විකුණුම් + ලැබුණු ණය',T.length,b1,true)+rpSec('pc','📒','එක් එක් කෙනාගේ ණය',P.length,b2,true);
+  const i=base.indexOf('<details class="rp-sec"');return i<0?base+add:base.slice(0,i)+add+base.slice(i);};})();
+/* keep phone storage small: the per-shop tables only for the newest 7 reports */
+(function(){const _rs=rpStore;rpStore=function(){const r=_rs.apply(this,arguments);try{let ch=false;(S.reps||[]).forEach((x,i)=>{if(i>=7&&x&&x.pc){delete x.pc;ch=true;}});if(ch)save();}catch(e){}return r;};})();
+
+/* ================= v4.5.4 · 🌶️ batch එකට අමු ද්‍රව්‍ය lot — sticker / scan නැතුව ලේසියෙන් =================
+   අලුත් batch එකකදී: ඒ භාණ්ඩයේ අන්තිම batch එකේ lot එක ඉබේම tick · ඒ භාණ්ඩයට කලින් පාවිච්චි කළ ද්‍රව්‍ය වල lot මුලින් (⭐) */
+function v454AllLots(){return ((S.cfg&&S.cfg.rl)||[]).map(l=>({no:l[0],mat:l[1],d:l[3]})).concat(myL().map(l=>({no:l.no,mat:l.mat,d:l.d})));}
+function v454FamLots(fam){return myB().filter(x=>x&&x.fam===fam&&Array.isArray(x.raw)&&x.raw.length).sort((a,b)=>String(b.at||b.d||'').localeCompare(String(a.at||a.d||'')));}
+(function(){const _r=renderBNew;renderBNew=function(){
+  let auto=false;try{if(bd&&bd.fam&&!bd.bid&&!bd._v454){bd._v454=1;if(!bd.raw.length){const last=v454FamLots(bd.fam)[0],ok=new Set(v454AllLots().map(l=>l.no));if(last){last.raw.filter(n=>ok.has(n)&&!lotVoid(n)).forEach(n=>bd.raw.push(n));auto=bd.raw.length>0;bd._v454a=auto;}}}}catch(e){}
+  const r=_r.apply(this,arguments);
+  try{if(!bd||!bd.fam)return r;const box=[...document.querySelectorAll('#bnewBody .card h3')].find(h=>h.textContent.includes('අමු ද්‍රව්‍ය'));if(!box)return r;const card=box.parentNode,chips=card.querySelector('.chips');if(!chips)return r;
+    const L=v454AllLots(),matOf=n=>(L.find(l=>l.no===n)||{}).mat||'',used=new Set();v454FamLots(bd.fam).forEach(x=>x.raw.forEach(n=>{const m=matOf(n);if(m)used.add(m);}));
+    const items=[...chips.querySelectorAll('button.chip')];if(used.size&&items.length){const fav=items.filter(b=>[...used].some(m=>b.textContent.includes(' · '+m)));fav.slice().reverse().forEach(b=>{chips.prepend(b);if(!b.dataset.fav){b.dataset.fav=1;b.insertAdjacentText('afterbegin','⭐ ');}});}
+    if(bd._v454a&&bd.raw.length)box.insertAdjacentHTML('afterend','<div class="small muted" style="margin:-4px 0 6px">↺ කලින් '+esc(bd.fam)+' batch එකේ මල්ලම ඉබේම තේරුවා — වෙනස් නම් ඔබලා මාරු කරන්න.</div>');}catch(e){}
+  return r;};})();
+
+/* ================= v4.5.4 · 📅 පරණ දවස් 4ක දත්ත ලේසියෙන් (අද / ඊයේ / දින 2 / 3 / 4) ================= */
+function v454DayChips(cur,set){const w=workDay(),L=[0,1,2,3,4].map(n=>addDays(w,-n)),nm=['අද','ඊයේ','පෙරේදා','දින 3','දින 4'];
+  return `<div class="chips" style="margin:-4px 0 8px">${L.map((d,i)=>`<button type="button" class="chip ${cur===d?'ok':''}" onclick="${set}('${d}')">${nm[i]}<small> ${d.slice(5).replace('-','/')}</small></button>`).join('')}</div>`;}
+function v454SetD(k,d){D(k).d=d;save();render();}
+function v454SetBd(d){if(bd){bd.d=d;render();}}
+(function(){const _f=dateField;dateField=function(k){return _f.apply(this,arguments)+v454DayChips(D(k).d,`v454SetD.bind(null,'${k}')`);};
+  const _g=dateField0;dateField0=function(v,id){return _g.apply(this,arguments)+v454DayChips(v,'v454SetBd');};})();
+
+/* ================= v4.5.5 · 🧾 බිල් තිරය පිරිසිදු · 👷 සේවකයෝ ගත්තා · 🌶️ අමු ද්‍රව්‍ය විකිණීම · 🏠 මුල් තිරය සකසන්න ================= */
+/* one bill engine, three doors: shop = shops + packets (no staff, no raw) · staff = staff only (anything, cash / from pay) · raw = loose / raw goods by weight */
+const V455_MODE={shop:'🧾 බිලක් දාන්න',staff:'👷 සේවකයෝ ගත්තා',raw:'🌶️ අමු ද්‍රව්‍ය / ලිහිල් විකිණීම'};
+function v455M(){const d=S.drafts&&S.drafts.bill;return (d&&d.mode)||'shop';}
+function v455Title(){try{TITLES.bill=V455_MODE[v455M()]||V455_MODE.shop;}catch(e){}}
+function v455Bill(mode){newDraft('bill');const d=D('bill');d.mode=V455_MODE[mode]?mode:'shop';if(d.mode==='staff'){d.book='';d.no='';d.noAuto=0;}save();v455Title();go('bill');
+  if(d.mode==='staff')setTimeout(()=>{try{const x=D('bill');if(!x.c&&!x.cn)staffPick();}catch(e){}},60);}
+(function(){const _nd=newDraft;newDraft=function(k,keep){const prev=k==='bill'&&S.drafts&&S.drafts.bill?S.drafts.bill.mode:'';const r=_nd.apply(this,arguments);
+  try{if(k==='bill'&&prev&&keep&&Object.keys(keep).length){S.drafts.bill.mode=prev;if(prev==='staff'){S.drafts.bill.book='';S.drafts.bill.no='';}save();}v455Title();}catch(e){}return r;};})();
+/* who can be picked */
+(function(){const _cl=custListHtml;custListHtml=function(k){if(k!=='bill'||!S.cfg||!Array.isArray(S.cfg.c))return _cl.apply(this,arguments);const m=v455M(),all=S.cfg.c;
+  try{S.cfg.c=all.filter(c=>m==='staff'?!!c[11]:!c[11]);return _cl.apply(this,arguments);}finally{S.cfg.c=all;}};})();
+(function(){const _cp=custPicker;custPicker=function(k){let h=_cp.apply(this,arguments);if(k!=='bill')return h;try{const m=v455M();
+  if(m!=='staff')h=h.replace(/<button class="btn light" onclick="staffPick\(\)">👷 සේවකයෙක්<\/button>/,'');
+  else{h=h.replace(/<button class="btn light" onclick="D\('bill'\)\.c='';D\('bill'\)\.cn='__walk'[^>]*>[^<]*<\/button>/,'').replace('<button class="btn light" onclick="staffPick()">👷 සේවකයෙක්</button>','<button class="btn primary block" onclick="staffPick()">👷 සේවකයා තෝරන්න / අලුත් නමක්</button>').replace('👤 කඩය / පාරිභෝගිකයා','👷 සේවකයා');}}catch(e){}return h;};})();
+/* which goods */
+(function(){const _po=prodOk;prodOk=function(k,field,p){if(k==='bill'&&field==='it'){const m=v455M();if(m==='shop'&&p&&p[7]==='r')return false;if(m==='raw'&&!isW(p))return false;}return _po.apply(this,arguments);};})();
+(function(){const _lc=looseChips;looseChips=function(k){if(k!=='bill'||!S.cfg||!Array.isArray(S.cfg.p))return _lc.apply(this,arguments);const m=v455M(),all=S.cfg.p,np=S.newProds;
+  if(m!=='shop')return _lc.apply(this,arguments);try{S.cfg.p=all.filter(p=>p[7]!=='r');S.newProds=(np||[]).filter(n=>n.kind!=='raw');return _lc.apply(this,arguments);}finally{S.cfg.p=all;S.newProds=np;}};})();
+(function(){const _rb=renderBill;renderBill=function(){v455Title();const r=_rb.apply(this,arguments);try{const m=v455M();if(m!=='shop'){const b=$('billBody');if(b&&!b.querySelector('.v455mode'))b.insertAdjacentHTML('afterbegin',`<div class="infobox small v455mode">${m==='staff'?'👷 සේවකයෙක් ගත්ත බඩු — Cash හරි “පඩියෙන් අඩු කරන්න” හරි. කඩ බිල් වලට මිශ්‍ර වෙන්නේ නැහැ.':'🌶️ ලිහිල් / අමු බඩු බරට (kg / g). කඩවලට පැකට් බිල් “🧾 බිලක් දාන්න” එකෙන්.'}</div>`);}}catch(e){}return r;};})();
+
+/* ---------- 🏠 home: groups, hide, order, ⭐ big ---------- */
+const V455_G=[['s','🧾 විකුණුම්'],['f','🏭 කම්හල'],['l','🚚 ලොරිය'],['r','📒 වාර්තා / සටහන්'],['o','වෙනත්']];
+function v455Key(b){return String(b.getAttribute('onclick')||'').replace(/\s+/g,'');}
+function v455Grp(k){if(/v455Bill|'(pay|ret|order|orders)'/.test(k))return 's';if(/'(batches|bnew|raw|scan|stock|fcount|move|take)'|go\('price'\)/.test(k))return 'f';if(/'loadl'|'ld'/.test(k))return 'l';if(/'(rpt|history|iss|notes)'/.test(k))return 'r';return 'o';}
+function v455HC(){const h=S.home&&typeof S.home==='object'?S.home:(S.home={order:[],hide:[],big:[]});['order','hide','big'].forEach(x=>{if(!Array.isArray(h[x]))h[x]=[];});return h;}
+let _v455Tiles=[];
+(function(){const _h=renderHome0;renderHome0=function(){const r=_h.apply(this,arguments);try{const box=$('homeBody');if(!box||!S.cfg)return r;
+  const bt=[...box.querySelectorAll('button.tile')];if(!bt.length)return r;
+  bt.forEach(b=>{if(v455Key(b)==="newDraft('bill');go('bill')")b.setAttribute('onclick',"v455Bill('shop')");});
+  const ref=bt.find(b=>v455Key(b)==="v455Bill('shop')");
+  if(ref){const mk=(oc,ic,t,s)=>{const x=document.createElement('button');x.className='tile';x.setAttribute('onclick',oc);x.innerHTML=`<span>${ic}</span>${t}<small>${s}</small>`;return x;};
+    bt.push(mk("v455Bill('staff')",'👷','සේවකයෝ ගත්තා','බඩු / අමු ද්‍රව්‍ය · Cash / පඩියෙන්'),mk("v455Bill('raw')",'🌶️','අමු ද්‍රව්‍ය විකිණීම','ලිහිල් / අමු බරට'));}
+  const H=v455HC(),key=b=>v455Key(b),pos=k=>{const i=H.order.indexOf(k);return i<0?1e3:i;};
+  _v455Tiles=bt.map((b,i)=>({k:key(b),t:(b.childNodes[1]&&b.childNodes[1].textContent||b.textContent).trim().slice(0,40),ic:(b.querySelector('span')||{}).textContent||'',i}));
+  const grids=[...box.querySelectorAll('.grid2')].filter(g=>g.querySelector('button.tile'));const anchor=grids[0];if(!anchor)return r;
+  const wrap=document.createElement('div');wrap.className='v455home';
+  const vis=bt.filter(b=>!H.hide.includes(key(b))).sort((a,b)=>pos(key(a))-pos(key(b))||bt.indexOf(a)-bt.indexOf(b));
+  const big=vis.filter(b=>H.big.includes(key(b)));
+  if(big.length){const g=document.createElement('div');g.className='grid2 v455big';big.forEach(b=>{b.classList.add('big');g.appendChild(b);});wrap.appendChild(g);}
+  V455_G.forEach(([gk,gt])=>{const L=vis.filter(b=>!H.big.includes(key(b))&&v455Grp(key(b))===gk);if(!L.length)return;const h=document.createElement('div');h.className='v455gh';h.textContent=gt;wrap.appendChild(h);const g=document.createElement('div');g.className='grid2';L.forEach(b=>g.appendChild(b));wrap.appendChild(g);});
+  const cb=document.createElement('button');cb.className='btn ghost block small';cb.setAttribute('onclick','v455HomeSet()');cb.textContent='🏠 මුල් තිරය සකසන්න (සඟවන්න / පිළිවෙළ / ⭐)';wrap.appendChild(cb);
+  anchor.replaceWith(wrap);grids.slice(1).forEach(g=>g.remove());}catch(e){console.warn('home',e);}return r;};})();
+function v455HomeSet(){const H=v455HC(),T=_v455Tiles.slice().sort((a,b)=>{const pa=H.order.indexOf(a.k),pb=H.order.indexOf(b.k);return (pa<0?1e3:pa)-(pb<0?1e3:pb)||a.i-b.i;});
+  sheet(`<h3>🏠 මුල් තිරය සකසන්න</h3><div class="small muted" style="margin-bottom:8px">⭐ = උඩින්ම ලොකුවට · 👁 = පෙන්වන්න / සඟවන්න · ⬆️⬇️ = පිළිවෙළ (ඒ කොටස ඇතුළේ)</div>
+   ${T.map((x,i)=>`<div class="row" style="align-items:center;gap:6px;border-bottom:1px solid #eef2f7;padding:6px 0"><div class="grow">${esc(x.ic)} ${esc(x.t)}<div class="small muted">${esc((V455_G.find(g=>g[0]===v455Grp(x.k))||['',''])[1])}</div></div>
+    <button class="btn sm ${H.big.includes(x.k)?'primary':'light'}" onclick="v455HT('big',${i})">⭐</button><button class="btn sm ${H.hide.includes(x.k)?'light':'primary'}" onclick="v455HT('hide',${i})">${H.hide.includes(x.k)?'🙈':'👁'}</button><button class="btn sm light" onclick="v455HM(${i},-1)">⬆️</button><button class="btn sm light" onclick="v455HM(${i},1)">⬇️</button></div>`).join('')}
+   <button class="btn light block" style="margin-top:10px" onclick="S.home={order:[],hide:[],big:[]};save();sheet();render()">↺ පරණ විදිහට</button><button class="btn primary block" onclick="sheet();render()">හරි</button>`);
+  window._v455T=T;}
+function v455HT(what,i){const H=v455HC(),k=(window._v455T||[])[i]&&window._v455T[i].k;if(!k)return;const L=H[what],j=L.indexOf(k);if(j>=0)L.splice(j,1);else L.push(k);save();render();v455HomeSet();}
+function v455HM(i,dir){const H=v455HC(),T=window._v455T||[];if(!T[i])return;const ord=T.map(x=>x.k),j=i+dir;if(j<0||j>=ord.length)return;[ord[i],ord[j]]=[ord[j],ord[i]];H.order=ord;save();render();v455HomeSet();}
+(function(){const st=document.createElement('style');st.textContent='.v455gh{font-weight:800;font-size:13px;color:#475569;margin:12px 4px 6px}.v455big .tile.big{grid-column:1/-1;font-size:17px;padding:16px}.v455big .tile.big span{font-size:30px}.tile{transition:transform .08s ease}.tile:active{transform:scale(.97)}.screen.on,.screen.show{animation:v455f .12s ease-out}@keyframes v455f{from{opacity:.6}to{opacity:1}}';document.head.appendChild(st);})();
+
+/* ---------- 📦 තොගය: ලොරි app එකේ ගණනින් පටවපු / බාපු ඒවාත් (scan නැතුවත්) · 🟡 අද batch · ⚠️ PC එකේ ඊයේ අඩු / වැඩි ---------- */
+(function(){const _lp=ldPull;ldPull=async function(){const r=await _lp.apply(this,arguments);try{const url=ldDoc();if(!url)return r;const x=await fetch(url,{cache:'no-store'});if(!x.ok){ld.lev=[];return r;}let j;try{j=await x.json();}catch(e){return r;}
+  const ev=[];Object.entries(j.fields||{}).forEach(([k,v])=>{if(!k.startsWith('k_'))return;try{const o=JSON.parse(v.stringValue||'{}');(o.ev||[]).forEach(e=>ev.push(e));}catch(e){}});
+  const last={};ev.forEach(e=>{if(!e||!e.uid)return;const p=last[e.uid];if(!p||num(e.rev)>=num(p.rev))last[e.uid]=e;});ld.lev=Object.values(last);}catch(e){}return r;};})();
+function v455LorryMoves(pcAt){const out={l:{},u:{},any:false},T=workDay();(ld.lev||[]).forEach(e=>{if(!e||(e.k!=='l'&&e.k!=='u'))return;if(e.d&&e.d!==T)return;if(pcAt&&String(e.at||'')<=pcAt)return;
+  out.any=out.any||e.k==='l';const m=e.k==='l'?out.l:out.u;Object.entries(e.i||{}).forEach(([pid,q])=>{const n=num(Array.isArray(q)?q[0]:q);if(n)m[pid]=(m[pid]||0)+n;});});return out;}
+(function(){const _sd=stockDelta;stockDelta=function(){const D=_sd.apply(this,arguments);try{const pcAt=(S.stk&&S.stk.at)||'',L=v455LorryMoves(pcAt);
+  if(L.any){Object.values(D).forEach(e=>{e.l=0;});Object.entries(L.l).forEach(([pid,q])=>{const e=D[pid]||(D[pid]={b:0,s:0,l:0});e.l+=q;});}
+  Object.entries(L.u).forEach(([pid,q])=>{const e=D[pid]||(D[pid]={b:0,s:0,l:0});e.l-=q;});}catch(e){}return D;};})();
+(function(){const _rs=renderStock;renderStock=function(){const r=_rs.apply(this,arguments);try{const box=$('stockBody');if(!box)return r;let add='';
+  const T=workDay(),mk=myB().filter(b=>b&&b.d===T&&b.st==='making');
+  if(mk.length)add+=`<div class="card warnbox small">🟡 අද batch ${mk.length}ක පැකට් ගණන තාම නැහැ (${mk.map(b=>esc(b.no)).join(', ')}) — උදේ පැක් කරලා ලොරියට දුන්නත් කමක් නැහැ, හවස ගණන දාන්න. එතකොට තොගය ගැළපෙනවා.</div>`;
+  const D=S.stk?stockDelta():{},mkF=new Set(mk.map(b=>b.fam)),neg=Object.entries(D).filter(([pid,e])=>{const pc=(((S.stk&&S.stk.f)||[]).find(x=>x[0]===pid)||[0,[]])[1].reduce((t,x)=>t+num(x[1]),0);const p=prod(pid),fam=p?String(p[1]).replace(/\s+\S+$/,''):'';return pc+e.b-e.s-e.l<0&&!mkF.has(fam);});
+  if(neg.length)add+=`<div class="card warnbox small">⚠️ තොගයට වඩා ලොරියට / විකුණලා: ${neg.map(([pid])=>esc((prod(pid)||[0,pid])[1])).join(', ')} — batch එකක ගණන දාන්න අමතක වුණාද? (රෑ PC එකේ ගළපනවා)</div>`;
+  const dx=S.stk&&Array.isArray(S.stk.dx)?S.stk.dx:[];
+  if(dx.length)add+=`<div class="card"><h3 style="margin:0 0 6px">⚠️ අඩු / වැඩි <span class="small muted">(PC ${esc(S.stk.dxd||'')})</span></h3>${dx.map(x=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid #eef2f7;padding:4px 0"><span>${x[3]==='l'?'🚚':'🏭'} ${esc((prod(x[0])||[0,x[0]])[1])}</span><b class="${x[1]<0?'bad':'warn'}">${x[1]>0?'+':''}${x[1]}${x[2]?' · '+esc(x[2]):''}</b></div>`).join('')}</div>`;
+  try{box.innerHTML=box.innerHTML.replace('අද ලොරියට scan කරපු ඒවා','අද ලොරියට පටවපු / බාපු ඒවා (ලොරි app එකෙන් — scan නැතුවත්)');}catch(e){}if(add)box.insertAdjacentHTML('afterbegin',add);}catch(e){console.warn('v455 stock',e);}return r;};})();
+/* ================= v4.5.6 · M3 · app එක දෙපාරක් open වුණත් (Home-screen app + Chrome tab) නොගිය බිල් නැති වෙන්නේ නැහැ =================
+   save() first merges what the other open copy wrote: its new outbox items / history are kept; an item one copy already sent
+   or deleted is remembered (S.obDone) so no copy sends it again. */
+function v456Rv(o){const m=/_r(\d+)$/.exec(String(o&&o.id||''));return m?+m[1]:1;}
+let _v456Base=new Set((Array.isArray(S.outbox)?S.outbox:[]).map(o=>o&&o.id));
+function v456Track(){if(!Array.isArray(S.outbox))S.outbox=[];const now=new Set(S.outbox.map(o=>o&&o.id)),done=new Set(Array.isArray(S.obDone)?S.obDone:[]);let add=false;
+  _v456Base.forEach(id=>{if(id&&!now.has(id)&&!done.has(id)){done.add(id);add=true;}});if(add)S.obDone=[...done].slice(-300);_v456Base=now;}
+function v456Merge(){let X;try{X=JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){return false;}if(!X||typeof X!=='object')return false;let ch=false;
+  if(!Array.isArray(S.outbox))S.outbox=[];if(!Array.isArray(S.sent))S.sent=[];
+  const xs=Array.isArray(X.sent)?X.sent:[],xo=Array.isArray(X.outbox)?X.outbox:[];
+  /* sent / removed outbox ids from both copies */
+  const tomb=new Set((Array.isArray(S.obDone)?S.obDone:[]).concat(Array.isArray(X.obDone)?X.obDone:[]));
+  if(tomb.size!==(Array.isArray(S.obDone)?S.obDone.length:0)){S.obDone=[...tomb].slice(-300);ch=true;}
+  /* history: one line per message; a deleted / newer / already-sent one wins */
+  const pick=(a,b)=>{if(!a)return b;if(!b)return a;if(!!b.gone!==!!a.gone)return b.gone?b:a;const ra=(a.rec&&a.rec.rev)||1,rb=(b.rec&&b.rec.rev)||1;if(ra!==rb)return rb>ra?b:a;if(!!b.fix!==!!a.fix)return b.fix?b:a;if(!!b.up!==!!a.up)return b.up?b:a;return a;};
+  const sm=new Map();S.sent.forEach(h=>{if(h&&h.uid)sm.set(h.uid,h);});let sch=false;
+  xs.forEach(h=>{if(!h||!h.uid)return;const a=sm.get(h.uid),w=pick(a,h);if(w!==a){sm.set(h.uid,w);sch=true;}});
+  if(sch){S.sent=[...sm.values()].sort((a,b)=>String(b.at||'').localeCompare(String(a.at||''))).slice(0,400);ch=true;}
+  /* outbox */
+  const n0=S.outbox.length,gone=new Set([...sm.values()].filter(h=>h.gone).map(h=>h.uid));
+  S.outbox=S.outbox.filter(o=>o&&!tomb.has(o.id)&&!(o.uid&&gone.has(o.uid)));if(S.outbox.length!==n0)ch=true;
+  xo.forEach(o=>{if(!o||!o.id||tomb.has(o.id)||S.outbox.some(y=>y.id===o.id))return;const rv=v456Rv(o);
+    if(o.uid&&(gone.has(o.uid)||S.outbox.some(y=>y.uid===o.uid&&v456Rv(y)>=rv)))return;
+    S.outbox=S.outbox.filter(y=>!(o.uid&&y.uid===o.uid&&v456Rv(y)<rv));S.outbox.push(o);ch=true;});
+  if(Number(X.seq)>Number(S.seq||0)){S.seq=Number(X.seq);ch=true;}
+  [['notes','id'],['myB','bid'],['myL','no']].forEach(([k,id])=>{const a=Array.isArray(S[k])?S[k]:[],b=Array.isArray(X[k])?X[k]:[];const have=new Set(a.map(x=>x&&x[id]));const add=b.filter(x=>x&&x[id]&&!have.has(x[id]));if(add.length){S[k]=a.concat(add);ch=true;}});
+  _v456Base=new Set(S.outbox.map(o=>o&&o.id));
+  return ch;}
+(function(){const _sv=save;save=function(){try{v456Track();v456Merge();}catch(e){console.warn('merge',e);}return _sv.apply(this,arguments);};
+  window.addEventListener('storage',e=>{if(e.key!==KEY)return;try{v456Track();if(v456Merge()){_sv();if(['home','history'].includes(screen))render();}}catch(x){}});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)return;try{v456Track();if(v456Merge()){_sv();if(['home','history'].includes(screen))render();}}catch(x){}});})();
+/* ================= v4.5.7 · 📒 දෛනික වාර්තාව — Return / චෙක් විස්තර + දවසේ විකුණුම් PDF එකේ තනි A4 පිටුවක ================= */
+const V457_REC={driver:'🚚 රියදුරු',factory:'🏭 කම්හල',owner:'👤 අයිතිකරු'};
+function v457For(f){f=String(f||'');const t=f.slice(2);if(f.startsWith('B:'))return 'අද බිල '+t;if(f.startsWith('A:'))return 'අත්තිකාරම (කලින් ගෙවීම)';if(f.startsWith('O:'))return 'පරණ ණය'+(t?' — '+t:'');return f;}
+function v457RdHtml(x){const L=x.rd||[];if(!L.length)return '';const N=v=>v===''||v===null||v===undefined||Number(v)===0?'':rpN(v);
+  const K={R:'↩️ Return',D:'💥 Damage',S:'📉 අඩුවෙන් දුන්නා',Q:'🎁 නොමිලේ'};const t=i=>L.reduce((s,r)=>s+(Number(r[i])||0),0);
+  L.forEach(r=>{const m=/^💰[^(]*\(([^)]*)\)\s*—?\s*(.*)$/.exec(String(r[14]||''));if(String(r[4]||'').startsWith('💰')&&m&&!r._v){r._v=1;r[4]=m[1];r[14]=m[2];r[11]='V';}});K.V='💰 වටිනාකමෙන් Return';
+  const rows=L.map(r=>[esc(r[0])+(r[1]?`<br><small>${esc(r[1])}</small>`:''),esc(r[2])+(r[3]&&r[3]!==(typeof rpSel!=='undefined'?rpSel:'')?`<br><small>${esc(r[3])}</small>`:''),esc(r[4]),K[r[11]]||esc(r[11]),rpN(r[5]),N(r[6]),`<b>${N(r[7])}</b>`,N(r[8]),N(r[9]),N(r[10]),(r[12]==='F'?'🏭':'🚚')+(r[13]?' '+r[13]:'')+(r[14]?`<br><small>${esc(r[14])}</small>`:'')]);
+  const sumK=k=>L.filter(r=>r[11]===k).reduce((s,r)=>s+(Number(r[7])||0),0);
+  const top=`<div class="rp-ks">${['R','V','D','S','Q'].filter(k=>L.some(r=>r[11]===k)).map(k=>`<div class="rp-k"><span>${K[k]}</span><b>${rpM(sumK(k))}</b><small>${L.filter(r=>r[11]===k).length}ක්</small></div>`).join('')}</div>`;
+  return top+rpTable(['කඩය','මුල් බිල','භාණ්ඩය','වර්ගය','ගණන','ඒකක මිල','මුදල','💵 අතට දුන්නා','🎟 Credit note','📒 ණයෙන් අඩු','කොහෙද / සටහන'],rows,[4,5,6,7,8,9],['<b>එකතුව</b>','','','',rpN(t(5)),'',`<b>${rpN(t(7))}</b>`,`<b>${N(t(8))}</b>`,`<b>${N(t(9))}</b>`,`<b>${N(t(10))}</b>`,''])
+    +'<p class="small muted">💵 අතට දුන්නා = කඩයට සල්ලි ආපසු · 🎟 Credit note = ඊළඟ බිලෙන් අඩු වෙන ශේෂය · 📒 ණයෙන් අඩු = බිලේ / ණයේ මුදල අඩු වුණා · ♻️ ආයේ පාවිච්චි කරන්න පුළුවන්</p>';}
+function v457QiHtml(x){const L=x.qi||[];if(!L.length)return '';const S={P:'⏳ අතේ',D:'🏦 බැංකුගත කළා',C:'✅ හරි ගියා',X:'↩️ ආපසු',V:'❌'};
+  return rpTable(['කඩය','චෙක් අංකය','බැංකුව','චෙක් දිනය','මුදල','මොකටද','ලැබුණේ','තත්ත්වය'],L.map(r=>[esc(r[0])+(r[1]?`<br><small>${esc(r[1])}</small>`:''),`<b>${esc(r[2])}</b>`,esc(r[3]),esc(r[4]),`<b>${rpN(r[5])}</b>`,esc(v457For(r[6])),V457_REC[r[7]]||esc(r[7]),S[r[8]]||esc(r[8])]),[4],['<b>එකතුව</b>','','','',`<b>${rpN(L.reduce((s,r)=>s+(Number(r[5])||0),0))}</b>`,`${L.length} චෙක්`,'','']);}
+(function(){const _h=rpHtml;rpHtml=function(r){if(!r||!r.x||typeof r.x!=='object')return _h.apply(this,arguments);
+  let base=_h.call(this,Object.assign({},r,{rd:[],q:Object.assign({in:[],due:[],ret:[],my:[]},r.q||{},{in:[]})}));const x=r.x;
+  const add=rpSec('rd2','↩️','Return / Damage — විස්තර',(x.rd||[]).length,v457RdHtml(x),(x.rd||[]).length>0)+rpSec('qi2','🏦','අද ලැබුණු චෙක් — විස්තර',(x.qi||[]).length,v457QiHtml(x),(x.qi||[]).length>0);
+  const at=['<summary>🏦 <b>චෙක්</b>','<summary>💵 <b>මුදල් ගණන</b>','<summary>🧾 <b>අද වියදම්</b>','<summary>⚠️ <b>වැරදුණු']
+    .map(m=>base.indexOf(m)).filter(i=>i>=0).sort((a,b)=>a-b)[0];
+  if(at!==undefined){const ds=base.lastIndexOf('<details',at);base=base.slice(0,ds)+add+base.slice(ds);}else base+=add;
+  return base;};})();
+/* 🧾 “දවසේ විකුණුම් + ලැබුණු ණය” — PDF එකේ තනි A4 පිටුවක් (print කරන්න ලේසියි): ඒකට කලින් / පස්සේ අලුත් පිටුව, දිග වැඩි නම් පොඩි කරලා එක පිටුවට */
+(function(){const _h=rpHtml;rpHtml=function(r){let h=_h.apply(this,arguments);try{const m=h.indexOf('<summary>🧾 <b>දවසේ විකුණුම් + ලැබුණු ණය</b>');if(m<0)return h;
+  const ds=h.lastIndexOf('<details class="rp-sec',m);if(ds<0)return h;
+  h=h.slice(0,ds)+h.slice(ds).replace('class="rp-sec','class="rp-sec rp-pb rp-fit').replace('<b>දවසේ විකුණුම් + ලැබුණු ණය</b>',`<b>දවසේ විකුණුම් + ලැබුණු ණය</b> <span class="small">— ${esc(r.d||'')} · ${esc(r.biz||'')}</span>`);
+  const nx=h.indexOf('<details class="rp-sec',h.indexOf('</summary>',ds));if(nx>0)h=h.slice(0,nx)+h.slice(nx).replace('class="rp-sec','class="rp-sec rp-pb');}catch(e){}return h;};})();
+/* PDF: .rp-pb = අලුත් A4 පිටුවකින් පටන් ගන්නවා · .rp-fit = එක පිටුවට පොඩි කරනවා (අවම 62%) */
+(function(){const _c=rpPdfCuts;rpPdfCuts=function(doc,total){
+  const P=[...doc.querySelectorAll('.rp-pb')];if(!P.length)return _c.apply(this,arguments);
+  doc.querySelectorAll('.rp-fit').forEach(e=>{const h=e.getBoundingClientRect().height,av=RP_PH-220;if(h>av)e.style.zoom=Math.max(0.62,av/h).toFixed(3);});
+  /* blank gap before each break: the picture can sit a few px lower / higher than the live layout, so the cut lands inside empty space */
+  P.forEach(e=>{e.style.marginTop='200px';});total=Math.ceil(doc.getBoundingClientRect().height)+150;const top=doc.getBoundingClientRect().top;
+  const pb=P.map(e=>Math.round(e.getBoundingClientRect().top-top)-80).filter(v=>v>20&&v<total-4).sort((a,b)=>a-b);
+  if(!pb.length)return _c.apply(this,arguments);
+  const ends=[];doc.querySelectorAll('tr,.rp-er,.rp-k,.rp-ks,.rp-line,summary,.rp-rt,.rp-st,.rp-head,li,.rp-sec,.rp-tw,p').forEach(e=>{const r=e.getBoundingClientRect();ends.push(Math.round(r.bottom-top));});ends.sort((a,b)=>a-b);
+  const cuts=[0];let s=0;while(total-s>2){const f=pb.find(v=>v>s+2);if(f!==undefined&&f-s<=RP_PH){cuts.push(f);s=f;continue;}if(total-s<=RP_PH)break;
+    let c=0;for(const e of ends){if(e>s+RP_PH*0.45&&e<=s+RP_PH)c=e;}if(!c)c=s+RP_PH;cuts.push(c);s=c;}
+  if(cuts[cuts.length-1]!==total)cuts.push(total);return cuts;};})();
+try{document.head.insertAdjacentHTML('beforeend','<style>@media print{.rp-pb{break-before:page}}</style>');}catch(e){}
 </script>
 </body>
 </html>
