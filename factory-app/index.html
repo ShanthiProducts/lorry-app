@@ -933,8 +933,8 @@ async function bSave(){if(!bd||!bd.fam){toast('භාණ්ඩය තෝරන�
   const t=BT.get(b.no);if(!t)BT.set(b.no,localTuple(b));bd=null;toast(old?'💾 යැව්වා':'✅ '+b.no);if(!old)bShow(b.bid);else go('batches');}
 function localTuple(b){return {n:b.no,f:b.fam,c:(bfOf(b.fam)||[])[1]||'',e:(bfOf(b.fam)||[])[2]||'',d:b.d,x:b.exp,...(b.pk?{pk:b.pk}:{}),s:b.st,sm:b.sm,by:b.by,src:'factory',sz:b.sz.map(([pid,q,rem])=>{const l=sizeLines(b.fam).find(x=>x[3]===pid)||[];return [pid,l[0]||'?',q,l[1]||'s',l[2]||0,rem];}),rw:b.raw.map(no=>[no,'','','']),rt:b.rt,k:b.kg,w:b.w,m:b.sz.reduce((s,x)=>s+x[1],0),fl:b.sz.reduce((s,x)=>s+x[1],0),ll:0,tl:[],ls:0,fs:0,mv:0,ca:0,sh:[],rq:0,rp:0,rl:[],local:1};}
 function bShow(bid){const b=myB().find(x=>x.bid===bid);if(!b)return;const qr=bookQR(b.no,b.fam,b.d,b.exp,b.pk);
-  sheet(`<div class="bigno">${esc(b.no)}</div><div class="center"><strong>${esc(b.fam)}</strong><br>B.No : ${esc(b.no)} / MFD : ${dmy(b.d)}${b.pk?' / PKD : '+dmy(b.pk):''} / EXP : ${dmy(b.exp)}</div><div class="qrbox">${SBPQR.svg(qr,'M',{quiet:2,minVersion:2})}</div><div class="small muted center">Stamp එකට: <strong>${esc(b.no)}</strong> · Stickers PC එකෙන් රෑ print කරන්න</div><button class="btn light block" onclick="bWa('${esc(b.bid)}')">💬 සේවකයන්ට WhatsApp</button><button class="btn primary block" onclick="sheet();go('batches')">හරි</button>`);}
-function bWaText(list){return `🏷️ *අද batch අංක* — ${dmy(workDay())}\n\n`+list.map(b=>`• *${b.fam}* — B.No : *${b.no}*\n  MFD : ${dmy(b.d)}${b.pk?' / PKD : '+dmy(b.pk):''} / EXP : ${dmy(b.exp)}`).join('\n\n')+'\n\nපැකට් වලට stamp එකෙන් මේ අංකයම ගහන්න.';}
+  sheet(`<div class="bigno">${esc(bStamp(b.no))}</div><div class="center"><strong>${esc(b.fam)}</strong><br>B.No : ${esc(b.no)} / MFD : ${dmy(b.d)}${b.pk?' / PKD : '+dmy(b.pk):''} / EXP : ${dmy(b.exp)}</div><div class="qrbox">${SBPQR.svg(qr,'M',{quiet:2,minVersion:2})}</div><div class="small muted center">Stamp එකට: <strong>${esc(bStamp(b.no))}</strong> · Stickers PC එකෙන් රෑ print කරන්න</div><button class="btn light block" onclick="bWa('${esc(b.bid)}')">💬 සේවකයන්ට WhatsApp</button><button class="btn primary block" onclick="sheet();go('batches')">හරි</button>`);}
+function bWaText(list){return `🏷️ *අද batch අංක* — ${dmy(workDay())}\n\n`+list.map(b=>`• *${b.fam}* — B.No : *${bStamp(b.no)}*\n  MFD : ${dmy(b.d)}${b.pk?' / PKD : '+dmy(b.pk):''} / EXP : ${dmy(b.exp)}`).join('\n\n')+'\n\nපැකට් වලට stamp එකෙන් මේ අංකයම ගහන්න.';}
 function bWa(bid){const b=myB().find(x=>x.bid===bid);if(b)window.open('https://wa.me/?text='+encodeURIComponent(bWaText([b])),'_blank');}
 function bWaAll(){const l=myB().filter(b=>b.d===workDay());if(!l.length){toast('අද batch නැහැ','warn');return;}window.open('https://wa.me/?text='+encodeURIComponent(bWaText(l)),'_blank');}
 /* ---------- 🌶️ raw material received ---------- */
@@ -1275,7 +1275,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='4.57';
+const FA_VER='4.571';
 function faVerBar(){
   try{const want=S.cfg&&S.cfg.faVer,newer=want&&parseFloat(want)>parseFloat(FA_VER);let b=document.getElementById('faVerBar');
     if(!newer){if(b)b.remove();return;}
@@ -1544,6 +1544,43 @@ function v457QiHtml(x){const L=x.qi||[];if(!L.length)return '';const S={P:'⏳ �
     let c=0;for(const e of ends){if(e>s+RP_PH*0.45&&e<=s+RP_PH)c=e;}if(!c)c=s+RP_PH;cuts.push(c);s=c;}
   if(cuts[cuts.length-1]!==total)cuts.push(total);return cuts;};})();
 try{document.head.insertAdjacentHTML('beforeend','<style>@media print{.rp-pb{break-before:page}}</style>');}catch(e){}
+
+/* R8 · PDF: phone එකේ SVG පින්තූරය live layout එකට වඩා ටිකක් දිග / කොට වෙනවා (fonts / zoom) → පේළි දෙකට කැපෙනවා, අන්තිම table එක නැති වෙනවා.
+   දැන්: මුළු වාර්තාවම එක පින්තූරයක් විදිහට ඇඳලා, ඇත්ත pixel වලින් හිස් (සුදු) ඉරක් හොයලා එතනින් කපනවා · අන්තිම අකුර දක්වාම ගන්නවා. */
+rpPdf=async function(){const r=(S.reps||[]).find(x=>x.d===rpSel);if(!r||rpPdfBusy)return;rpPdfBusy=true;toast('📥 PDF හදනවා…');let host=null;
+  try{host=document.createElement('div');host.style.cssText=`position:fixed;left:-20000px;top:0;width:${RP_W}px;background:#fff;color:#0f172a;font-family:system-ui,'Noto Sans Sinhala','Iskoola Pota',sans-serif;font-size:14px;line-height:1.45`;
+    host.innerHTML=`<div id="rpDocPdf" class="rp-doc" style="border:0;border-radius:0;padding:0 2px">${rpHtml(r).replace(/<details/g,'<details open')}</div>`;document.body.appendChild(host);
+    const doc=host.firstElementChild;doc.querySelectorAll('.rp-tw').forEach(x=>{x.style.overflow='visible';});doc.querySelectorAll('.rp-t').forEach(x=>{x.style.whiteSpace='normal';});doc.querySelectorAll('.rp-t th').forEach(x=>{x.style.position='static';});doc.querySelectorAll('.rp-t').forEach(x=>{x.style.fontSize='11px';});doc.querySelectorAll('.rp-t td').forEach(c=>{if(c.textContent.trim().length<=14)c.style.whiteSpace='nowrap';c.style.padding='4px 4px';});doc.querySelectorAll('.rp-t th').forEach(c=>{c.style.whiteSpace='normal';c.style.padding='4px 4px';});doc.querySelectorAll('.rp-t').forEach(t=>{const w=t.scrollWidth;if(w>RP_W-6)t.style.zoom=((RP_W-6)/w).toFixed(3);});
+    await new Promise(z=>setTimeout(z,60));const plan=rpPdfCuts(doc,Math.ceil(doc.getBoundingClientRect().height)+4);const total=Math.ceil(doc.getBoundingClientRect().height),H=total+600;
+    const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');const xh=new XMLSerializer().serializeToString(doc);
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${RP_W}" height="${H}"><foreignObject x="0" y="0" width="${RP_W}" height="${H}"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${RP_W}px;height:${H}px;overflow:hidden;background:#fff;color:#0f172a;font-family:system-ui,'Noto Sans Sinhala','Iskoola Pota',sans-serif;font-size:14px;line-height:1.45"><style>${css.replace(/<\/style/gi,'')}
+.rp-er{border:1px solid #fde68a;border-left:4px solid #d97706;border-radius:10px;padding:8px 10px;margin:6px 0;background:#fffdf5}.rp-er.done{border-left-color:#16a34a;opacity:.8}.rp-er-h{display:flex;justify-content:space-between;gap:8px}.rp-er-a{font-weight:800;color:#b91c1c;white-space:nowrap}.rp-er .small{margin-top:3px;line-height:1.4}.rp-er-todo{color:#92400e;font-weight:600}
+</style>${xh}</div></foreignObject></svg>`;
+    const im=await rpPdfImg(svg);
+    /* 1 · scan at 1× : which pixel rows are blank */
+    const sc=document.createElement('canvas');sc.width=RP_W;sc.height=H;const sg=sc.getContext('2d',{willReadFrequently:true});sg.fillStyle='#fff';sg.fillRect(0,0,RP_W,H);sg.drawImage(im,0,0);
+    const px=sg.getImageData(0,0,RP_W,H).data,blank=new Uint8Array(H);let last=0;
+    for(let y=0;y<H;y++){let ok=1;const o=y*RP_W*4;for(let x=0;x<RP_W;x+=2){const k=o+x*4;if(px[k]<250||px[k+1]<250||px[k+2]<250){ok=0;break;}}blank[y]=ok;if(!ok)last=y;}
+    const end=Math.min(H,last+14);
+    const snap=(c,lo,hi)=>{for(let d=0;d<=70;d++){const a=c-d,b=c+d;if(b<=hi&&b>lo&&blank[b]&&blank[Math.max(0,b-1)])return b;if(a<=hi&&a>lo&&blank[a]&&blank[Math.max(0,a-1)])return a;}return null;};
+    /* 2 · page cuts: the planned (DOM) cut, moved to the nearest blank line; never past the page */
+    const cuts=[0];let s=0;while(end-s>RP_PH){const top=s+RP_PH;let c=0;for(const e of plan){if(e>s+RP_PH*0.45&&e<=top)c=e;}
+      let y=c?snap(c,s+RP_PH*0.3,top):null;if(y===null){for(let d=top;d>s+RP_PH*0.5;d--){if(blank[d]&&blank[d-1]){y=d;break;}}}if(y===null)y=top;cuts.push(y);s=y;}
+    cuts.push(end);
+    const SC=2,pages=[];
+    for(let i=0;i<cuts.length-1;i++){const s0=cuts[i],h=cuts[i+1]-s0;const cv=document.createElement('canvas');cv.width=RP_W*SC;cv.height=Math.max(1,Math.round(h*SC));const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);g.scale(SC,SC);g.drawImage(im,0,-s0);
+      const bin=atob(cv.toDataURL('image/jpeg',0.82).split(',')[1]),u=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);pages.push({jpg:u,w:cv.width,h:cv.height,hpt:h*RP_PX});}
+    const pdf=rpPdfBytes(pages,`Shanthi Food Products - Daily report ${r.d}`),name=`Shanthi_Report_${r.d}.pdf`,blob=new Blob([pdf],{type:'application/pdf'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);
+    S.rpSaved=S.rpSaved||{};S.rpSaved[r.d]=new Date().toISOString();save();toast(`✅ ${name} — phone එකේ Downloads folder එකට save වුණා (පිටු ${pages.length})`);renderRpt();
+  }catch(e){console.warn('rpPdf',e);toast('PDF හදන්න බැරි වුණා — 🖨️ Print → “Save as PDF” පාවිච්චි කරන්න ('+e.message+')','err');}
+  finally{if(host)host.remove();rpPdfBusy=false;}};
+
+/* ================= v4.5.7 · 🏷️ Batch අංකය stamp එකට ඉරි නැතුව — MR-041126-1 → MR0411261 =================
+   system එක ඇතුළේ අංකය කලින් වගේම (QR / scan / FIFO වෙනස් නැහැ). stamp / sticker / WhatsApp වල ඉරි (-) නැතුව. */
+function bStamp(no){const m=/^([A-Z]{2,3})-(\d{6})-(\d{1,3})$/.exec(String(no||'').trim().toUpperCase());return m?m[1]+m[2]+m[3]:String(no||'');}
+function bUnstamp(t){const m=/^([A-Z]{2,3})(\d{6})(\d{1,3})$/.exec(String(t||'').trim().toUpperCase());return m?m[1]+'-'+m[2]+'-'+m[3]:'';}
+
 </script>
 </body>
 </html>

@@ -321,9 +321,9 @@ function sendLoad(){
   const d=loadDraft();d.d=$('loadDate').value||today();d.note=$('loadNote').value.trim();const ids=Object.keys(d.i);if(!ids.length&&!preOk(d))return;
   const rev=(d.sentRev||0)+1,items=ids.sort((a,b)=>porder(a)-porder(b)).map(id=>[id,d.i[id],pname(id)]),total=items.reduce((t,x)=>t+x[1],0);
   if(d.sentRev&&!d.unlock){toast('🔒 යැව්වා — නිවැරදි කරන්න නම් “✏️ නිවැරදි කිරීමක්”','warn');return;}
-  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,i:items,why:rev>1?(d.why||''):'',...(d.pre?{pre:1}:{}),...(d.add?{add:1}:{}),...(btOf(d).length?{bt:btOf(d)}:{}),...(hoPayload(d)?{ho:hoPayload(d)}:{})};
-  const text=`${d.pre?'🌙 *ගමනට කලින් වෙන් කළා*':'📦 *ලොරියට පැටවීම*'} — ${d.d}${d.pre?' ('+wday(d.d)+' ගමනට)':''}\n${rev>1?'✏️ සංශෝධනය '+rev+' (කලින් එක වෙනුවට)':'සංශෝධනය 1'} · පැටවූයේ: ${S.me}${hoDone(d)?`\n📥 භාර ගත්තේ: ${d.ho.by||''}${hoRows(d).some(r=>r[3]==='keep')?' ⚠️ වෙනස් '+hoRows(d).filter(r=>r[3]==='keep').length:' ✅'}`:''}\n\n`+items.map(x=>`• ${x[2]} — ${x[1]}`).join('\n')+`\n\nඑකතුව: ${items.length} වර්ග · ${total} පැකට්${d.note?'\nසටහන: '+d.note:''}\n━━━━━━━━━━\n${sbpEncode('load',payload)}`;
-  beforeSend('load',payload,text,t2=>sendOut('📦 පැටවීම යවන්න',t2,'load',payload,()=>{d.sentRev=rev;d.unlock=false;d.why='';S.sent.push({t:'load',...(d.pre?{pre:1}:{}),...(d.add?{add:1}:{}),uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text:t2,why:payload.why});trimSent();save();renderLoad();}));
+  const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,i:items,why:rev>1?(d.why||''):'',...(d.pre?{pre:1}:{}),...(d.add?{add:1}:{}),...(d.add&&d.mid?{mid:1,midBy:String(d.midBy||'').slice(0,60)}:{}),...(btOf(d).length?{bt:btOf(d)}:{}),...(hoPayload(d)?{ho:hoPayload(d)}:{})};
+  const text=`${d.pre?'🌙 *ගමනට කලින් වෙන් කළා*':d.add&&d.mid?'🛵 *ගමන අතරතුර ලොරියට ගෙනිහින් දුන්නා*'+(d.midBy?' ('+d.midBy+')':''):'📦 *ලොරියට පැටවීම*'} — ${d.d}${d.pre?' ('+wday(d.d)+' ගමනට)':''}\n${rev>1?'✏️ සංශෝධනය '+rev+' (කලින් එක වෙනුවට)':'සංශෝධනය 1'} · පැටවූයේ: ${S.me}${hoDone(d)?`\n📥 භාර ගත්තේ: ${d.ho.by||''}${hoRows(d).some(r=>r[3]==='keep')?' ⚠️ වෙනස් '+hoRows(d).filter(r=>r[3]==='keep').length:' ✅'}`:''}\n\n`+items.map(x=>`• ${x[2]} — ${x[1]}`).join('\n')+`\n\nඑකතුව: ${items.length} වර්ග · ${total} පැකට්${d.note?'\nසටහන: '+d.note:''}\n━━━━━━━━━━\n${sbpEncode('load',payload)}`;
+  beforeSend('load',payload,text,t2=>sendOut('📦 පැටවීම යවන්න',t2,'load',payload,()=>{d.sentRev=rev;d.unlock=false;d.why='';S.sent.push({t:'load',...(d.pre?{pre:1}:{}),...(d.add?{add:1}:{}),...(d.add&&d.mid?{mid:1,midBy:String(d.midBy||'').slice(0,60)}:{}),uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text:t2,why:payload.why});trimSent();save();renderLoad();}));
 }
 
 /* ---------------- COUNT ---------------- */
@@ -1154,7 +1154,7 @@ function lrRsSet(k){const d=unloadDraft();d.rs=k;save();renderUnload();}
   const _rl=renderLoad;renderLoad=function(){const r=_rl.apply(this,arguments);try{if(loadMode==='pre'||!S.cfg)return r;const d=loadDraft(),sent=isLocked(d);
     const st=lrState(today(),sent?'':d.uid);let box=$('lrBox');if(!box){$('loadInfo').insertAdjacentHTML('beforebegin','<div id="lrBox"></div>');box=$('lrBox');}
     box.innerHTML=lrPanel(sent?lrState(today()):st,sent);
-    if(sent){const x=lastSentUid(d.uid),left=lrLeft(x);$('loadInfo').innerHTML=`<div class="card ${left?'infobox':'lockbox'} lr-sentbox">✅ <b>${d.add?'එකතු කිරීම':'පැටවීම'} යැව්වා</b> (සංශෝධනය ${d.sentRev}) · ${esc(lrHM(x&&x.at))}<div class="small">${left?`✏️ වැරැද්දක් නම් තව <b>${lrLeftTxt(left)}</b> හදන්න පුළුවන්.`:`⏳ පැය ${LR_EDIT_H} ඉවරයි — දැන් ➕ / ➖ විතරයි (වැරැද්දක් නම් ලොකු මහත්තයාට කියන්න).`}</div>${left?`<button class="btn light sm" style="margin-top:6px" onclick="askFix('load')">✏️ වැරැද්දක් හදන්න</button>`:''}</div>`;
+    if(sent){const x=lastSentUid(d.uid),left=lrLeft(x);$('loadInfo').innerHTML=`<div class="card ${left?'infobox':'lockbox'} lr-sentbox">✅ <b>${d.add?'එකතු කිරීම':'පැටවීම'} යැව්වා</b> (සංශෝධනය ${d.sentRev}) · ${esc(lrHM(x&&x.at))}<div class="small">${left?`✏️ වැරැද්දක් නම් තව <b>${lrLeftTxt(left)}</b> හදන්න පුළුවන්.`:`⏳ ඒ දවස ඉවරයි — දැන් ➕ / ➖ විතරයි (වැරැද්දක් නම් ලොකු මහත්තයාට කියන්න).`}</div>${left?`<button class="btn light sm" style="margin-top:6px" onclick="askFix('load')">✏️ වැරැද්දක් හදන්න</button>`:''}</div>`;
       const ll=$('loadList');if(ll){const lb=ll.querySelector('.lockbox');if(lb)lb.remove();ll.insertAdjacentHTML('afterbegin',`<h3 class="lr-sub">මේ ${d.add?'එකතු කිරීමේ':'පැටවීමේ'} බඩු</h3>`);}}
     else{if(d.add)$('loadInfo').insertAdjacentHTML('afterbegin',`<div class="card infobox lr-addbox">➕ <b>අලුතින් එකතු කරනවා</b> — මෙතන දාන්නේ <b>අලුත් බඩු විතරයි</b>. ලොරියේ දැනටමත් තියෙන ඒවා ආයෙත් දාන්න එපා. <button class="btn light sm" onclick="lrCancelAdd()">↩ අවලංගු කරන්න</button></div>`);
       lr.cur=st;document.querySelectorAll('#loadList [data-lrow]').forEach(el=>lrChip(el.getAttribute('data-lrow')));}
@@ -1162,7 +1162,7 @@ function lrRsSet(k){const d=unloadDraft();d.rs=k;save();renderUnload();}
   window.lrCancelAdd=function(){const d=S.drafts.load;if(d&&d.add&&!d.sentRev&&Object.keys(d.i).length&&!confirm('දාපු එකතු කිරීම අවලංගු කරන්නද?'))return;const prev=S.sent.filter(x=>x.t==='load'&&!x.pre&&x.d===today()).slice(-1)[0];
     if(prev){S.drafts.load={uid:prev.uid,d:prev.d,rev:prev.rev,sentRev:prev.rev,by:prev.by||S.me,i:{...prev.i},note:'',...(prev.add?{add:1}:{})};}else S.drafts.load=null;save();renderLoad();};
   /* ✏️ only within 3 hours of that send */
-  const _af=askFix;askFix=function(k){if(k==='load'||k==='unload'){const d=draftOf(k),x=lastSentUid(d.uid);if(x&&!lrLeft(x)){sheet('⏳ පැය '+LR_EDIT_H+' ඉවරයි',`<p>මේක යැව්වේ ${esc(fmtAt(x.at))}. පැය ${LR_EDIT_H}කට පස්සේ කෙළින්ම වෙනස් කරන්න බැහැ.</p><p><b>➕ අලුතින් එකතු කරන්න</b> හෝ <b>➖ ලොරියෙන් අයින් කරන්න</b> පාවිච්චි කරන්න. ලොකු වැරැද්දක් නම් ලොකු මහත්තයාට කියන්න.</p>`,[]);return;}}return _af.apply(this,arguments);};
+  const _af=askFix;askFix=function(k){if(k==='load'||k==='unload'){const d=draftOf(k),x=lastSentUid(d.uid);if(x&&!lrLeft(x)){sheet('⏳ ඒ දවස ඉවරයි',`<p>මේක යැව්වේ ${esc(fmtAt(x.at))}. දවස ඉවර වුණාට පස්සේ (පාන්දර ${esc((S.cfg&&S.cfg.de)||'04:00')}) කෙළින්ම වෙනස් කරන්න බැහැ.</p><p><b>➕ අලුතින් එකතු කරන්න</b> හෝ <b>➖ ලොරියෙන් අයින් කරන්න</b> පාවිච්චි කරන්න. ලොකු වැරැද්දක් නම් ලොකු මහත්තයාට කියන්න.</p>`,[]);return;}}return _af.apply(this,arguments);};
   /* send: carry ➕ / ➖ marks; stop removing more than is on the lorry; same goods twice? */
   const _sl=sendLoad;sendLoad=function(){try{const d=loadDraft();if(!d.pre&&!isLocked(d)&&!d.lrDupOk){const st=lrState(today(),d.uid),now=Date.now(),dup=Object.keys(d.i).filter(k=>st.moves.some(e=>e.k==='l'&&num(e.i[k])===num(d.i[k])&&now-new Date(e.at).getTime()<10*60000));
       if(dup.length&&!confirm(`🔁 ${dup.slice(0,3).map(pname).join(', ')} — මේ ගණනම විනාඩි 10ක් ඇතුළත දැනටමත් පැටෙව්වා. දෙපාරක් නෙවෙයිද? ඒත් යවන්නද?`))return;}}catch(e){}return _sl.apply(this,arguments);};
@@ -1170,7 +1170,7 @@ function lrRsSet(k){const d=unloadDraft();d.rs=k;save();renderUnload();}
       if(over.length&&(st.rem.src==='count'||st.rem.src==='pc')){toast(`❌ ${pname(over[0])} — ලොරියේ තියෙන්නේ ${st.tot[over[0]]||0} විතරයි`,'err');return;}
       if(d.rs&&!/^\[/.test(d.note||''))d.note=`[${LR_RS[d.rs]||d.rs}] `+(d.note||'');}}catch(e){}return _su.apply(this,arguments);};
   const _ru=renderUnload;renderUnload=function(){const r=_ru.apply(this,arguments);try{const d=unloadDraft();if(d.lr){const st=lrState(today(),d.uid);let b=$('lrUnBox');if(!b){$('unloadScan').insertAdjacentHTML('beforebegin','<div id="lrUnBox"></div>');b=$('lrUnBox');}
-      b.innerHTML=`<div class="card lr-card"><div class="lr-k">➖ ලොරියෙන් අයින් කරනවා</div><div class="small muted">🚚 ලොරියේ දැන් ${st.sum} පැකට්. අයින් කරන ගණන් විතරක් දාන්න.</div><div class="lr-rs">${Object.entries(LR_RS).map(([k,t])=>`<button class="btn ${d.rs===k?'primary':'light'} sm" onclick="lrRsSet('${k}')" ${isLocked(d)?'disabled':''}>${t}</button>`).join('')}</div>${isLocked(d)?(()=>{const x=lastSentUid(d.uid),left=lrLeft(x);return `<div class="small">${left?`✏️ තව ${lrLeftTxt(left)} හදන්න පුළුවන්`:`⏳ පැය ${LR_EDIT_H} ඉවරයි`}</div><button class="btn light sm" style="margin-top:6px" onclick="go('load')">🚚 ලොරියේ ගණන බලන්න</button>`;})():''}</div>`;}}catch(e){console.warn('v4.4.6 unload',e);}return r;};
+      b.innerHTML=`<div class="card lr-card"><div class="lr-k">➖ ලොරියෙන් අයින් කරනවා</div><div class="small muted">🚚 ලොරියේ දැන් ${st.sum} පැකට්. අයින් කරන ගණන් විතරක් දාන්න.</div><div class="lr-rs">${Object.entries(LR_RS).map(([k,t])=>`<button class="btn ${d.rs===k?'primary':'light'} sm" onclick="lrRsSet('${k}')" ${isLocked(d)?'disabled':''}>${t}</button>`).join('')}</div>${isLocked(d)?(()=>{const x=lastSentUid(d.uid),left=lrLeft(x);return `<div class="small">${left?`✏️ තව ${lrLeftTxt(left)} හදන්න පුළුවන්`:`⏳ ඒ දවස ඉවරයි`}</div><button class="btn light sm" style="margin-top:6px" onclick="go('load')">🚚 ලොරියේ ගණන බලන්න</button>`;})():''}</div>`;}}catch(e){console.warn('v4.4.6 unload',e);}return r;};
   /* after counting: straight on to loading */
   const _rc=renderCount;renderCount=function(){const r=_rc.apply(this,arguments);try{const c=countDraft();if(c.sentRev&&!c.unlock&&!S.sent.some(x=>x.t==='load'&&!x.pre&&x.d===today())){const h=$('countHead');if(h&&!h.querySelector('.lr-next'))h.insertAdjacentHTML('afterbegin',`<div class="card lr-next">✅ <b>ඉතිරිය ගණන් කළා.</b> දැන් අලුත් බඩු පටවන්න — ලොරියේ ඉතිරිය එතන වෙනම පේනවා.<button class="btn primary block" style="margin-top:8px" onclick="goLoad()">📦 දැන් අලුත් බඩු පටවන්න</button></div>`);}}catch(e){}return r;};
   /* home: what is on the lorry now */
@@ -1203,7 +1203,7 @@ function lrChip(k){const el=document.querySelector(`#loadList [data-lrow="${CSS.
 
 
 /* ================= v4.5.2 · 🕓 04:00 වැඩ දවස · 🔐 encrypt (lx) · 📋 කම්හලේ අලුත් ඇණවුම් + 🔴 hold live · 🔄 update තීරුව ================= */
-const LA_VER='4.56';
+const LA_VER='4.57';
 /* 🕓 "today" = the work day (PC setting, e.g. before 04:00 = yesterday) — same rule as the PC and the factory app */
 const _calToday=today;
 today=function(){const t=_calToday();try{const de=String((S.cfg&&S.cfg.de)||'00:00');if(!/^\d\d:\d\d$/.test(de)||de==='00:00')return t;
@@ -1317,6 +1317,15 @@ function v456Merge(){let X;try{X=JSON.parse(localStorage.getItem(KEY)||'null');}
   const again=()=>{try{v456Track();if(v456Merge()){_sv();if(screen==='home'||screen==='setup')render();}}catch(x){}};
   window.addEventListener('storage',e=>{if(e.key===KEY)again();});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)again();});})();
+
+/* ================= v4.5.7 (ලොරි app 4.57) · 2026-11-04 =================
+   1 · ✏️ යවපු පැටවීමක් වෙනස් කරන්න පුළුවන් මුළු දවසම (පැය 3 නෙවෙයි) — ඒ වැඩ දවස ඉවර වෙනකම් (පාන්දර 04:00, PC සැකසුම).
+   2 · 🛵 ගමන අතරතුර ලොරියට ගෙනිහින් දුන්න බඩු — ➕ එකතු කිරීමේදී ✔ කරලා කවුද / කොහෙද දාන්න; PC එකේ වෙනම ලකුණ. */
+function lrDayEnd(at){const de=String((S.cfg&&S.cfg.de)||'04:00'),m=/^(\d{1,2}):(\d{2})$/.exec(de),dm=m?Number(m[1])*60+Number(m[2]):240,off=330*60e3,t=new Date(at).getTime();
+  if(!Number.isFinite(t))return 0;const wd=new Date(t+off-dm*60e3).toISOString().slice(0,10),n=new Date(wd+'T00:00:00Z');n.setUTCDate(n.getUTCDate()+1);return n.getTime()+dm*60e3-off;}
+lrLeft=function(x){if(!x||!x.at)return 0;return Math.max(0,lrDayEnd(x.at)-Date.now());};
+(function(){const _r=renderLoad;renderLoad=function(){const r=_r.apply(this,arguments);try{const d=loadDraft(),n=document.getElementById('loadNote'),old=document.getElementById('loadMidBox');if(old)old.remove();
+  if(d&&d.add&&!(d.sentRev&&!d.unlock)&&n){n.insertAdjacentHTML('afterend',`<div id="loadMidBox" class="card infobox" style="margin-top:8px"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="loadMid" ${d.mid?'checked':''} onchange="(()=>{const d=loadDraft();d.mid=this.checked?1:0;save();document.getElementById('loadMidBy').style.display=this.checked?'':'none';})()"> 🛵 ලොරිය පාරේ — <b>ගමන අතරතුර ගෙනිහින් දුන්නා</b></label><input id="loadMidBy" placeholder="කවුද ගෙනිච්චේ / කොහෙදී (උදා: මම — ඕවිස්ස)" value="${esc(d.midBy||'')}" style="${d.mid?'':'display:none;'}margin-top:6px;width:100%" oninput="(()=>{const d=loadDraft();d.midBy=this.value;save();})()"></div>`);}}catch(e){}return r;};})();
 </script>
 </body>
 </html>
