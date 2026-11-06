@@ -120,7 +120,7 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
     <div class="card"><h3>☁️ මිල ලැයිස්තුව ඉබේම අලුත් වීම</h3><div class="small" id="cloudInfo"></div>
       <button class="btn primary block" id="pullBtn" onclick="cloudPull(true)">🔄 දැන් අලුත් කරන්න</button></div>
     <div class="card"><h3>📲 භාණ්ඩ ලැයිස්තුව දාන්න (එක පාරක්)</h3>
-      <p class="small muted">PC එකෙන් WhatsApp එකට එවපු <b>“📲 භාණ්ඩ ලැයිස්තුව”</b> message එක (නැත්නම් ලොරි Report එක, නැත්නම් “📱 ලොරි app link” එක) සම්පූර්ණයෙන්ම copy කරලා මෙතන paste කරන්න. එක පාරක් දැම්මම ඊට පස්සේ internet තියෙන හැම වෙලාවකම මිල ඉබේම අලුත් වෙනවා.</p>
+      <p class="small muted">PC එකෙන් එවපු <b>“🧾 කඩ බිල app link”</b> එක open කළාම මේක ඕනේ නැහැ. නැත්නම් WhatsApp එකට එවපු “📲 භාණ්ඩ ලැයිස්තුව” message එක (හෝ ලොරි Report / “📱 ලොරි app link”) සම්පූර්ණයෙන්ම copy කරලා මෙතන paste කරන්න. එක පාරක් දැම්මම ඊට පස්සේ internet තියෙන හැම වෙලාවකම මිල ඉබේම අලුත් වෙනවා.</p>
       <textarea id="paste" placeholder="මෙතන ඔබාගෙන ඉඳලා Paste කරන්න…"></textarea>
       <button class="btn light block" onclick="pasteClip()">📋 Copy කරපු එක ගන්න</button>
       <button class="btn primary block" onclick="applyPaste()">✅ දාන්න</button>
@@ -133,11 +133,11 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 'use strict';
-/* Shanthi Food Products — කඩ බිල app (v1.2.2, 2026-11-06)
+/* Shanthi Food Products — කඩ බිල app (v1.3, 2026-11-06)
    Offline first. The product list + wholesale prices come from the PC through Firebase (boxes/<box>/out/cfg · out/rep — the same
    messages the lorry app reads; the PC v4.7.3 sends a new one whenever a price changes). Also accepts a pasted WhatsApp message,
    and the lorry app's saved list on the same phone (read only). Nothing is ever sent anywhere. */
-const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.2.2',QMAX=9999;
+const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.3',QMAX=9999;
 const FS='https://firestore.googleapis.com/v1/projects/';
 const SIZE_RE=/^(\d+(?:\.\d+)?(?:g|kg|ml|l|P)|Card|Packet)$/i;
 const $=id=>document.getElementById(id);
@@ -239,7 +239,7 @@ function rowHtml(x){const n=qty(x.id),pr=price(x.id),chg=chgOf(x.id);
    <div class="st"><button class="sb" aria-label="අඩු කරන්න" onclick="step(this.closest('.row').dataset.r,-1)">−</button><input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="${QMAX}" value="${n||''}" placeholder="0" aria-label="${esc(x.name)} ගණන" onfocus="this.select()" oninput="setQty(this.closest('.row').dataset.r,this.value)" onblur="if(this.value!==String(qty(this.closest('.row').dataset.r)||''))this.value=qty(this.closest('.row').dataset.r)||''"><button class="sb" aria-label="වැඩි කරන්න" onclick="step(this.closest('.row').dataset.r,1)">＋</button></div></div>`;}
 function renderItems(){const el=$('list');renderCloud();$('qx').style.display=Q?'':'none';
   $('foot').textContent=`කඩ බිල v${VER} · Internet නැතුවත් වැඩ කරනවා${S.p.length?' · භාණ්ඩ '+S.p.length:''}`;
-  if(!S.p.length){el.innerHTML=`<div class="card empty"><div style="font-size:40px">📲</div><p>භාණ්ඩ ලැයිස්තුව තවම නැහැ.</p><p class="small">PC එකෙන් එවපු “📲 භාණ්ඩ ලැයිස්තුව” WhatsApp message එක එක පාරක් දාන්න.</p><button class="btn primary block" onclick="go('setup')">⚙️ භාණ්ඩ ලැයිස්තුව දාන්න</button></div>`;renderBar();return;}
+  if(!S.p.length){el.innerHTML=`<div class="card empty"><div style="font-size:40px">📲</div><p>භාණ්ඩ ලැයිස්තුව තවම නැහැ.</p><p class="small">PC එකේ <b>📱 Phone Apps</b> → 🧾 කඩ බිල → “📲 WhatsApp එකෙන් යවන්න” එකෙන් එන link එක open කරන්න.</p><button class="btn primary block" onclick="go('setup')">⚙️ භාණ්ඩ ලැයිස්තුව දාන්න</button></div>`;renderBar();return;}
   const F=families(),q=norm(Q);let h='',i=0;if(OPEN!==null&&!F.has(OPEN))OPEN=null;
   /* every word typed must match the product name (anywhere) or the size (from its start): “50g” finds 50g, not 250g · “මිරිස් 100” works */
   const words=String(Q||'').trim().split(/\s+/).map(norm).filter(Boolean),hit=(fam,x)=>words.every(w=>norm(fam).includes(w)||norm(x.size).startsWith(w));
@@ -300,6 +300,10 @@ function setBase(id,el){const t=String(el.value).trim(),p=num(t);if(t!==''&&(!/^
   if(p>0)S.prices[id]=r2(p);else delete S.prices[id];if(hasOwn(id)&&num(S.bill.pr[id])===basePrice(id))delete S.bill.pr[id];save();el.value=basePrice(id)||'';toast('💾 මිල සුරැකුවා');}
 
 /* ---- start ---- */
+/* the PC's “📲 කඩ බිල app link” (…/bill-app/#c=project~box): set up once, then the list + prices come by themselves */
+(function(){try{const h=decodeURIComponent((location.hash||'').slice(1)),m=/^c=([a-z0-9-]+)~([A-Za-z0-9_-]+?)(?:~[A-Za-z0-9_-]{43})?$/.exec(h);
+  if(m&&setCloud(m[1],m[2])){S.cloudErr='';save();toast('☁️ සකස් කළා — භාණ්ඩ ලැයිස්තුව + මිල ගන්නවා…');lastPull=0;}
+  if(h)try{history.replaceState(null,'',location.pathname+location.search);}catch(e){}}catch(e){}})();
 syncLorry();
 function wake(){const ch=syncLorry();if(ch)softRender();cloudPull(false);}
 window.addEventListener('pageshow',e=>{if(e.persisted)wake();});
