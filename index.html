@@ -444,7 +444,7 @@ function applyCodes(codes,silent){
   const msg=[];
   for(const c of codes){
     if(c.type==='cfg'||c.type==='rep'){const cfg=c.type==='cfg'?c.data:c.data.cfg;if(!cfg||!Array.isArray(cfg.p)){if(!silent)toast('වලංගු නැති message එකක්','err');return null;}
-      const old=S.cfg;S.cfg={biz:String(cfg.biz||''),wa:String(cfg.wa||''),blind:!!cfg.blind,p:cfg.p.filter(x=>Array.isArray(x)&&x[0]&&x[1]).map(x=>[String(x[0]),String(x[1])]),at:cfg.at||'',driver:cfg.driver||'',vehicle:cfg.vehicle||'',gps:!!cfg.gps,hours:cfg.hours&&cfg.hours.from&&cfg.hours.to?{from:String(cfg.hours.from),to:String(cfg.hours.to)}:null};
+      const old=S.cfg;S.cfg={biz:String(cfg.biz||''),wa:String(cfg.wa||''),blind:!!cfg.blind,p:cfg.p.filter(x=>Array.isArray(x)&&x[0]&&x[1]).map(x=>Number(x[2])>0?[String(x[0]),String(x[1]),Number(x[2])]:[String(x[0]),String(x[1])]),/* v4.5.8: wholesale price (3rd) kept for the කඩ බිල app */at:cfg.at||'',driver:cfg.driver||'',vehicle:cfg.vehicle||'',gps:!!cfg.gps,hours:cfg.hours&&cfg.hours.from&&cfg.hours.to?{from:String(cfg.hours.from),to:String(cfg.hours.to)}:null};
       if(S.cfg.wa&&!S.waOverride)S.wa=S.cfg.wa;
       if(cfg.cloud&&cfg.cloud.p&&cfg.cloud.b)cloudSetCfg(cfg.cloud.p,cfg.cloud.b);
       if(c.type==='cfg')msg.push(`📲 භාණ්ඩ ${S.cfg.p.length}ක්${old?' (අලුත් කළා)':''}`);}
