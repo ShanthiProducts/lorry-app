@@ -19,7 +19,7 @@ html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Noto Sans Sinhala","Iskoola Pota",sans-serif;padding-bottom:calc(100px + env(safe-area-inset-bottom))}
 button,input,textarea{font:inherit;color:inherit}
 header{position:sticky;top:0;z-index:20;background:linear-gradient(120deg,var(--red),var(--red2));color:#fff;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 14px #e51b2333}
-header .hb{background:#ffffff26;color:#fff;border:0;border-radius:10px;width:42px;height:42px;font-size:20px;flex:none}
+header .hb{background:#ffffff26;color:#fff;border:0;border-radius:10px;width:44px;height:44px;font-size:20px;flex:none;cursor:pointer}
 header h1{margin:0;font-size:18px;line-height:1.2}header p{margin:0;font-size:12px;opacity:.9}
 header .grow{flex:1;min-width:0}
 main{max-width:640px;margin:0 auto;padding:12px 14px}
@@ -29,15 +29,21 @@ main{max-width:640px;margin:0 auto;padding:12px 14px}
 .muted{color:var(--muted)}.small{font-size:13px}
 .btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;cursor:pointer;min-height:48px}
 .btn.primary{background:var(--red);color:#fff}.btn.light{background:#fff;border:1.5px solid #cbd5e1;color:#1e293b}
-.btn.block{display:block;width:100%;margin-top:8px}.btn:disabled{opacity:.45}
-textarea{width:100%;min-height:120px;border:1.5px solid #cbd5e1;border-radius:12px;padding:10px;font-size:14px}
-.search{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #cbd5e1;border-radius:14px;padding:0 12px;height:48px;margin-bottom:12px}
-.search input{border:0;outline:0;flex:1;font-size:16px;background:transparent;min-width:0}
+.btn.block{display:block;width:100%;margin-top:8px}.btn:disabled{opacity:.45;cursor:default}
+textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12px;padding:10px;font-size:14px}
+.search{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid #cbd5e1;border-radius:14px;padding:0 6px 0 12px;height:48px;margin-bottom:10px}
+.search input{border:0;outline:0;flex:1;font-size:16px;background:transparent;min-width:0;height:100%}
+.search input::-webkit-search-cancel-button{display:none}
+.search .x{border:0;background:#f1f5f9;border-radius:10px;width:36px;height:36px;font-size:16px;cursor:pointer;flex:none}
+.cl{display:flex;align-items:center;gap:8px;font-size:13px;color:#475569;background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px 10px;margin-bottom:10px}
+.cl.bad{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
+.cl .grow{flex:1;min-width:0}
+.cl button{border:1px solid #cbd5e1;background:#fff;border-radius:10px;min-height:36px;padding:0 10px;font-weight:700;cursor:pointer;flex:none}
 .fam{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:10px}
 .fam.open{border:1.5px solid var(--red)}
 .fh{width:100%;min-height:54px;display:flex;align-items:center;gap:10px;padding:8px 14px;border:0;background:#fff;text-align:left;cursor:pointer}
 .fam.open .fh{background:#fff7d6;border-bottom:1px solid #fde68a}
-.fh .nm{flex:1;font-weight:800;font-size:17px}
+.fh .nm{flex:1;min-width:0;font-weight:800;font-size:17px;overflow-wrap:anywhere}
 .fh svg{flex:none;transition:transform .15s}.fam.open .fh svg{transform:rotate(180deg)}
 .chip{font-size:13px;font-weight:700;color:var(--ok);background:var(--okbg);border-radius:8px;padding:2px 8px;white-space:nowrap}
 .chip:empty{display:none}
@@ -46,40 +52,44 @@ textarea{width:100%;min-height:120px;border:1.5px solid #cbd5e1;border-radius:12
 .row.has{background:#fef2f2}.row.has .sz{color:var(--red)}
 .row .l{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .row .t{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.sz{font-weight:800;font-size:18px}
-.amt{font-weight:800;font-size:15px;color:var(--ok);background:var(--okbg);border-radius:8px;padding:1px 8px}
+.sz{font-weight:800;font-size:18px;overflow-wrap:anywhere}
+.amt{font-weight:800;font-size:15px;color:var(--ok);background:var(--okbg);border-radius:8px;padding:1px 8px;white-space:nowrap}
 .amt:empty{display:none}
-.pr{display:flex;align-items:center;gap:6px;font-size:13px}
+.pr{display:flex;align-items:center;gap:6px;font-size:13px;flex-wrap:wrap}
 .pr label{display:flex;align-items:center;gap:2px;border:1px solid #cbd5e1;border-radius:8px;padding:1px 6px;background:#fff;font-weight:700;color:#334155}
 .pr label.chg{border:1.5px solid var(--red)}
-.pr input{width:58px;border:0;outline:0;background:transparent;font-weight:700;padding:2px 0}
+.pr input{width:62px;border:0;outline:0;background:transparent;font-weight:700;padding:3px 0;font-size:14px}
 .pr .cm{color:#b91c1c;font-weight:700}.pr .need{color:#b45309;font-weight:700}
+.pr .cm:empty,.pr .need:empty{display:none}
 .st{display:flex;align-items:center;gap:6px;flex:none}
-.sb{width:44px;height:44px;border-radius:12px;border:1.5px solid #d1d5db;background:#fff;font-size:22px;font-weight:900;color:#334155;cursor:pointer}
+.sb{width:44px;height:44px;border-radius:12px;border:1.5px solid #d1d5db;background:#fff;font-size:22px;font-weight:900;color:#334155;cursor:pointer;touch-action:manipulation}
 .sb:active{background:#fee2e2}
-.st input{width:56px;height:44px;text-align:center;font-weight:800;font-size:18px;border:1.5px solid #d1d5db;border-radius:12px;padding:0}
+.st input{width:56px;height:44px;text-align:center;font-weight:800;font-size:18px;border:1.5px solid #d1d5db;border-radius:12px;padding:0;-moz-appearance:textfield}
+.st input::-webkit-outer-spin-button,.st input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+@media(max-width:350px){.sb{width:40px}.st input{width:48px}.row{padding-left:10px;gap:6px}}
 .bar{position:fixed;left:0;right:0;bottom:0;z-index:15;background:#fff;border-top:1px solid var(--line);box-shadow:0 -6px 18px #0f172a14;padding:10px 16px calc(12px + env(safe-area-inset-bottom));display:flex;gap:10px;align-items:center}
 .bar .grow{flex:1;min-width:0}
 .bar .cnt{font-size:14px;color:#475569}.bar .cnt b{color:#1e293b}
-.bar .tot{font-size:22px;font-weight:800;line-height:1.2}
+.bar .tot{font-size:22px;font-weight:800;line-height:1.2;overflow-wrap:anywhere}
 .bar .btn{min-height:54px;font-size:18px}
 .empty{text-align:center;color:var(--muted);padding:24px 10px}
 .bt{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.bt .r{display:grid;grid-template-columns:1fr 44px 60px 74px;gap:6px;padding:11px 12px 11px 14px;border-top:1px solid #f1f5f9;align-items:baseline}
+.bt .r{display:grid;grid-template-columns:minmax(0,1fr) 44px 64px 78px;gap:6px;padding:11px 12px 11px 14px;border-top:1px solid #f1f5f9;align-items:baseline}
 .bt .r.h{background:#f8fafc;border-top:0;font-size:13px;font-weight:700;color:#475569;padding-top:9px;padding-bottom:9px}
-.bt .r>div:not(:first-child){text-align:right}
-.bt .r .n{font-weight:700;font-size:15px}.bt .r .q{font-weight:800}.bt .r .a{font-weight:800}
-.sum{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-top:2px solid #e2e8f0}
+.bt .r>div:not(:first-child){text-align:right;overflow-wrap:anywhere}
+.bt .r .n{font-weight:700;font-size:15px;overflow-wrap:anywhere}.bt .r .q{font-weight:800}.bt .r .a{font-weight:800}
+@media(max-width:350px){.bt .r{grid-template-columns:minmax(0,1fr) 36px 54px 68px;padding-left:10px;font-size:14px}}
+.sum{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:12px 14px;border-top:2px solid #e2e8f0}
 .disc{padding:10px 14px 12px;border-top:1px dashed #cbd5e1}
 .disc .top{display:flex;align-items:center;gap:8px}
-.seg{display:flex;border:1.5px solid #cbd5e1;border-radius:12px;overflow:hidden}
+.seg{display:flex;border:1.5px solid #cbd5e1;border-radius:12px;overflow:hidden;flex:none}
 .seg button{min-width:50px;height:44px;border:0;background:#fff;font-weight:800;cursor:pointer}
 .seg button.on{background:var(--red);color:#fff}
-.disc input{width:84px;height:44px;text-align:center;font-size:18px;font-weight:800;border:1.5px solid #d1d5db;border-radius:12px}
+.disc input{width:84px;height:44px;text-align:center;font-size:18px;font-weight:800;border:1.5px solid #d1d5db;border-radius:12px;flex:none}
 .disc .dl{display:flex;justify-content:space-between;margin-top:8px;color:#b91c1c;font-weight:700}
 .disc .dl:empty{display:none}
-.pay{display:flex;justify-content:space-between;align-items:center;padding:14px;background:#fff7d6;border-top:2px solid #fde68a}
-.pay .v{font-size:28px;font-weight:800}
+.pay{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px;background:#fff7d6;border-top:2px solid #fde68a}
+.pay .v{font-size:28px;font-weight:800;overflow-wrap:anywhere;text-align:right}
 .plist .row{border-top:1px solid #f1f5f9}
 .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:#172033;color:#fff;padding:10px 16px;border-radius:12px;font-weight:700;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;max-width:90vw;text-align:center}
 .toast.show{opacity:1}
@@ -94,10 +104,11 @@ textarea{width:100%;min-height:120px;border:1.5px solid #cbd5e1;border-radius:12
 </header>
 <main>
   <section class="screen" id="s-items">
-    <label class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
-      <input type="search" id="q" placeholder="භාණ්ඩය සොයන්න" aria-label="භාණ්ඩය සොයන්න" oninput="Q=this.value;renderItems()"></label>
+    <div id="cline"></div>
+    <div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-4-4"></path></svg>
+      <input type="search" id="q" placeholder="භාණ්ඩය සොයන්න" aria-label="භාණ්ඩය සොයන්න" autocomplete="off" oninput="Q=this.value;renderItems()"><button class="x" id="qx" aria-label="සෙවීම මකන්න" onclick="clearQ()" style="display:none">✕</button></div>
     <div id="list"></div>
-    <div class="foot">කඩ බිල v1.1 · Internet නැතුවත් වැඩ කරනවා</div>
+    <div class="foot" id="foot"></div>
   </section>
 
   <section class="screen" id="s-bill">
@@ -106,30 +117,38 @@ textarea{width:100%;min-height:120px;border:1.5px solid #cbd5e1;border-radius:12
   </section>
 
   <section class="screen" id="s-setup">
-    <div class="card"><h3>📲 භාණ්ඩ ලැයිස්තුව</h3><p class="small muted" id="srcInfo"></p>
-      <button class="btn light block" onclick="reloadLorry()">🔄 ලොරි App එකෙන් ආයෙත් ගන්න</button>
-      <p class="small muted" style="margin-top:12px">ලොරි App එක මේ phone එකේ නැත්නම්: WhatsApp එකෙන් ආපු <b>“📲 භාණ්ඩ ලැයිස්තුව”</b> message එක (නැත්නම් Report එක) සම්පූර්ණයෙන්ම copy කරලා මෙතන paste කරන්න.</p>
+    <div class="card"><h3>☁️ මිල ලැයිස්තුව ඉබේම අලුත් වීම</h3><div class="small" id="cloudInfo"></div>
+      <button class="btn primary block" id="pullBtn" onclick="cloudPull(true)">🔄 දැන් අලුත් කරන්න</button></div>
+    <div class="card"><h3>📲 භාණ්ඩ ලැයිස්තුව දාන්න (එක පාරක්)</h3>
+      <p class="small muted">PC එකෙන් WhatsApp එකට එවපු <b>“📲 භාණ්ඩ ලැයිස්තුව”</b> message එක (නැත්නම් ලොරි Report එක, නැත්නම් “📱 ලොරි app link” එක) සම්පූර්ණයෙන්ම copy කරලා මෙතන paste කරන්න. එක පාරක් දැම්මම ඊට පස්සේ internet තියෙන හැම වෙලාවකම මිල ඉබේම අලුත් වෙනවා.</p>
       <textarea id="paste" placeholder="මෙතන ඔබාගෙන ඉඳලා Paste කරන්න…"></textarea>
-      <button class="btn primary block" onclick="applyPaste()">✅ දාන්න</button></div>
-    <div class="card"><h3>💰 තොග මිල ලැයිස්තුව</h3><p class="small muted">“PC” කියලා තියෙන මිල PC එකෙන් එනවා (PC එකේ මිල වෙනස් කළාම ඊළඟ Report / භාණ්ඩ ලැයිස්තුවත් එක්ක මෙතනත් වෙනස් වෙනවා). PC එකෙන් මිල නැති ඒවට මෙතන දාන්න පුළුවන්. බිලක් ඇතුළේ මිල වෙනස් කළොත් ඒ වෙනස ඒ බිලට විතරයි.</p>
+      <button class="btn light block" onclick="pasteClip()">📋 Copy කරපු එක ගන්න</button>
+      <button class="btn primary block" onclick="applyPaste()">✅ දාන්න</button>
+      <p class="small muted" id="srcInfo" style="margin:10px 0 0"></p></div>
+    <div class="card"><h3>💰 තොග මිල ලැයිස්තුව</h3><p class="small muted">“PC” කියලා තියෙන මිල PC එකෙන් එනවා — PC එකේ මිල වෙනස් කළාම මෙතනත් ඉබේම වෙනස් වෙනවා. PC එකෙන් මිලක් නැති ඒවට මෙතන දාන්න පුළුවන්. බිලක් ඇතුළේ මිල වෙනස් කළොත් ඒ වෙනස ඒ බිලට විතරයි.</p>
       <div class="plist" id="plist"></div></div>
   </section>
 </main>
 <div class="bar" id="bar"></div>
-<div class="toast" id="toast" role="status"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 'use strict';
-/* Shanthi Food Products — කඩ බිල app (v1.0, 2026-11-06)
-   Stand-alone, offline. Reads the product list the lorry app keeps on this phone (same site, read only),
-   or a pasted “📲 භාණ්ඩ ලැයිස්තුව” WhatsApp message. Nothing is sent anywhere. */
-const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.1';
+/* Shanthi Food Products — කඩ බිල app (v1.2, 2026-11-06)
+   Offline first. The product list + wholesale prices come from the PC through Firebase (boxes/<box>/out/cfg · out/rep — the same
+   messages the lorry app reads; the PC v4.7.3 sends a new one whenever a price changes). Also accepts a pasted WhatsApp message,
+   and the lorry app's saved list on the same phone (read only). Nothing is ever sent anywhere. */
+const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.2',QMAX=9999;
+const FS='https://firestore.googleapis.com/v1/projects/';
 const SIZE_RE=/^(\d+(?:\.\d+)?(?:g|kg|ml|l|P)|Card|Packet)$/i;
 const $=id=>document.getElementById(id);
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function num(v){const n=Number(String(v??'').replace(/,/g,'').trim());return Number.isFinite(n)?n:0;}
-function money(n){n=Math.round(num(n)*100)/100;return n.toLocaleString('en-LK',{maximumFractionDigits:2});}
-function norm(s){return String(s||'').toLocaleLowerCase().replace(/\s+/g,'');}
-function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2600);}
+function num(v){const t=String(v??'').replace(/,/g,'').trim();if(!t)return 0;const n=Number(t);return Number.isFinite(n)?n:0;}
+function r2(n){return Math.round(n*100)/100;}
+function money(n){return r2(num(n)).toLocaleString('en-LK',{maximumFractionDigits:2});}
+function norm(s){return String(s||'').toLocaleLowerCase().replace(/[\s​-‍]+/g,'');}
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2800);}
+function hm(iso){try{const d=new Date(iso);if(isNaN(d))return '';return d.toLocaleString('en-GB',{timeZone:'Asia/Colombo',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit',hour12:true});}catch(e){return '';}}
+function typing(){const a=document.activeElement;return !!(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'));}
 
 /* ---- SBP1 WhatsApp codes (same format as Smart Bill Pro / lorry app) ---- */
 const SBP_CODE_RE=/SBP1:([a-z]+):([A-Za-z0-9+\/=\s]+?):([0-9a-f]{8})/g;
@@ -141,99 +160,152 @@ function sbpDecodeAll(text){const out=[];const src=String(text||'');SBP_CODE_RE.
   if(!out.length&&/SBP1:/.test(src))out.push({type:'?',error:'cut'});return out;}
 
 /* ---- state ---- */
-function blank(){return {p:[],src:'',at:'',prices:{},bill:{q:{},pr:{},dt:'%',dv:''}};}
-function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object'){const b=blank();return {...b,...x,prices:x.prices&&typeof x.prices==='object'?x.prices:{},bill:{...b.bill,...(x.bill||{}),q:(x.bill&&x.bill.q)||{},pr:(x.bill&&x.bill.pr)||{}}};}}catch(e){}return blank();}
+function blank(){return {p:[],src:'',at:'',prices:{},cloud:null,pulledAt:'',cloudErr:'',bill:{q:{},pr:{},dt:'%',dv:''}};}
+function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object'){const b=blank(),bl=x.bill&&typeof x.bill==='object'?x.bill:{};
+  return {...b,...x,p:Array.isArray(x.p)?x.p:[],prices:x.prices&&typeof x.prices==='object'?x.prices:{},bill:{...b.bill,...bl,q:bl.q&&typeof bl.q==='object'?bl.q:{},pr:bl.pr&&typeof bl.pr==='object'?bl.pr:{},dt:bl.dt==='rs'?'rs':'%',dv:String(bl.dv??'')}};}}catch(e){}return blank();}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('Phone එකේ save කරන්න බැරි වුණා');}}
-let S=load(),Q='',OPEN=null,screen='items';
+let S=load(),Q='',OPEN=null,screen='items',pendingRender=false;
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
 
-/* product list: [id, name, price?] — price (3rd) is used if the PC ever sends it */
-function cleanP(arr){return (Array.isArray(arr)?arr:[]).filter(x=>Array.isArray(x)&&x[0]&&x[1]).map(x=>{const o=[String(x[0]),String(x[1])];if(num(x[2])>0)o.push(num(x[2]));return o;});}
-function fromLorry(){try{const x=JSON.parse(localStorage.getItem(LORRY_KEY)||'null');const p=cleanP(x&&x.cfg&&x.cfg.p);if(p.length)return {p,at:(x.cfg&&x.cfg.at)||''};}catch(e){}return null;}
-function syncLorry(force){const L=fromLorry();if(!L)return false;const same=JSON.stringify(L.p)===JSON.stringify(S.p);if(same&&!force)return true;S.p=L.p;S.src='lorry';S.at=L.at||new Date().toISOString();save();return true;}
-function reloadLorry(){if(syncLorry(true)){toast(`✅ භාණ්ඩ ${S.p.length}ක් ලොරි App එකෙන් ගත්තා`);render();}else toast('මේ phone එකේ ලොරි App එකේ භාණ්ඩ ලැයිස්තුවක් නැහැ');}
-function applyPaste(){const codes=sbpDecodeAll($('paste').value);const c=codes.find(x=>!x.error&&(x.type==='cfg'||x.type==='rep'));
-  if(!c){toast(codes.some(x=>x.error)?'Message එක සම්පූර්ණයෙන් copy වෙලා නැහැ — ආයෙත් copy කරන්න':'“📲 භාණ්ඩ ලැයිස්තුව” message එක හම්බ වුණේ නැහැ');return;}
-  const cfg=c.type==='cfg'?c.data:c.data&&c.data.cfg;const p=cleanP(cfg&&cfg.p);if(!p.length){toast('ඒ message එකේ භාණ්ඩ නැහැ');return;}
-  S.p=p;S.src='paste';S.at=(cfg&&cfg.at)||new Date().toISOString();save();$('paste').value='';toast(`✅ භාණ්ඩ ${p.length}ක් දැම්මා`);go('items');}
+/* ---- product list [id, name, price?] from a cfg: newest wins (PC time `at`), a paste always wins ---- */
+function cleanP(arr){const seen=new Set();return (Array.isArray(arr)?arr:[]).filter(x=>Array.isArray(x)&&x[0]&&x[1]&&!seen.has(String(x[0]))&&seen.add(String(x[0]))).map(x=>{const o=[String(x[0]),String(x[1]).trim()];if(num(x[2])>0)o.push(r2(num(x[2])));return o;});}
+function setCloud(p,b){p=String(p||'').toLowerCase();b=String(b||'');if(!/^[a-z][a-z0-9-]{4,29}$/.test(p)||!/^[A-Za-z0-9_-]{20,64}$/.test(b))return false;if(!S.cloud||S.cloud.p!==p||S.cloud.b!==b){S.cloud={p,b};save();}return true;}
+function takeCfg(cfg,src,force){const p=cleanP(cfg&&cfg.p);if(!p.length)return false;if(cfg.cloud&&cfg.cloud.p)setCloud(cfg.cloud.p,cfg.cloud.b);
+  const at=String(cfg.at||'');if(!force&&S.at&&at&&at<S.at)return false;
+  const ch=JSON.stringify(p)!==JSON.stringify(S.p);S.p=p;S.src=src;if(at||force)S.at=at||new Date().toISOString();save();return ch;}
+function fromLorry(){try{const x=JSON.parse(localStorage.getItem(LORRY_KEY)||'null');if(x&&x.cloud&&x.cloud.p)setCloud(x.cloud.p,x.cloud.b);if(x&&x.cfg)return x.cfg;}catch(e){}return null;}
+function syncLorry(){const c=fromLorry();return c?takeCfg(c,'lorry',false):false;}
+/* ☁️ Firebase: read the PC's latest product list (cfg, or the cfg inside the lorry report) */
+let pulling=false,lastPull=0;
+async function cloudPull(manual){if(!S.cloud){if(manual)toast('මුලින්ම “📲 භාණ්ඩ ලැයිස්තුව” message එක එක පාරක් දාන්න');renderCloud();return;}
+  if(pulling)return;if(!manual&&Date.now()-lastPull<45000)return;pulling=true;lastPull=Date.now();renderCloud();let best=null,err='';
+  try{for(const k of ['cfg','rep']){let r;try{r=await fetch(`${FS}${S.cloud.p}/databases/(default)/documents/boxes/${S.cloud.b}/out/${k}`,{cache:'no-store'});}catch(e){err='Internet නැහැ';break;}
+      if(r.status===404)continue;if(!r.ok){err=r.status===429?'Firebase අද සීමාව ඉවරයි':r.status===403?'Firebase අවසර නැහැ':'Firebase දෝෂය '+r.status;break;}
+      let j;try{j=await r.json();}catch(e){continue;}const code=((j.fields||{}).code||{}).stringValue||'';
+      sbpDecodeAll(code).forEach(c=>{if(c.error)return;const cfg=c.type==='cfg'?c.data:c.type==='rep'?c.data&&c.data.cfg:null;if(cfg&&cleanP(cfg.p).length&&(!best||String(cfg.at||'')>String(best.at||'')))best=cfg;});}}
+  finally{pulling=false;}
+  let ch=false;if(best)ch=takeCfg(best,'cloud',false);
+  if(!err){S.pulledAt=new Date().toISOString();S.cloudErr='';}else S.cloudErr=err;save();
+  if(manual)toast(err?'⚠️ '+err+' — අන්තිමට ගත්ත මිලෙන් වැඩ කරනවා':(ch?'✅ මිල ලැයිස්තුව අලුත් කළා':'✅ මිල ලැයිස්තුව දැනටමත් අලුත්'));else if(ch)toast('☁️ මිල ලැයිස්තුව අලුත් කළා');
+  if(ch)softRender();else renderCloud();}
+function softRender(){if(typing()){pendingRender=true;return;}pendingRender=false;render();}
+document.addEventListener('focusout',()=>setTimeout(()=>{if(pendingRender&&!typing())softRender();},50));
+async function pasteClip(){try{const t=await navigator.clipboard.readText();if(t){$('paste').value=t;applyPaste();return;}}catch(e){}toast('කොටුව ඔබාගෙන ඉඳලා Paste කරන්න');}
+function applyPaste(){const txt=$('paste').value,codes=sbpDecodeAll(txt);const c=codes.find(x=>!x.error&&(x.type==='cfg'||x.type==='rep'));
+  if(c){const cfg=c.type==='cfg'?c.data:c.data&&c.data.cfg;if(!cfg||!cleanP(cfg.p).length){toast('ඒ message එකේ භාණ්ඩ නැහැ');return;}
+    takeCfg(cfg,'paste',true);$('paste').value='';toast(`✅ භාණ්ඩ ${S.p.length}ක් දැම්මා${S.cloud?' · ☁️ මිල ඉබේම අලුත් වෙනවා':''}`);go('items');if(S.cloud)cloudPull(false);return;}
+  const m=/[#&]c=([a-z0-9-]+)~([A-Za-z0-9_-]+?)(?:~[A-Za-z0-9_-]{43})?(?=$|[&\s])/.exec(String(txt).trim());
+  if(m&&setCloud(m[1],m[2])){$('paste').value='';toast('☁️ සකස් කළා — මිල ලැයිස්තුව ගන්නවා…');cloudPull(true).then(()=>{if(S.p.length&&screen==='setup')go('items');});renderSetup();return;}
+  toast(codes.some(x=>x.error)?'Message එක සම්පූර්ණයෙන් copy වෙලා නැහැ — ආයෙත් copy කරන්න':'“📲 භාණ්ඩ ලැයිස්තුව” message එක හම්බ වුණේ නැහැ');}
 
 function split(name){const n=String(name||'').trim().replace(/\s+/g,' '),parts=n.split(' '),last=parts[parts.length-1];return parts.length>1&&SIZE_RE.test(last)?{fam:parts.slice(0,-1).join(' '),size:last}:{fam:n,size:''};}
-function prod(id){return S.p.find(x=>x[0]===id)||null;}
-function families(){const m=new Map();S.p.forEach(p=>{const s=split(p[1]);if(!m.has(s.fam))m.set(s.fam,[]);m.get(s.fam).push({id:p[0],name:p[1],size:s.size||s.fam});});return m;}
+let _pix={k:null,m:null};
+function prodIx(){if(_pix.k!==S.p){const m=new Map();S.p.forEach(p=>m.set(p[0],p));_pix={k:S.p,m};}return _pix.m;}
+function prod(id){return prodIx().get(id)||null;}
+let _fam={k:null,v:null};
+function families(){if(_fam.k===S.p)return _fam.v;const m=new Map();S.p.forEach(p=>{const s=split(p[1]);if(!m.has(s.fam))m.set(s.fam,[]);m.get(s.fam).push({id:p[0],name:p[1],size:s.size||s.fam});});_fam={k:S.p,v:m};return m;}
+function famKeys(){return [...families().keys()];}
 
-/* prices: this bill's change → PC price (comes with the product list) → a price typed on this phone (only for items the PC sends no price for) */
+/* prices: this bill's change → PC price → a price typed on this phone (only for items the PC sends no price for) */
 function pcPrice(id){const p=prod(id);return p&&num(p[2])>0?num(p[2]):0;}
-function basePrice(id){const pc=pcPrice(id);if(pc)return pc;if(S.prices[id]!==undefined&&num(S.prices[id])>0)return num(S.prices[id]);return 0;}
-function price(id){const o=S.bill.pr[id];return o!==undefined&&o!==''?num(o):basePrice(id);}
-function qty(id){return Math.max(0,Math.floor(num(S.bill.q[id])));}
-function line(id){return qty(id)*price(id);}
-function totals(){let types=0,pk=0,sum=0;Object.keys(S.bill.q).forEach(id=>{const n=qty(id);if(!n||!prod(id))return;types++;pk+=n;sum+=n*price(id);});return {types,pk,sum:Math.round(sum*100)/100};}
-function discount(sum){const v=num(S.bill.dv);if(!(v>0)||!(sum>0))return 0;let d=S.bill.dt==='%'?sum*Math.min(v,100)/100:v;d=Math.round(d);return Math.min(d,sum);}
+function basePrice(id){const pc=pcPrice(id);if(pc)return pc;const v=num(S.prices[id]);return v>0?v:0;}
+function hasOwn(id){const o=S.bill.pr[id];return o!==undefined&&o!==null&&o!=='';}
+function price(id){return hasOwn(id)?Math.max(0,num(S.bill.pr[id])):basePrice(id);}
+function qty(id){return Math.min(QMAX,Math.max(0,Math.floor(num(S.bill.q[id]))));}
+function line(id){return r2(qty(id)*price(id));}
+function billIds(){const ix=new Map(S.p.map((p,i)=>[p[0],i]));return Object.keys(S.bill.q).filter(id=>qty(id)&&ix.has(id)).sort((a,b)=>ix.get(a)-ix.get(b));}
+function totals(){let types=0,pk=0,sum=0;billIds().forEach(id=>{types++;pk+=qty(id);sum+=line(id);});return {types,pk,sum:r2(sum)};}
+function discount(sum){const v=num(S.bill.dv);if(!(v>0)||!(sum>0))return 0;const d=Math.round(S.bill.dt==='%'?sum*Math.min(v,100)/100:v);return Math.min(d,sum);}
 
 /* ---- navigation ---- */
 const TITLES={items:'🧾 කඩ බිල',bill:'🧾 බිල',setup:'⚙️ සැකසුම්'};
-function go(n){screen=n;document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+n));$('hTitle').textContent=TITLES[n];
+function go(n){if(n==='bill'&&!billIds().length)n='items';screen=n;document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+n));$('hTitle').textContent=TITLES[n];
   $('hBack').style.visibility=n==='items'?'hidden':'visible';$('hSet').style.visibility=n==='setup'?'hidden':'visible';window.scrollTo(0,0);render();}
 function render(){({items:renderItems,bill:renderBill,setup:renderSetup})[screen]();}
+function renderCloud(){const el=$('cline');if(el&&screen==='items'){
+    if(!S.p.length)el.innerHTML='';
+    else if(!S.cloud)el.innerHTML=`<div class="cl bad"><span>⚠️</span><span class="grow">මිල ඉබේම අලුත් වෙන්නේ නැහැ — ⚙️ එකේ “📲 භාණ්ඩ ලැයිස්තුව” message එක එක පාරක් දාන්න</span></div>`;
+    else el.innerHTML=`<div class="cl ${S.cloudErr?'bad':''}"><span>${pulling?'⏳':S.cloudErr?'⚠️':'☁️'}</span><span class="grow">${pulling?'මිල ලැයිස්තුව බලනවා…':S.cloudErr?esc(S.cloudErr)+' — අන්තිමට ගත්ත මිල':'මිල අලුත්'}${S.at&&!pulling?' · PC '+esc(hm(S.at)):''}</span><button onclick="cloudPull(true)" aria-label="මිල අලුත් කරන්න">🔄</button></div>`;}
+  if(screen==='setup')renderCloudInfo();}
 
 /* ---- screen 1: items (one product open at a time) ---- */
 const CHEV='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>';
 function famSum(list){let pk=0,s=0;list.forEach(x=>{const n=qty(x.id);if(n){pk+=n;s+=n*price(x.id);}});return pk?`පැකට් ${pk} · රු. ${money(s)}`:'';}
-function rowHtml(x){const n=qty(x.id),pr=price(x.id),chg=S.bill.pr[x.id]!==undefined&&S.bill.pr[x.id]!==''&&num(S.bill.pr[x.id])!==basePrice(x.id),no=!(pr>0);
+function chgOf(id){return hasOwn(id)&&price(id)!==basePrice(id);}
+function rowHtml(x){const n=qty(x.id),pr=price(x.id),chg=chgOf(x.id);
   return `<div class="row ${n?'has':''}" data-r="${esc(x.id)}"><div class="l"><div class="t"><span class="sz">${esc(x.size)}</span><span class="amt">${n&&pr>0?'රු. '+money(n*pr):''}</span></div>
-   <div class="pr"><label class="${chg?'chg':''}">රු.<input type="text" inputmode="decimal" value="${pr>0?esc(String(pr)):''}" placeholder="මිල" aria-label="${esc(x.name)} මිල" onfocus="this.select()" onchange="setPrice('${esc(x.id)}',this.value)"></label>${chg?'<span class="cm">වෙනස් කළා</span>':''}${no?'<span class="need">මිල දාන්න</span>':''}</div></div>
-   <div class="st"><button class="sb" aria-label="අඩු කරන්න" onclick="step('${esc(x.id)}',-1)">−</button><input type="number" inputmode="numeric" min="0" value="${n||''}" placeholder="0" aria-label="${esc(x.name)} ගණන" onfocus="this.select()" oninput="setQty('${esc(x.id)}',this.value,true)"><button class="sb" aria-label="වැඩි කරන්න" onclick="step('${esc(x.id)}',1)">＋</button></div></div>`;}
-function renderItems(){const el=$('list');if(!S.p.length){el.innerHTML=`<div class="card empty"><div style="font-size:40px">📲</div><p>භාණ්ඩ ලැයිස්තුව තවම නැහැ.</p><button class="btn primary block" onclick="go('setup')">⚙️ භාණ්ඩ ලැයිස්තුව දාන්න</button></div>`;renderBar();return;}
-  const F=families(),q=norm(Q);let h='',i=0;
-  F.forEach((list,fam)=>{const k=i++;const hit=!q||norm(fam).includes(q)||list.some(x=>norm(x.name).includes(q));if(!hit)return;const open=q?true:OPEN===fam;
-    const shown=q&&!norm(fam).includes(q)?list.filter(x=>norm(x.name).includes(q)):list;
+   <div class="pr"><label class="${chg?'chg':''}">රු.<input type="text" inputmode="decimal" autocomplete="off" value="${pr>0||hasOwn(x.id)?esc(String(pr)):''}" placeholder="මිල" aria-label="${esc(x.name)} මිල" onfocus="this.select()" onchange="setPrice(this.closest('.row').dataset.r,this.value)"></label><span class="cm">${chg?'වෙනස් කළා':''}</span><span class="need">${!(pr>0)&&!hasOwn(x.id)?'මිල දාන්න':''}</span></div></div>
+   <div class="st"><button class="sb" aria-label="අඩු කරන්න" onclick="step(this.closest('.row').dataset.r,-1)">−</button><input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="${QMAX}" value="${n||''}" placeholder="0" aria-label="${esc(x.name)} ගණන" onfocus="this.select()" oninput="setQty(this.closest('.row').dataset.r,this.value)" onblur="if(this.value!==String(qty(this.closest('.row').dataset.r)||''))this.value=qty(this.closest('.row').dataset.r)||''"><button class="sb" aria-label="වැඩි කරන්න" onclick="step(this.closest('.row').dataset.r,1)">＋</button></div></div>`;}
+function renderItems(){const el=$('list');renderCloud();$('qx').style.display=Q?'':'none';
+  $('foot').textContent=`කඩ බිල v${VER} · Internet නැතුවත් වැඩ කරනවා${S.p.length?' · භාණ්ඩ '+S.p.length:''}`;
+  if(!S.p.length){el.innerHTML=`<div class="card empty"><div style="font-size:40px">📲</div><p>භාණ්ඩ ලැයිස්තුව තවම නැහැ.</p><p class="small">PC එකෙන් එවපු “📲 භාණ්ඩ ලැයිස්තුව” WhatsApp message එක එක පාරක් දාන්න.</p><button class="btn primary block" onclick="go('setup')">⚙️ භාණ්ඩ ලැයිස්තුව දාන්න</button></div>`;renderBar();return;}
+  const F=families(),q=norm(Q);let h='',i=0;if(OPEN!==null&&!F.has(OPEN))OPEN=null;
+  /* every word typed must match the product name (anywhere) or the size (from its start): “50g” finds 50g, not 250g · “මිරිස් 100” works */
+  const words=String(Q||'').trim().split(/\s+/).map(norm).filter(Boolean),hit=(fam,x)=>words.every(w=>norm(fam).includes(w)||norm(x.size).startsWith(w));
+  F.forEach((list,fam)=>{const k=i++;const shown=words.length?list.filter(x=>hit(fam,x)):list;if(!shown.length)return;const open=q?true:OPEN===fam;
     h+=`<div class="fam ${open?'open':''}" data-f="${k}"><button class="fh" aria-expanded="${open}" onclick="toggle(${k})"><span class="nm">${esc(fam)}</span><span class="chip">${famSum(list)}</span>${CHEV}</button>${open?shown.map(rowHtml).join(''):''}</div>`;});
   el.innerHTML=h||'<div class="card empty">භාණ්ඩ හම්බ වුණේ නැහැ</div>';renderBar();}
-function toggle(k){const fam=[...families().keys()][k];if(Q){Q='';$('q').value='';}OPEN=OPEN===fam?null:fam;renderItems();const f=document.querySelector(`.fam[data-f="${k}"]`);if(f&&OPEN)f.scrollIntoView({block:'nearest',behavior:'smooth'});}
+function clearQ(){Q='';$('q').value='';renderItems();}
+function toggle(k){const fam=famKeys()[k];if(fam===undefined)return;if(Q){Q='';$('q').value='';OPEN=fam;}else OPEN=OPEN===fam?null:fam;renderItems();
+  const f=document.querySelector(`.fam[data-f="${k}"]`);if(f&&OPEN===fam)try{f.scrollIntoView({block:'nearest',behavior:'smooth'});}catch(e){}}
 /* typing updates only that row, its product's chip and the bar — the box keeps focus */
-function refreshRow(id){const r=document.querySelector(`[data-r="${CSS.escape(id)}"]`);const n=qty(id),pr=price(id);
-  if(r){r.classList.toggle('has',!!n);r.querySelector('.amt').textContent=n&&pr>0?'රු. '+money(n*pr):'';const f=r.closest('.fam');if(f){const fam=[...families().entries()][+f.dataset.f];if(fam)f.querySelector('.chip').textContent=famSum(fam[1]);}}
+function rowEl(id){return document.querySelector(`[data-r="${CSS.escape(id)}"]`);}
+function refreshRow(id){const r=rowEl(id),n=qty(id),pr=price(id),chg=chgOf(id);
+  if(r){r.classList.toggle('has',!!n);r.querySelector('.amt').textContent=n&&pr>0?'රු. '+money(n*pr):'';
+    const lb=r.querySelector('.pr label');lb.classList.toggle('chg',chg);r.querySelector('.cm').textContent=chg?'වෙනස් කළා':'';r.querySelector('.need').textContent=!(pr>0)&&!hasOwn(id)?'මිල දාන්න':'';
+    const f=r.closest('.fam');if(f){const fam=famKeys()[+f.dataset.f];if(fam!==undefined)f.querySelector('.chip').textContent=famSum(families().get(fam));}}
   renderBar();}
-function setQty(id,v,typing){const n=Math.max(0,Math.floor(num(v)));if(n)S.bill.q[id]=n;else delete S.bill.q[id];save();refreshRow(id);}
-function step(id,dx){const n=Math.max(0,qty(id)+dx);setQty(id,n);const r=document.querySelector(`[data-r="${CSS.escape(id)}"] .st input`);if(r)r.value=n||'';try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}}
-/* a price typed in a bill: first time (no saved price) it is remembered for every bill; after that it is for this bill only */
-function setPrice(id,v){const p=num(v);if(!basePrice(id)){if(p>0){S.prices[id]=p;toast('💾 මිල මතක තියාගත්තා — ඊළඟ බිල් වලටත් වැටෙනවා');}delete S.bill.pr[id];}
-  else if(String(v).trim()===''||p===basePrice(id))delete S.bill.pr[id];else S.bill.pr[id]=p;save();
-  const r=document.querySelector(`[data-r="${CSS.escape(id)}"]`);if(r){const x=families();let it=null;x.forEach(l=>{const f=l.find(y=>y.id===id);if(f)it=f;});if(it&&r.isConnected){try{r.outerHTML=rowHtml(it);}catch(e){}}}refreshRow(id);}
+function setQty(id,v){if(!prod(id))return;const n=Math.min(QMAX,Math.max(0,Math.floor(num(v))));if(n)S.bill.q[id]=n;else delete S.bill.q[id];save();refreshRow(id);}
+function step(id,dx){const n=Math.min(QMAX,Math.max(0,qty(id)+dx));setQty(id,n);const r=rowEl(id);if(r){const i=r.querySelector('.st input');if(i)i.value=n||'';}try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}}
+/* a price typed in a bill: for an item with no saved / PC price it is remembered for every bill; otherwise it is for this bill only */
+function setPrice(id,v){if(!prod(id))return;const t=String(v??'').trim(),p=num(t),r=rowEl(id),inp=r&&r.querySelector('.pr input');
+  if(t!==''&&(!/^[\d,]*\.?\d*$/.test(t)||p<0||p>1e7)){toast('මිල හරියට දාන්න (ඉලක්කම් විතරයි)');if(inp)inp.value=price(id)>0||hasOwn(id)?String(price(id)):'';return;}
+  if(!basePrice(id)){if(p>0){S.prices[id]=r2(p);toast('💾 මිල මතක තියාගත්තා — ඊළඟ බිල් වලටත් වැටෙනවා');}delete S.bill.pr[id];}
+  else if(t===''||r2(p)===basePrice(id))delete S.bill.pr[id];else S.bill.pr[id]=r2(p);
+  save();if(inp)inp.value=price(id)>0||hasOwn(id)?String(price(id)):'';refreshRow(id);}
 function renderBar(){const b=$('bar');
   if(screen==='items'){const t=totals();b.style.display=S.p.length?'flex':'none';
     b.innerHTML=`<div class="grow"><div class="cnt"><b>${t.types}</b> වර්ග · <b>${t.pk}</b> පැකට්</div><div class="tot">රු. ${money(t.sum)}</div></div><button class="btn primary" onclick="okBill()" ${t.types?'':'disabled'}>✓ OK</button>`;}
   else if(screen==='bill'){b.style.display='flex';b.innerHTML=`<button class="btn light" style="flex:1" onclick="go('items')">← ආපහු</button><button class="btn primary" style="flex:1" onclick="clearBill()">🗑️ Clear</button>`;}
   else b.style.display='none';}
-function okBill(){const miss=Object.keys(S.bill.q).filter(id=>qty(id)&&prod(id)&&!(price(id)>0));
+function okBill(){const a=document.activeElement;if(a&&a.blur)a.blur();const miss=billIds().filter(id=>!(price(id)>0));
   if(miss.length&&!confirm(`මිල නැති භාණ්ඩ ${miss.length}ක් තියෙනවා (${miss.slice(0,3).map(id=>prod(id)[1]).join(', ')}). ඒවා රු. 0 විදිහට ගණන් වෙනවා. ඒත් බිල පෙන්නන්නද?`))return;go('bill');}
 
 /* ---- screen 2: the bill ---- */
-function renderBill(){const ids=Object.keys(S.bill.q).filter(id=>qty(id)&&prod(id)).sort((a,b)=>S.p.findIndex(p=>p[0]===a)-S.p.findIndex(p=>p[0]===b));const t=totals();
+function renderBill(){const ids=billIds(),t=totals();
   if(!ids.length){$('billTbl').innerHTML='<div class="empty">බිලේ බඩු නැහැ</div>';renderBar();return;}
   $('billTbl').innerHTML=`<div class="r h"><div>භාණ්ඩය</div><div>ගණන</div><div>මිල</div><div>මුදල</div></div>`+
    ids.map(id=>`<div class="r"><div class="n">${esc(prod(id)[1])}</div><div class="q">${qty(id)}</div><div>${money(price(id))}</div><div class="a">${money(line(id))}</div></div>`).join('')+
-   `<div class="sum"><div><div style="font-weight:800">එකතුව</div><div class="small muted">වර්ග ${t.types} · පැකට් ${t.pk}</div></div><div style="font-size:20px;font-weight:800">රු. ${money(t.sum)}</div></div>
+   `<div class="sum"><div><div style="font-weight:800">එකතුව</div><div class="small muted">වර්ග ${t.types} · පැකට් ${t.pk}</div></div><div style="font-size:20px;font-weight:800;text-align:right">රු. ${money(t.sum)}</div></div>
     <div class="disc"><div class="top"><div style="flex:1;font-weight:800">වට්ටම</div><div class="seg" role="group" aria-label="වට්ටම් වර්ගය"><button class="${S.bill.dt==='%'?'on':''}" aria-pressed="${S.bill.dt==='%'}" onclick="setDt('%')">%</button><button class="${S.bill.dt==='rs'?'on':''}" aria-pressed="${S.bill.dt==='rs'}" onclick="setDt('rs')">රු.</button></div>
-     <input type="text" inputmode="decimal" id="dv" value="${esc(S.bill.dv)}" placeholder="0" aria-label="වට්ටම" onfocus="this.select()" oninput="setDv(this.value)"></div><div class="dl" id="dl"></div></div>
+     <input type="text" inputmode="decimal" autocomplete="off" id="dv" value="${esc(S.bill.dv)}" placeholder="0" aria-label="වට්ටම" onfocus="this.select()" oninput="setDv(this)"></div><div class="dl" id="dl"></div></div>
     <div class="pay"><div style="font-size:17px;font-weight:800">ගෙවිය යුතු මුදල</div><div class="v" id="payV"></div></div>`;
   drawPay();renderBar();}
-function drawPay(){const t=totals(),d=discount(t.sum),v=num(S.bill.dv);$('dl').innerHTML=d>0?`<span>${S.bill.dt==='%'?esc(String(Math.min(v,100)))+'% වට්ටම':'වට්ටම'}</span><span>− රු. ${money(d)}</span>`:'';$('payV').textContent='රු. '+money(t.sum-d);}
-function setDt(t){S.bill.dt=t;save();renderBill();}
-function setDv(v){S.bill.dv=String(v).replace(/[^\d.]/g,'');save();drawPay();}
+function drawPay(){const t=totals(),d=discount(t.sum),v=num(S.bill.dv);if(!$('dl'))return;
+  $('dl').innerHTML=d>0?`<span>${S.bill.dt==='%'?esc(String(Math.min(v,100)))+'% වට්ටම':'වට්ටම'}${S.bill.dt==='rs'&&v>t.sum?' (එකතුවට වඩා වැඩියි)':''}</span><span>− රු. ${money(d)}</span>`:'';$('payV').textContent='රු. '+money(t.sum-d);}
+function setDt(t){S.bill.dt=t==='rs'?'rs':'%';save();renderBill();}
+function setDv(el){let v=String(el.value).replace(/[^\d.]/g,'');const i=v.indexOf('.');if(i>=0)v=v.slice(0,i+1)+v.slice(i+1).replace(/\./g,'');if(v!==el.value)el.value=v;S.bill.dv=v;save();drawPay();}
 function clearBill(){if(!confirm('මේ බිල මකලා අලුත් බිලක් පටන් ගන්නද?'))return;S.bill={q:{},pr:{},dt:S.bill.dt||'%',dv:''};OPEN=null;Q='';$('q').value='';save();toast('🆕 අලුත් බිලක්');go('items');}
 
-/* ---- settings: product list + saved prices ---- */
-function renderSetup(){const L=fromLorry();$('srcInfo').innerHTML=S.p.length?`දැනට භාණ්ඩ <b>${S.p.length}</b>ක් — ${S.src==='lorry'?'ලොරි App එකෙන්':'WhatsApp message එකෙන්'}${S.at?' ('+esc(String(S.at).slice(0,10))+')':''}.`:(L?'ලොරි App එකේ ලැයිස්තුව තියෙනවා — පහළ බොත්තම ඔබන්න.':'තවම භාණ්ඩ ලැයිස්තුවක් නැහැ.');
-  const F=families();let h='';F.forEach((list,fam)=>{h+=`<div class="small" style="font-weight:800;background:#fff7d6;padding:6px 10px;border-radius:8px;margin-top:8px">${esc(fam)}</div>`+list.map(x=>`<div class="row" style="padding:6px 4px"><div class="l"><span style="font-weight:700">${esc(x.size)}</span></div><div class="pr">${pcPrice(x.id)?`<b>රු. ${money(pcPrice(x.id))}</b><span class="muted">· PC</span>`:`<label>රු.<input type="text" inputmode="decimal" value="${basePrice(x.id)||''}" placeholder="මිල" aria-label="${esc(x.name)} සාමාන්‍ය මිල" onchange="setBase('${esc(x.id)}',this.value)"></label>`}</div></div>`).join('');});
+/* ---- settings: where the list comes from + saved prices ---- */
+function renderCloudInfo(){const el=$('cloudInfo');if(!el)return;
+  el.innerHTML=!S.cloud?'<span style="color:#9a3412">⚠️ තවම සකසලා නැහැ — පහළ “📲 භාණ්ඩ ලැයිස්තුව” message එක එක පාරක් දාන්න.</span>'
+   :`✅ සකසලා තියෙනවා. Internet තියෙනකොට app එක open කරන හැම පාරම PC එකේ අලුත්ම මිල ගන්නවා.<br>PC එකෙන් අන්තිම ලැයිස්තුව: <b>${esc(hm(S.at)||'—')}</b>${S.pulledAt?` · අන්තිමට බැලුවේ: ${esc(hm(S.pulledAt))}`:''}${S.cloudErr?`<br><span style="color:#9a3412">⚠️ ${esc(S.cloudErr)}</span>`:''}`;
+  $('pullBtn').disabled=!S.cloud||pulling;$('pullBtn').textContent=pulling?'⏳ බලනවා…':'🔄 දැන් අලුත් කරන්න';}
+function renderSetup(){renderCloudInfo();$('srcInfo').innerHTML=S.p.length?`දැනට භාණ්ඩ <b>${S.p.length}</b>ක් (${({cloud:'☁️ Firebase',lorry:'🚛 ලොරි app',paste:'📲 WhatsApp message'})[S.src]||''}).`:'';
+  const F=families();let h='';F.forEach((list,fam)=>{h+=`<div class="small" style="font-weight:800;background:#fff7d6;padding:6px 10px;border-radius:8px;margin-top:8px">${esc(fam)}</div>`+list.map(x=>`<div class="row" style="padding:6px 4px" data-b="${esc(x.id)}"><div class="l"><span style="font-weight:700">${esc(x.size)}</span></div><div class="pr">${pcPrice(x.id)?`<b>රු. ${money(pcPrice(x.id))}</b><span class="muted">· PC</span>`:`<label>රු.<input type="text" inputmode="decimal" autocomplete="off" value="${basePrice(x.id)||''}" placeholder="මිල" aria-label="${esc(x.name)} සාමාන්‍ය මිල" onchange="setBase(this.closest('.row').dataset.b,this)"></label>`}</div></div>`).join('');});
   $('plist').innerHTML=h||'<div class="muted small">භාණ්ඩ ලැයිස්තුව දැම්මාම මෙතන පේනවා.</div>';renderBar();}
-function setBase(id,v){const p=num(v);if(p>0)S.prices[id]=p;else delete S.prices[id];if(S.bill.pr[id]!==undefined&&num(S.bill.pr[id])===basePrice(id))delete S.bill.pr[id];save();toast('💾 මිල සුරැකුවා');}
+function setBase(id,el){const t=String(el.value).trim(),p=num(t);if(t!==''&&(!/^[\d,]*\.?\d*$/.test(t)||p<0||p>1e7)){toast('මිල හරියට දාන්න');el.value=basePrice(id)||'';return;}
+  if(p>0)S.prices[id]=r2(p);else delete S.prices[id];if(hasOwn(id)&&num(S.bill.pr[id])===basePrice(id))delete S.bill.pr[id];save();el.value=basePrice(id)||'';toast('💾 මිල සුරැකුවා');}
 
 /* ---- start ---- */
-syncLorry(false);
-window.addEventListener('pageshow',()=>{if(syncLorry(false)&&screen==='items')renderItems();});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&syncLorry(false)&&screen==='items')renderItems();});
-go(S.p.length?'items':'setup');
+syncLorry();
+function wake(){const ch=syncLorry();if(ch)softRender();cloudPull(false);}
+window.addEventListener('pageshow',e=>{if(e.persisted)wake();});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wake();});
+window.addEventListener('online',()=>cloudPull(false));
+window.addEventListener('storage',e=>{if(e.key===LORRY_KEY&&syncLorry())softRender();});
+go(S.p.length?'items':'setup');cloudPull(false);
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
