@@ -133,11 +133,11 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 'use strict';
-/* Shanthi Food Products — කඩ බිල app (v1.2, 2026-11-06)
+/* Shanthi Food Products — කඩ බිල app (v1.2.2, 2026-11-06)
    Offline first. The product list + wholesale prices come from the PC through Firebase (boxes/<box>/out/cfg · out/rep — the same
    messages the lorry app reads; the PC v4.7.3 sends a new one whenever a price changes). Also accepts a pasted WhatsApp message,
    and the lorry app's saved list on the same phone (read only). Nothing is ever sent anywhere. */
-const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.2',QMAX=9999;
+const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.2.2',QMAX=9999;
 const FS='https://firestore.googleapis.com/v1/projects/';
 const SIZE_RE=/^(\d+(?:\.\d+)?(?:g|kg|ml|l|P)|Card|Packet)$/i;
 const $=id=>document.getElementById(id);
@@ -172,7 +172,7 @@ function cleanP(arr){const seen=new Set();return (Array.isArray(arr)?arr:[]).fil
 function setCloud(p,b){p=String(p||'').toLowerCase();b=String(b||'');if(!/^[a-z][a-z0-9-]{4,29}$/.test(p)||!/^[A-Za-z0-9_-]{20,64}$/.test(b))return false;if(!S.cloud||S.cloud.p!==p||S.cloud.b!==b){S.cloud={p,b};save();}return true;}
 function takeCfg(cfg,src,force){const p=cleanP(cfg&&cfg.p);if(!p.length)return false;if(cfg.cloud&&cfg.cloud.p)setCloud(cfg.cloud.p,cfg.cloud.b);
   const at=String(cfg.at||'');if(!force&&S.at&&at&&at<S.at)return false;
-  const ch=JSON.stringify(p)!==JSON.stringify(S.p);S.p=p;S.src=src;if(at||force)S.at=at||new Date().toISOString();save();return ch;}
+  const ch=JSON.stringify(p)!==JSON.stringify(S.p);if(!ch&&!force&&S.src)return false;S.p=p;S.src=src;if(at||force)S.at=at||new Date().toISOString();save();return ch;}
 function fromLorry(){try{const x=JSON.parse(localStorage.getItem(LORRY_KEY)||'null');if(x&&x.cloud&&x.cloud.p)setCloud(x.cloud.p,x.cloud.b);if(x&&x.cfg)return x.cfg;}catch(e){}return null;}
 function syncLorry(){const c=fromLorry();return c?takeCfg(c,'lorry',false):false;}
 /* ☁️ Firebase: read the PC's latest product list (cfg, or the cfg inside the lorry report) */
@@ -187,7 +187,7 @@ async function cloudPull(manual){if(!S.cloud){if(manual)toast('මුලින�
   let ch=false;if(best)ch=takeCfg(best,'cloud',false);
   if(!err){S.pulledAt=new Date().toISOString();S.cloudErr='';}else S.cloudErr=err;save();
   if(manual)toast(err?'⚠️ '+err+' — අන්තිමට ගත්ත මිලෙන් වැඩ කරනවා':(ch?'✅ මිල ලැයිස්තුව අලුත් කළා':'✅ මිල ලැයිස්තුව දැනටමත් අලුත්'));else if(ch)toast('☁️ මිල ලැයිස්තුව අලුත් කළා');
-  if(ch)softRender();else renderCloud();}
+  if(ch&&S.p.length&&screen==='setup'&&!manual)go('items');else if(ch)softRender();else renderCloud();}
 function softRender(){if(typing()){pendingRender=true;return;}pendingRender=false;render();}
 document.addEventListener('focusout',()=>setTimeout(()=>{if(pendingRender&&!typing())softRender();},50));
 async function pasteClip(){try{const t=await navigator.clipboard.readText();if(t){$('paste').value=t;applyPaste();return;}}catch(e){}toast('කොටුව ඔබාගෙන ඉඳලා Paste කරන්න');}
@@ -215,7 +215,8 @@ function qty(id){return Math.min(QMAX,Math.max(0,Math.floor(num(S.bill.q[id]))))
 function line(id){return r2(qty(id)*price(id));}
 function billIds(){const ix=new Map(S.p.map((p,i)=>[p[0],i]));return Object.keys(S.bill.q).filter(id=>qty(id)&&ix.has(id)).sort((a,b)=>ix.get(a)-ix.get(b));}
 function totals(){let types=0,pk=0,sum=0;billIds().forEach(id=>{types++;pk+=qty(id);sum+=line(id);});return {types,pk,sum:r2(sum)};}
-function discount(sum){const v=num(S.bill.dv);if(!(v>0)||!(sum>0))return 0;const d=Math.round(S.bill.dt==='%'?sum*Math.min(v,100)/100:v);return Math.min(d,sum);}
+/* % → nearest rupee (owner's choice) · රු. → exactly as typed (cents kept) */
+function discount(sum){const v=num(S.bill.dv);if(!(v>0)||!(sum>0))return 0;const d=S.bill.dt==='%'?Math.round(sum*Math.min(v,100)/100):r2(v);return Math.min(d,sum);}
 
 /* ---- navigation ---- */
 const TITLES={items:'🧾 කඩ බිල',bill:'🧾 බිල',setup:'⚙️ සැකසුම්'};
@@ -284,7 +285,7 @@ function renderBill(){const ids=billIds(),t=totals();
 function drawPay(){const t=totals(),d=discount(t.sum),v=num(S.bill.dv);if(!$('dl'))return;
   $('dl').innerHTML=d>0?`<span>${S.bill.dt==='%'?esc(String(Math.min(v,100)))+'% වට්ටම':'වට්ටම'}${S.bill.dt==='rs'&&v>t.sum?' (එකතුවට වඩා වැඩියි)':''}</span><span>− රු. ${money(d)}</span>`:'';$('payV').textContent='රු. '+money(t.sum-d);}
 function setDt(t){S.bill.dt=t==='rs'?'rs':'%';save();renderBill();}
-function setDv(el){let v=String(el.value).replace(/[^\d.]/g,'');const i=v.indexOf('.');if(i>=0)v=v.slice(0,i+1)+v.slice(i+1).replace(/\./g,'');if(v!==el.value)el.value=v;S.bill.dv=v;save();drawPay();}
+function setDv(el){let v=String(el.value).replace(/,/g,'.').replace(/[^\d.]/g,'');/* a phone keypad may give “,” for the decimal point */const i=v.indexOf('.');if(i>=0)v=v.slice(0,i+1)+v.slice(i+1).replace(/\./g,'');if(v!==el.value)el.value=v;S.bill.dv=v;save();drawPay();}
 function clearBill(){if(!confirm('මේ බිල මකලා අලුත් බිලක් පටන් ගන්නද?'))return;S.bill={q:{},pr:{},dt:S.bill.dt||'%',dv:''};OPEN=null;Q='';$('q').value='';save();toast('🆕 අලුත් බිලක්');go('items');}
 
 /* ---- settings: where the list comes from + saved prices ---- */
