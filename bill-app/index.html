@@ -60,7 +60,12 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
 .pr label.chg{border:1.5px solid var(--red)}
 .pr input{width:62px;border:0;outline:0;background:transparent;font-weight:700;padding:3px 0;font-size:14px}
 .pr .cm{color:#b91c1c;font-weight:700}.pr .need{color:#b45309;font-weight:700}
-.pr .cm:empty,.pr .need:empty{display:none}
+.pr .cm:empty,.pr .need:empty,.pr .fr:empty{display:none}
+.pr .fr{color:#475569;font-weight:700;border:1px dashed #94a3b8;background:#fff;border-radius:8px;padding:2px 8px;min-height:30px;cursor:pointer}span.fr{border:0!important;padding:0!important;cursor:default}
+.row{flex-wrap:wrap}.fedrow{flex-basis:100%}.fedrow:empty{display:none}
+.fed{display:flex;flex-wrap:wrap;align-items:center;gap:4px;background:#dcfce7;border-radius:10px;padding:2px 4px;font-weight:800;color:#14532d}.fed b{min-width:22px;text-align:center;font-size:15px}
+.fb{min-width:36px;height:36px;border-radius:9px;border:1.5px solid #86efac;background:#fff;font-weight:900;font-size:17px;cursor:pointer;color:#14532d}.fb.t{font-size:13px;padding:0 10px}.fb.ok{margin-left:auto;background:#16a34a;color:#fff;border-color:#16a34a}.fed{padding:6px 8px!important}.pr .fr.on{color:#14532d;background:#dcfce7;border-radius:8px;padding:1px 7px}.pr .ndt{color:#64748b;font-weight:600;font-size:12px}
+.bt .fq{font-size:12px;font-weight:800;color:#14532d}
 .st{display:flex;align-items:center;gap:6px;flex:none}
 .sb{width:44px;height:44px;border-radius:12px;border:1.5px solid #d1d5db;background:#fff;font-size:22px;font-weight:900;color:#334155;cursor:pointer;touch-action:manipulation}
 .sb:active{background:#fee2e2}
@@ -86,7 +91,7 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
 .seg button{min-width:50px;height:44px;border:0;background:#fff;font-weight:800;cursor:pointer}
 .seg button.on{background:var(--red);color:#fff}
 .disc input{width:84px;height:44px;text-align:center;font-size:18px;font-weight:800;border:1.5px solid #d1d5db;border-radius:12px;flex:none}
-.disc .dl{display:flex;justify-content:space-between;margin-top:8px;color:#b91c1c;font-weight:700}
+.disc .dl{display:flex;flex-wrap:wrap;justify-content:space-between;margin-top:8px;color:#b91c1c;font-weight:700}
 .disc .dl:empty{display:none}
 .pay{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:14px;background:#fff7d6;border-top:2px solid #fde68a}
 .pay .v{font-size:28px;font-weight:800;overflow-wrap:anywhere;text-align:right}
@@ -133,11 +138,11 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 'use strict';
-/* Shanthi Food Products — කඩ බිල app (v1.4, 2026-11-06)
+/* Shanthi Food Products — කඩ බිල app (v1.6, 2026-11-06)
    Offline first. The product list + wholesale prices come from the PC through Firebase (boxes/<box>/out/cfg · out/rep — the same
    messages the lorry app reads; the PC v4.7.3 sends a new one whenever a price changes). Also accepts a pasted WhatsApp message,
    and the lorry app's saved list on the same phone (read only). Nothing is ever sent anywhere. */
-const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.4',QMAX=9999;
+const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.6',QMAX=9999;
 const FS='https://firestore.googleapis.com/v1/projects/';
 const SIZE_RE=/^(\d+(?:\.\d+)?(?:g|kg|ml|l|P)|Card|Packet)$/i;
 const $=id=>document.getElementById(id);
@@ -160,9 +165,9 @@ function sbpDecodeAll(text){const out=[];const src=String(text||'');SBP_CODE_RE.
   if(!out.length&&/SBP1:/.test(src))out.push({type:'?',error:'cut'});return out;}
 
 /* ---- state ---- */
-function blank(){return {p:[],src:'',at:'',prices:{},cloud:null,pulledAt:'',cloudErr:'',bill:{q:{},pr:{},dt:'%',dv:''}};}
+function blank(){return {p:[],src:'',at:'',prices:{},cloud:null,pulledAt:'',cloudErr:'',bill:{q:{},pr:{},f:{},dt:'%',dv:''}};}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object'){const b=blank(),bl=x.bill&&typeof x.bill==='object'?x.bill:{};
-  return {...b,...x,p:Array.isArray(x.p)?x.p:[],prices:x.prices&&typeof x.prices==='object'?x.prices:{},bill:{...b.bill,...bl,q:bl.q&&typeof bl.q==='object'?bl.q:{},pr:bl.pr&&typeof bl.pr==='object'?bl.pr:{},dt:bl.dt==='rs'?'rs':'%',dv:String(bl.dv??'')}};}}catch(e){}return blank();}
+  return {...b,...x,p:Array.isArray(x.p)?x.p:[],prices:x.prices&&typeof x.prices==='object'?x.prices:{},bill:{...b.bill,...bl,q:bl.q&&typeof bl.q==='object'?bl.q:{},pr:bl.pr&&typeof bl.pr==='object'?bl.pr:{},f:bl.f&&typeof bl.f==='object'?bl.f:{},dt:bl.dt==='rs'?'rs':'%',dv:String(bl.dv??'')}};}}catch(e){}return blank();}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('Phone එකේ save කරන්න බැරි වුණා');}}
 let S=load(),Q='',OPEN=null,screen='items',pendingRender=false;
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
@@ -173,7 +178,10 @@ function setCloud(p,b){p=String(p||'').toLowerCase();b=String(b||'');if(!/^[a-z]
 function takeCfg(cfg,src,force){const p=cleanP(cfg&&cfg.p);if(!p.length)return false;if(cfg.cloud&&cfg.cloud.p)setCloud(cfg.cloud.p,cfg.cloud.b);
   const at=String(cfg.at||'');if(!force&&S.at&&at&&at<S.at)return false;
   if(cfg.bv&&String(cfg.bv)!==S.bv){S.bv=String(cfg.bv).slice(0,10);save();verBar();}
-  const ch=JSON.stringify(p)!==JSON.stringify(S.p);if(!ch&&!force&&S.src)return false;S.p=p;S.src=src;if(at||force)S.at=at||new Date().toISOString();save();return ch;}
+  /* 🎁 free rules + 🚫 no-discount items + max % — sent by the PC (v4.7.3); an older PC sends none → the PC's own defaults below */
+  let rch=false;if(cfg.fr&&typeof cfg.fr==='object'){const fr={};Object.entries(cfg.fr).forEach(([k,v])=>{if(Array.isArray(v)&&num(v[0])>=1&&num(v[1])>=1)fr[String(k)]=[Math.floor(num(v[0])),Math.floor(num(v[1]))];});
+    const nd=Array.isArray(cfg.nd)?cfg.nd.map(String):[],dm=num(cfg.dmax)>0?num(cfg.dmax):0,fa=cfg.fa===0?0:1;if(JSON.stringify([fr,nd,dm,fa])!==JSON.stringify([S.fr,S.nd,S.dmax,S.fa])){S.fr=fr;S.nd=nd;S.dmax=dm;S.fa=fa;rch=true;}}
+  const ch=JSON.stringify(p)!==JSON.stringify(S.p)||rch;if(!ch&&!force&&S.src)return false;S.p=p;S.src=src;if(at||force)S.at=at||new Date().toISOString();save();return ch;}
 function fromLorry(){try{const x=JSON.parse(localStorage.getItem(LORRY_KEY)||'null');if(x&&x.cloud&&x.cloud.p)setCloud(x.cloud.p,x.cloud.b);if(x&&x.cfg)return x.cfg;}catch(e){}return null;}
 function syncLorry(){const c=fromLorry();return c?takeCfg(c,'lorry',false):false;}
 /* ☁️ Firebase: read the PC's latest product list (cfg, or the cfg inside the lorry report) */
@@ -214,10 +222,29 @@ function hasOwn(id){const o=S.bill.pr[id];return o!==undefined&&o!==null&&o!==''
 function price(id){return hasOwn(id)?Math.max(0,num(S.bill.pr[id])):basePrice(id);}
 function qty(id){return Math.min(QMAX,Math.max(0,Math.floor(num(S.bill.q[id]))));}
 function line(id){return r2(qty(id)*price(id));}
+/* same rules as a PC bill: prodFreeRule (per → give free) · prodNoDisc (left out of the % discount). Defaults = the PC's own defaults. */
+function ruleOf(id){if(S.fr&&typeof S.fr==='object'){const r=S.fr[id];return Array.isArray(r)?{per:r[0],give:r[1]}:null;}const p=prod(id);return p&&p[1]==='සෝයා 60g'?{per:25,give:1}:null;}
+function autoFree(id){const r=ruleOf(id),n=qty(id);return r&&n>0?Math.floor(n/r.per)*r.give:0;}
+/* free can be changed by hand (like the PC's free box) — for any item if the PC allows it (cfg.fa, PC default yes), else only items with a rule */
+function canFree(id){return !!ruleOf(id)||S.fa!==0;}
+function hasFreeOwn(id){return S.bill.f&&S.bill.f[id]!==undefined&&S.bill.f[id]!==null&&S.bill.f[id]!=='';}
+function freeOf(id){if(!qty(id))return 0;if(hasFreeOwn(id)&&canFree(id))return Math.min(QMAX,Math.max(0,Math.floor(num(S.bill.f[id]))));return autoFree(id);}
+let FE=null;/* the row whose free editor is open */
+function freeHtml(id){if(!canFree(id))return '';const f=freeOf(id),own=hasFreeOwn(id),r=ruleOf(id),n=qty(id);
+  if(FE===id&&n)return '';
+  if(!n)return r?`<span class="fr">🎁 ${r.per}කට ${r.give}ක් නොමිලේ</span>`:'';
+  return `<button class="fr ${f?'on':''}" onclick="FE='${esc(id)}';redrawRow('${esc(id)}')" aria-label="නොමිලේ ගණන වෙනස් කරන්න">${f?`🎁 නොමිලේ ${f}`:'🎁 ＋ නොමිලේ'}${own?' ✋':''} ✏️</button>`;}
+function fedHtml(id){if(FE!==id||!qty(id)||!canFree(id))return '';const f=freeOf(id),own=hasFreeOwn(id),r=ruleOf(id);
+  return `<span class="fed"><span>🎁 නොමිලේ</span><button class="fb" aria-label="නොමිලේ අඩු කරන්න" onclick="freeStep('${esc(id)}',-1)">−</button><b>${f}</b><button class="fb" aria-label="නොමිලේ වැඩි කරන්න" onclick="freeStep('${esc(id)}',1)">＋</button>${own&&r?`<button class="fb t" onclick="freeAuto('${esc(id)}')">↺ ඉබේම (${autoFree(id)})</button>`:''}<button class="fb t ok" onclick="FE=null;redrawRow('${esc(id)}')">✓ හරි</button></span>`;}
+function redrawRow(id){const r=rowEl(id);let it=null;families().forEach(l=>{const x=l.find(y=>y.id===id);if(x)it=x;});if(r&&it&&r.isConnected){try{r.outerHTML=rowHtml(it);}catch(e){}}refreshRow(id);}
+function freeStep(id,d){const v=Math.min(QMAX,Math.max(0,freeOf(id)+d));S.bill.f[id]=v;if(v===autoFree(id)&&ruleOf(id))delete S.bill.f[id];save();redrawRow(id);try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}}
+function freeAuto(id){delete S.bill.f[id];save();redrawRow(id);}
+function noDisc(id){if(Array.isArray(S.nd))return S.nd.includes(id);const p=prod(id);return !!p&&/^සෝයා/.test(String(p[1]));}
 function billIds(){const ix=new Map(S.p.map((p,i)=>[p[0],i]));return Object.keys(S.bill.q).filter(id=>qty(id)&&ix.has(id)).sort((a,b)=>ix.get(a)-ix.get(b));}
-function totals(){let types=0,pk=0,sum=0;billIds().forEach(id=>{types++;pk+=qty(id);sum+=line(id);});return {types,pk,sum:r2(sum)};}
-/* % → nearest rupee (owner's choice) · රු. → exactly as typed (cents kept) */
-function discount(sum){const v=num(S.bill.dv);if(!(v>0)||!(sum>0))return 0;const d=S.bill.dt==='%'?Math.round(sum*Math.min(v,100)/100):r2(v);return Math.min(d,sum);}
+function totals(){let types=0,pk=0,sum=0,free=0,base=0,nd=0;billIds().forEach(id=>{types++;pk+=qty(id);sum+=line(id);free+=freeOf(id);if(noDisc(id))nd+=line(id);else base+=line(id);});return {types,pk,sum:r2(sum),free,base:r2(base),nd:r2(nd)};}
+/* % → on the lines that take a discount (like the PC: 🚫 items left out), nearest rupee (owner's choice), at most the PC's limit · රු. → as typed */
+function pctMax(){return num(S.dmax)>0?num(S.dmax):100;}
+function discount(t){if(typeof t==='number')t={sum:t,base:t};const v=num(S.bill.dv);if(!(v>0)||!(t.sum>0))return 0;const d=S.bill.dt==='%'?Math.round(t.base*Math.min(v,pctMax())/100):r2(v);return Math.min(d,t.sum);}
 
 /* ---- navigation ---- */
 const TITLES={items:'🧾 කඩ බිල',bill:'🧾 බිල',setup:'⚙️ සැකසුම්'};
@@ -232,12 +259,13 @@ function renderCloud(){const el=$('cline');if(el&&screen==='items'){
 
 /* ---- screen 1: items (one product open at a time) ---- */
 const CHEV='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>';
-function famSum(list){let pk=0,s=0;list.forEach(x=>{const n=qty(x.id);if(n){pk+=n;s+=n*price(x.id);}});return pk?`පැකට් ${pk} · රු. ${money(s)}`:'';}
+function famSum(list){let pk=0,s=0,f=0;list.forEach(x=>{const n=qty(x.id);if(n){pk+=n;s+=n*price(x.id);f+=freeOf(x.id);}});return pk?`පැකට් ${pk}${f?' +🎁'+f:''} · රු. ${money(s)}`:'';}
+
 function chgOf(id){return hasOwn(id)&&price(id)!==basePrice(id);}
 function rowHtml(x){const n=qty(x.id),pr=price(x.id),chg=chgOf(x.id);
   return `<div class="row ${n?'has':''}" data-r="${esc(x.id)}"><div class="l"><div class="t"><span class="sz">${esc(x.size)}</span><span class="amt">${n&&pr>0?'රු. '+money(n*pr):''}</span></div>
-   <div class="pr"><label class="${chg?'chg':''}">රු.<input type="text" inputmode="decimal" autocomplete="off" value="${pr>0||hasOwn(x.id)?esc(String(pr)):''}" placeholder="මිල" aria-label="${esc(x.name)} මිල" onfocus="this.select()" onchange="setPrice(this.closest('.row').dataset.r,this.value)"></label><span class="cm">${chg?'වෙනස් කළා':''}</span><span class="need">${!(pr>0)&&!hasOwn(x.id)?'මිල දාන්න':''}</span></div></div>
-   <div class="st"><button class="sb" aria-label="අඩු කරන්න" onclick="step(this.closest('.row').dataset.r,-1)">−</button><input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="${QMAX}" value="${n||''}" placeholder="0" aria-label="${esc(x.name)} ගණන" onfocus="this.select()" oninput="setQty(this.closest('.row').dataset.r,this.value)" onblur="if(this.value!==String(qty(this.closest('.row').dataset.r)||''))this.value=qty(this.closest('.row').dataset.r)||''"><button class="sb" aria-label="වැඩි කරන්න" onclick="step(this.closest('.row').dataset.r,1)">＋</button></div></div>`;}
+   <div class="pr"><label class="${chg?'chg':''}">රු.<input type="text" inputmode="decimal" autocomplete="off" value="${pr>0||hasOwn(x.id)?esc(String(pr)):''}" placeholder="මිල" aria-label="${esc(x.name)} මිල" onfocus="this.select()" onchange="setPrice(this.closest('.row').dataset.r,this.value)"></label><span class="cm">${chg?'වෙනස් කළා':''}</span><span class="need">${!(pr>0)&&!hasOwn(x.id)?'මිල දාන්න':''}</span><span class="frw">${freeHtml(x.id)}</span>${noDisc(x.id)?'<span class="ndt">🚫 වට්ටම් නැහැ</span>':''}</div></div>
+   <div class="st"><button class="sb" aria-label="අඩු කරන්න" onclick="step(this.closest('.row').dataset.r,-1)">−</button><input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="${QMAX}" value="${n||''}" placeholder="0" aria-label="${esc(x.name)} ගණන" onfocus="this.select()" oninput="setQty(this.closest('.row').dataset.r,this.value)" onblur="if(this.value!==String(qty(this.closest('.row').dataset.r)||''))this.value=qty(this.closest('.row').dataset.r)||''"><button class="sb" aria-label="වැඩි කරන්න" onclick="step(this.closest('.row').dataset.r,1)">＋</button></div><div class="fedrow">${fedHtml(x.id)}</div></div>`;}
 function renderItems(){const el=$('list');renderCloud();$('qx').style.display=Q?'':'none';
   $('foot').textContent=`කඩ බිල v${VER} · Internet නැතුවත් වැඩ කරනවා${S.p.length?' · භාණ්ඩ '+S.p.length:''}`;
   if(!S.p.length){el.innerHTML=`<div class="card empty"><div style="font-size:40px">📲</div><p>භාණ්ඩ ලැයිස්තුව තවම නැහැ.</p><p class="small">PC එකේ <b>📱 Phone Apps</b> → 🧾 කඩ බිල → “📲 WhatsApp එකෙන් යවන්න” එකෙන් එන link එක open කරන්න.</p><button class="btn primary block" onclick="go('setup')">⚙️ භාණ්ඩ ලැයිස්තුව දාන්න</button></div>`;renderBar();return;}
@@ -254,10 +282,10 @@ function toggle(k){const fam=famKeys()[k];if(fam===undefined)return;if(Q){Q='';$
 function rowEl(id){return document.querySelector(`[data-r="${CSS.escape(id)}"]`);}
 function refreshRow(id){const r=rowEl(id),n=qty(id),pr=price(id),chg=chgOf(id);
   if(r){r.classList.toggle('has',!!n);r.querySelector('.amt').textContent=n&&pr>0?'රු. '+money(n*pr):'';
-    const lb=r.querySelector('.pr label');lb.classList.toggle('chg',chg);r.querySelector('.cm').textContent=chg?'වෙනස් කළා':'';r.querySelector('.need').textContent=!(pr>0)&&!hasOwn(id)?'මිල දාන්න':'';
+    const lb=r.querySelector('.pr label');lb.classList.toggle('chg',chg);r.querySelector('.cm').textContent=chg?'වෙනස් කළා':'';r.querySelector('.need').textContent=!(pr>0)&&!hasOwn(id)?'මිල දාන්න':'';const fw=r.querySelector('.frw');if(fw)fw.innerHTML=freeHtml(id);const fd=r.querySelector('.fedrow');if(fd)fd.innerHTML=fedHtml(id);
     const f=r.closest('.fam');if(f){const fam=famKeys()[+f.dataset.f];if(fam!==undefined)f.querySelector('.chip').textContent=famSum(families().get(fam));}}
   renderBar();}
-function setQty(id,v){if(!prod(id))return;const n=Math.min(QMAX,Math.max(0,Math.floor(num(v))));if(n)S.bill.q[id]=n;else delete S.bill.q[id];save();refreshRow(id);}
+function setQty(id,v){if(!prod(id))return;const n=Math.min(QMAX,Math.max(0,Math.floor(num(v))));if(n)S.bill.q[id]=n;else{delete S.bill.q[id];if(S.bill.f)delete S.bill.f[id];if(FE===id)FE=null;}save();refreshRow(id);}
 function step(id,dx){const n=Math.min(QMAX,Math.max(0,qty(id)+dx));setQty(id,n);const r=rowEl(id);if(r){const i=r.querySelector('.st input');if(i)i.value=n||'';}try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}}
 /* a price typed in a bill: for an item with no saved / PC price it is remembered for every bill; otherwise it is for this bill only */
 function setPrice(id,v){if(!prod(id))return;const t=String(v??'').trim(),p=num(t),r=rowEl(id),inp=r&&r.querySelector('.pr input');
@@ -267,7 +295,7 @@ function setPrice(id,v){if(!prod(id))return;const t=String(v??'').trim(),p=num(t
   save();if(inp)inp.value=price(id)>0||hasOwn(id)?String(price(id)):'';refreshRow(id);}
 function renderBar(){const b=$('bar');
   if(screen==='items'){const t=totals();b.style.display=S.p.length?'flex':'none';
-    b.innerHTML=`<div class="grow"><div class="cnt"><b>${t.types}</b> වර්ග · <b>${t.pk}</b> පැකට්</div><div class="tot">රු. ${money(t.sum)}</div></div><button class="btn primary" onclick="okBill()" ${t.types?'':'disabled'}>✓ OK</button>`;}
+    b.innerHTML=`<div class="grow"><div class="cnt"><b>${t.types}</b> වර්ග · <b>${t.pk}</b> පැකට්${t.free?` · 🎁 <b>${t.free}</b>`:''}</div><div class="tot">රු. ${money(t.sum)}</div></div><button class="btn primary" onclick="okBill()" ${t.types?'':'disabled'}>✓ OK</button>`;}
   else if(screen==='bill'){b.style.display='flex';b.innerHTML=`<button class="btn light" style="flex:1" onclick="go('items')">← ආපහු</button><button class="btn primary" style="flex:1" onclick="clearBill()">🗑️ Clear</button>`;}
   else b.style.display='none';}
 function okBill(){const a=document.activeElement;if(a&&a.blur)a.blur();const miss=billIds().filter(id=>!(price(id)>0));
@@ -277,17 +305,18 @@ function okBill(){const a=document.activeElement;if(a&&a.blur)a.blur();const mis
 function renderBill(){const ids=billIds(),t=totals();
   if(!ids.length){$('billTbl').innerHTML='<div class="empty">බිලේ බඩු නැහැ</div>';renderBar();return;}
   $('billTbl').innerHTML=`<div class="r h"><div>භාණ්ඩය</div><div>ගණන</div><div>මිල</div><div>මුදල</div></div>`+
-   ids.map(id=>`<div class="r"><div class="n">${esc(prod(id)[1])}</div><div class="q">${qty(id)}</div><div>${money(price(id))}</div><div class="a">${money(line(id))}</div></div>`).join('')+
-   `<div class="sum"><div><div style="font-weight:800">එකතුව</div><div class="small muted">වර්ග ${t.types} · පැකට් ${t.pk}</div></div><div style="font-size:20px;font-weight:800;text-align:right">රු. ${money(t.sum)}</div></div>
+   ids.map(id=>`<div class="r"><div class="n">${esc(prod(id)[1])}${noDisc(id)?'<div class="small muted">🚫 % වට්ටම් නැහැ</div>':''}</div><div class="q">${qty(id)}${freeOf(id)?`<div class="fq">+${freeOf(id)} 🎁${hasFreeOwn(id)?' ✋':''}</div>`:''}</div><div>${money(price(id))}</div><div class="a">${money(line(id))}</div></div>`).join('')+
+   `<div class="sum"><div><div style="font-weight:800">එකතුව</div><div class="small muted">වර්ග ${t.types} · පැකට් ${t.pk}${t.free?` · 🎁 නොමිලේ ${t.free}`:''}</div></div><div style="font-size:20px;font-weight:800;text-align:right">රු. ${money(t.sum)}</div></div>
     <div class="disc"><div class="top"><div style="flex:1;font-weight:800">වට්ටම</div><div class="seg" role="group" aria-label="වට්ටම් වර්ගය"><button class="${S.bill.dt==='%'?'on':''}" aria-pressed="${S.bill.dt==='%'}" onclick="setDt('%')">%</button><button class="${S.bill.dt==='rs'?'on':''}" aria-pressed="${S.bill.dt==='rs'}" onclick="setDt('rs')">රු.</button></div>
      <input type="text" inputmode="decimal" autocomplete="off" id="dv" value="${esc(S.bill.dv)}" placeholder="0" aria-label="වට්ටම" onfocus="this.select()" oninput="setDv(this)"></div><div class="dl" id="dl"></div></div>
     <div class="pay"><div style="font-size:17px;font-weight:800">ගෙවිය යුතු මුදල</div><div class="v" id="payV"></div></div>`;
   drawPay();renderBar();}
-function drawPay(){const t=totals(),d=discount(t.sum),v=num(S.bill.dv);if(!$('dl'))return;
-  $('dl').innerHTML=d>0?`<span>${S.bill.dt==='%'?esc(String(Math.min(v,100)))+'% වට්ටම':'වට්ටම'}${S.bill.dt==='rs'&&v>t.sum?' (එකතුවට වඩා වැඩියි)':''}</span><span>− රු. ${money(d)}</span>`:'';$('payV').textContent='රු. '+money(t.sum-d);}
+function drawPay(){const t=totals(),d=discount(t),v=num(S.bill.dv),pc=S.bill.dt==='%';if(!$('dl'))return;
+  const cap=pc&&v>pctMax()?` (උපරිම ${pctMax()}%)`:'',on=pc&&t.nd>0?`<div class="small" style="width:100%;font-weight:600">රු. ${money(t.base)} ට — 🚫 වට්ටම් නැති භාණ්ඩ රු. ${money(t.nd)} හැර</div>`:'';
+  $('dl').innerHTML=d>0?`<span>${pc?esc(String(Math.min(v,pctMax())))+'% වට්ටම'+cap:'වට්ටම'}${!pc&&v>t.sum?' (එකතුවට වඩා වැඩියි)':''}</span><span>− රු. ${money(d)}</span>${on}`:(pc&&v>0&&t.base<=0?'<span>🚫 මේ බිලේ වට්ටම් දෙන භාණ්ඩ නැහැ</span>':'');$('payV').textContent='රු. '+money(t.sum-d);}
 function setDt(t){S.bill.dt=t==='rs'?'rs':'%';save();renderBill();}
 function setDv(el){let v=String(el.value).replace(/,/g,'.').replace(/[^\d.]/g,'');/* a phone keypad may give “,” for the decimal point */const i=v.indexOf('.');if(i>=0)v=v.slice(0,i+1)+v.slice(i+1).replace(/\./g,'');if(v!==el.value)el.value=v;S.bill.dv=v;save();drawPay();}
-function clearBill(){if(!confirm('මේ බිල මකලා අලුත් බිලක් පටන් ගන්නද?'))return;S.bill={q:{},pr:{},dt:S.bill.dt||'%',dv:''};OPEN=null;Q='';$('q').value='';save();toast('🆕 අලුත් බිලක්');go('items');}
+function clearBill(){if(!confirm('මේ බිල මකලා අලුත් බිලක් පටන් ගන්නද?'))return;S.bill={q:{},pr:{},f:{},dt:S.bill.dt||'%',dv:''};OPEN=null;Q='';$('q').value='';save();toast('🆕 අලුත් බිලක්');go('items');}
 
 /* ---- settings: where the list comes from + saved prices ---- */
 function renderCloudInfo(){const el=$('cloudInfo');if(!el)return;
