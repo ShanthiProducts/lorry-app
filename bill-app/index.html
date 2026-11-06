@@ -9,8 +9,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="කඩ බිල">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="../icon-192.png">
-<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>කඩ බිල · Shanthi Food Products</title>
 <style>
 :root{--red:#e51b23;--red2:#ff3434;--ink:#172033;--muted:#64748b;--line:#e5e7eb;--bg:#f4f5f8;--ok:#14532d;--okbg:#dcfce7}
@@ -133,11 +133,11 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 'use strict';
-/* Shanthi Food Products — කඩ බිල app (v1.3, 2026-11-06)
+/* Shanthi Food Products — කඩ බිල app (v1.4, 2026-11-06)
    Offline first. The product list + wholesale prices come from the PC through Firebase (boxes/<box>/out/cfg · out/rep — the same
    messages the lorry app reads; the PC v4.7.3 sends a new one whenever a price changes). Also accepts a pasted WhatsApp message,
    and the lorry app's saved list on the same phone (read only). Nothing is ever sent anywhere. */
-const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.3',QMAX=9999;
+const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.4',QMAX=9999;
 const FS='https://firestore.googleapis.com/v1/projects/';
 const SIZE_RE=/^(\d+(?:\.\d+)?(?:g|kg|ml|l|P)|Card|Packet)$/i;
 const $=id=>document.getElementById(id);
@@ -172,6 +172,7 @@ function cleanP(arr){const seen=new Set();return (Array.isArray(arr)?arr:[]).fil
 function setCloud(p,b){p=String(p||'').toLowerCase();b=String(b||'');if(!/^[a-z][a-z0-9-]{4,29}$/.test(p)||!/^[A-Za-z0-9_-]{20,64}$/.test(b))return false;if(!S.cloud||S.cloud.p!==p||S.cloud.b!==b){S.cloud={p,b};save();}return true;}
 function takeCfg(cfg,src,force){const p=cleanP(cfg&&cfg.p);if(!p.length)return false;if(cfg.cloud&&cfg.cloud.p)setCloud(cfg.cloud.p,cfg.cloud.b);
   const at=String(cfg.at||'');if(!force&&S.at&&at&&at<S.at)return false;
+  if(cfg.bv&&String(cfg.bv)!==S.bv){S.bv=String(cfg.bv).slice(0,10);save();verBar();}
   const ch=JSON.stringify(p)!==JSON.stringify(S.p);if(!ch&&!force&&S.src)return false;S.p=p;S.src=src;if(at||force)S.at=at||new Date().toISOString();save();return ch;}
 function fromLorry(){try{const x=JSON.parse(localStorage.getItem(LORRY_KEY)||'null');if(x&&x.cloud&&x.cloud.p)setCloud(x.cloud.p,x.cloud.b);if(x&&x.cfg)return x.cfg;}catch(e){}return null;}
 function syncLorry(){const c=fromLorry();return c?takeCfg(c,'lorry',false):false;}
@@ -299,6 +300,12 @@ function renderSetup(){renderCloudInfo();$('srcInfo').innerHTML=S.p.length?`ද�
 function setBase(id,el){const t=String(el.value).trim(),p=num(t);if(t!==''&&(!/^[\d,]*\.?\d*$/.test(t)||p<0||p>1e7)){toast('මිල හරියට දාන්න');el.value=basePrice(id)||'';return;}
   if(p>0)S.prices[id]=r2(p);else delete S.prices[id];if(hasOwn(id)&&num(S.bill.pr[id])===basePrice(id))delete S.bill.pr[id];save();el.value=basePrice(id)||'';toast('💾 මිල සුරැකුවා');}
 
+/* ---- 🔄 the PC says a newer කඩ බිල app exists (cfg.bv) ---- */
+function verOld(v,l){const a=String(v||'').split('.').map(Number),b=String(l||'').split('.').map(Number);for(let i=0;i<Math.max(a.length,b.length);i++){const x=a[i]||0,y=b[i]||0;if(x!==y)return x<y;}return false;}
+function verBar(){let b=$('verBar');const want=S.bv,newer=want&&verOld(VER,want);if(!newer){if(b)b.remove();return;}
+  if(!b){b=document.createElement('div');b.id='verBar';b.style.cssText='position:sticky;top:0;z-index:30;background:#fef3c7;color:#78350f;border-bottom:2px solid #f59e0b;padding:8px 12px;font-weight:700;font-size:14px;display:flex;gap:8px;align-items:center';document.body.prepend(b);}
+  b.innerHTML=`<span style="flex:1">🔄 අලුත් version එකක් (v${esc(want)}) — internet එක්ක update කරන්න</span><button type="button" style="min-height:40px;padding:4px 12px;border-radius:10px;border:1px solid #b45309;background:#fff;font-weight:800" onclick="updateNow()">🔄 දැන්</button>`;}
+async function updateNow(){try{const r=navigator.serviceWorker&&await navigator.serviceWorker.getRegistration();if(r)await r.update();}catch(e){}location.reload();}
 /* ---- start ---- */
 /* the PC's “📲 කඩ බිල app link” (…/bill-app/#c=project~box): set up once, then the list + prices come by themselves */
 (function(){try{const h=decodeURIComponent((location.hash||'').slice(1)),m=/^c=([a-z0-9-]+)~([A-Za-z0-9_-]+?)(?:~[A-Za-z0-9_-]{43})?$/.exec(h);
@@ -310,7 +317,7 @@ window.addEventListener('pageshow',e=>{if(e.persisted)wake();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wake();});
 window.addEventListener('online',()=>cloudPull(false));
 window.addEventListener('storage',e=>{if(e.key===LORRY_KEY&&syncLorry())softRender();});
-go(S.p.length?'items':'setup');cloudPull(false);
+go(S.p.length?'items':'setup');verBar();cloudPull(false);
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
