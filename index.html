@@ -117,14 +117,19 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 .lr-rs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 .lr-next{border:2px solid #22c55e;background:#f0fdf4}
 .lr-home{display:flex;align-items:center;gap:10px;cursor:pointer;border:1.5px solid #c7d2fe;background:linear-gradient(135deg,#eef2ff,#fff)}.lr-home .grow{flex:1}.lr-go{font-size:26px;color:#6366f1}
+.v5chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin:4px 0 10px;font-size:13px}.v5chips span{padding:4px 9px;border-radius:999px;background:#f1f5f9;color:#64748b;font-weight:700}.v5chips span.on{background:var(--red);color:#fff}.v5chips span.done{background:#dcfce7;color:#166534}.v5chips i{color:#94a3b8;font-style:normal}
+.v5hd{display:flex;justify-content:space-between;align-items:center;gap:8px}.v5hd h3{margin:0}.v5row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--line)}.v5row span{flex:1}.v5row small{display:block;color:#64748b;font-weight:400}.v5cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.v5cats .btn{min-height:44px}
+.v5den{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:6px 0}.v5den label{display:flex;align-items:center;gap:6px;font-weight:700}.v5den input{width:70px}
+.btn.danger{background:#dc2626;color:#fff}.btn.grey{background:#e5e7eb;color:#475569}.btn.big{min-height:56px;font-size:18px}.v5big{border:2px solid var(--red)}.v5lock{opacity:.75}.v5top{border:2px solid #f59e0b}.v5sync{text-align:center;margin:8px 0}.v5q{width:100%;margin:6px 0}.v5dt{margin:-4px 0 6px}.center{text-align:center}
+.lr-tw{max-width:100%;overflow-x:hidden}.lr-t{width:100%;table-layout:fixed}.lr-t td:first-child{word-break:break-word}
 </style>
 </head>
 <body>
 <header><button class="back" id="backBtn" onclick="go('home')" aria-label="ආපසු">⌂</button><div><h1>🚛 ලොරි App</h1><p id="hdrSub"></p></div></header>
 <main>
   <section class="screen" id="s-home"><div id="homeBody"></div>
-    <div class="grid2"><button class="tile" onclick="go('inbox')"><span>📥</span>Report / Code දාන්න<small>WhatsApp එකෙන් ආපු message (Cloud නැති වෙලාවට)</small></button><button class="tile" onclick="go('setup')"><span>⚙️</span>සැකසුම්<small>නම, WhatsApp අංකය</small></button></div>
-    <div class="foot">Shanthi Food Products · ලොරි App v4.5.8 · Internet නැතුවත් වැඩ කරනවා</div></section>
+    <button class="btn light block" style="margin-top:10px" onclick="go('setup')">⚙️ සැකසුම් · 📥 Report · 📜 යැවූ ඒවා · 🔢 · 🏭 · 🌙</button>
+    <div class="foot">Shanthi Food Products · ලොරි App v5.0 · Internet නැතුවත් වැඩ කරනවා</div></section>
 
   <section class="screen" id="s-inbox">
     <div class="card"><h3>📥 WhatsApp message එක දාන්න</h3><p class="muted small">ලොකු මහත්තයා එවන <strong>Report</strong> එක හෝ <strong>භාණ්ඩ ලැයිස්තුව</strong> — WhatsApp එකේ message එක ඔබාගෙන ඉඳලා <strong>Copy</strong> කරලා මෙතන <strong>Paste</strong> කරන්න.</p>
@@ -488,7 +493,11 @@ async function cloudFlush(){
 }
 async function cloudPull(){
   if(!S.cloud)return;const got=[];
+  /* v5 · 📑 read the small index doc first; fetch a list only when the PC changed it (5 reads → 1). A full check every 6 hours / after opening. */
+  let idx=null;try{const r=await fetch(`${fsBase()}/out/idx`,{cache:'no-store'});if(r.ok){const j=await r.json();idx={};Object.entries(j.fields||{}).forEach(([k,v])=>{idx[k]=v&&v.stringValue||'';});}else if(r.status!==404){let j={};try{j=await r.json();}catch(e){}S.cloudErr=cloudErrText(r.status,j);return;}}catch(e){S.cloudErr='Internet නැහැ';return;}
+  S.seenIdx=S.seenIdx||{};const full=!idx||!S.idxFull||Date.now()-S.idxFull>6*3600e3||!window._v5opened;window._v5opened=1;
   for(const k of ['cfg','rep','sug','ord','bat']){
+    if(!full&&(!idx[k]||S.seenIdx[k]===idx[k]))continue;if(idx&&idx[k])S.seenIdx[k]=idx[k];
     let r;try{r=await fetch(`${fsBase()}/out/${k}`,{cache:'no-store'});}catch(e){S.cloudErr='Internet නැහැ';return;}
     if(r.status===404)continue;if(!r.ok){let j={};try{j=await r.json();}catch(e){}S.cloudErr=cloudErrText(r.status,j);return;}
     let j;try{j=await r.json();}catch(e){continue;}const f=j.fields||{},at=(f.at||{}).stringValue||'',code=(f.code||{}).stringValue||'';
@@ -497,6 +506,7 @@ async function cloudPull(){
     if(codes.length){const res=applyCodes(codes,true);if(res)got.push(...res.msg);}
     S.seen[k]=at;
   }
+  if(full&&idx)S.idxFull=Date.now();
   S.cloudErr='';S.cloudOk=new Date().toISOString();save();
   if(got.length){toast('☁️ '+got.join(' · '));const typing=document.activeElement&&document.activeElement.tagName==='INPUT';if(!(screen==='count'||(screen==='load'&&typing)))render();}
 }
@@ -534,7 +544,7 @@ function ordGive(id){const x=((S.ord&&S.ord.o)||[]).find(o=>o[0]===id);if(!x)ret
 /* ---------------- HISTORY ---------------- */
 const TT={load:'📦 පැටවීම',count:'🔢 ගණන් කිරීම',unload:'🏭 Factory එකට','count-draft':'📝 නොයැවූ ගණන් කිරීම'};
 function trimSent(){if(S.sent.length>80)S.sent=S.sent.slice(-80);}
-function renderHistory(){const list=S.sent.slice().reverse();$('histList').innerHTML=list.length?list.map((x,i)=>`<div class="card hist"><div class="grow"><strong>${x.pre?'🌙 ගමනට වෙන් කළා':(TT[x.t]||x.t)}</strong> · ${esc(x.d)}${x.rev?' · සංශෝධනය '+x.rev:''}<div class="small muted">${esc(fmtAt(x.at))}${x.total?' · පැකට් '+x.total:''}${x.cloudId?(x.cloudAt?' · ☁️ ගියා':' · ⏳ යවන්න බලාගෙන'):''}</div></div>${x.text?`<button class="btn light sm" onclick="resend(${S.sent.length-1-i})">ආයෙත් යවන්න</button>`:''}</div>`).join(''):'<div class="empty">තවම කිසිවක් යැව්වේ නැහැ</div>';}
+function renderHistory(){const list=S.sent.slice().reverse();$('histList').innerHTML=list.length?list.map((x,i)=>`<div class="card hist"><div class="grow"><strong>${x.pre?'🌙 ගමනට වෙන් කළා':x.t==='lday'?esc(x.label||''):(TT[x.t]||x.t)}</strong> · ${esc(x.d)}${x.rev?' · සංශෝධනය '+x.rev:''}<div class="small muted">${esc(fmtAt(x.at))}${x.total?' · පැකට් '+x.total:''}${x.cloudId?(x.cloudAt?' · ☁️ ගියා':' · ⏳ යවන්න බලාගෙන'):''}</div></div>${x.text?`<button class="btn light sm" onclick="resend(${S.sent.length-1-i})">ආයෙත් යවන්න</button>`:''}</div>`).join(''):'<div class="empty">තවම කිසිවක් යැව්වේ නැහැ</div>';}
 function resend(i){const x=S.sent[i];if(x&&x.text)shareSheet('ආයෙත් යවන්න',x.text,null);}
 
 /* ---------------- SETUP ---------------- */
@@ -875,11 +885,11 @@ var QS=(function(){'use strict';
   function close(){if(!st)return;st.alive=false;clearTimeout(st.timer);try{st.stream.getTracks().forEach(function(t){t.stop();});}catch(e){}st=null;}
   /* the same QR text → what it is (bundle / batch book / raw lot) */
   function parse(t){t=String(t||'').trim();var m;
-    if((m=/^SHANTHI\s+([A-Z]{2,3}-\d{6}-\d{1,3})\s+(\S+)\s+([BC])(\d+)\/(\d+)\s+Q(\d+)/i.exec(t)))return {k:'bundle',no:m[1].toUpperCase(),size:m[2],card:m[3].toUpperCase()==='C',i:+m[4],of:+m[5],q:+m[6]};
+    if((m=/^SHANTHI\s+([A-Z]{2,3}-(?:\d{6}-\d{1,3}|[A-Z][A-L]\d{2}(?:-\d{1,3})?))\s+(\S+)\s+([BC])(\d+)\/(\d+)\s+Q(\d+)/i.exec(t)))return {k:'bundle',no:m[1].toUpperCase(),size:m[2],card:m[3].toUpperCase()==='C',i:+m[4],of:+m[5],q:+m[6]};
     if((m=/Lot\s+(R-\d{6}-\d{1,3})/i.exec(t)))return {k:'lot',no:m[1].toUpperCase()};
-    var bn=/Batch\s+([A-Z]{2,3}-\d{6}-\d{1,3})/i.exec(t);
+    var bn=/Batch\s+([A-Z]{2,3}-(?:\d{6}-\d{1,3}|[A-Z][A-L]\d{2}(?:-\d{1,3})?))/i.exec(t);
     if(bn){var bu=/(Bundle|Card)\s+(\d+)\/(\d+)\s*\|\s*(\d+)\s*packets/i.exec(t);if(bu){var seg=t.split('|').map(function(x){return x.trim();}),sz=(seg[1]||'').split(/\s+/).pop();return {k:'bundle',no:bn[1].toUpperCase(),size:sz,card:/card/i.test(bu[1]),i:+bu[2],of:+bu[3],q:+bu[4]};}return {k:'batch',no:bn[1].toUpperCase()};}
-    if((m=/^(?:SHANTHI\s+)?([A-Z]{2,3}-\d{6}-\d{1,3})(?:\s+(\S+)\s+(\d+)\s*\/\s*(\d+))?$/i.exec(t))){if(m[2])return {k:'bundle',no:m[1].toUpperCase(),size:m[2],card:false,i:+m[3],of:+m[4],q:0,typed:1};return {k:'batch',no:m[1].toUpperCase()};}
+    if((m=/^(?:SHANTHI\s+)?([A-Z]{2,3}-(?:\d{6}-\d{1,3}|[A-Z][A-L]\d{2}(?:-\d{1,3})?))(?:\s+(\S+)\s+(\d+)\s*\/\s*(\d+))?$/i.exec(t))){if(m[2])return {k:'bundle',no:m[1].toUpperCase(),size:m[2],card:false,i:+m[3],of:+m[4],q:0,typed:1};return {k:'batch',no:m[1].toUpperCase()};}
     if((m=/^SHANTHI\s+LOT\s+(R-\d{6}-\d{1,3})$/i.exec(t))||(m=/^(R-\d{6}-\d{1,3})$/i.exec(t)))return {k:'lot',no:m[1].toUpperCase()};
     return null;}
   return {open:open,close:close,parse:parse,beep:beep};
@@ -1203,7 +1213,7 @@ function lrChip(k){const el=document.querySelector(`#loadList [data-lrow="${CSS.
 
 
 /* ================= v4.5.2 · 🕓 04:00 වැඩ දවස · 🔐 encrypt (lx) · 📋 කම්හලේ අලුත් ඇණවුම් + 🔴 hold live · 🔄 update තීරුව ================= */
-const LA_VER='4.58';
+const LA_VER='5.0';
 /* 🕓 "today" = the work day (PC setting, e.g. before 04:00 = yesterday) — same rule as the PC and the factory app */
 const _calToday=today;
 today=function(){const t=_calToday();try{const de=String((S.cfg&&S.cfg.de)||'00:00');if(!/^\d\d:\d\d$/.test(de)||de==='00:00')return t;
@@ -1326,6 +1336,107 @@ function lrDayEnd(at){const de=String((S.cfg&&S.cfg.de)||'04:00'),m=/^(\d{1,2}):
 lrLeft=function(x){if(!x||!x.at)return 0;return Math.max(0,lrDayEnd(x.at)-Date.now());};
 (function(){const _r=renderLoad;renderLoad=function(){const r=_r.apply(this,arguments);try{const d=loadDraft(),n=document.getElementById('loadNote'),old=document.getElementById('loadMidBox');if(old)old.remove();
   if(d&&d.add&&!(d.sentRev&&!d.unlock)&&n){n.insertAdjacentHTML('afterend',`<div id="loadMidBox" class="card infobox" style="margin-top:8px"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="loadMid" ${d.mid?'checked':''} onchange="(()=>{const d=loadDraft();d.mid=this.checked?1:0;save();document.getElementById('loadMidBy').style.display=this.checked?'':'none';})()"> 🛵 ලොරිය පාරේ — <b>ගමන අතරතුර ගෙනිහින් දුන්නා</b></label><input id="loadMidBy" placeholder="කවුද ගෙනිච්චේ / කොහෙදී (උදා: මම — ඕවිස්ස)" value="${esc(d.midBy||'')}" style="${d.mid?'':'display:none;'}margin-top:6px;width:100%" oninput="(()=>{const d=loadDraft();d.midBy=this.value;save();})()"></div>`);}}catch(e){}return r;};})();
+
+/* ================= ලොරි app v5 (2026-11-07) · දවසේ පිළිවෙළ Ⓐ–Ⓖ · 🪙 සිල්ලර · 💸 වියදම් · 🚚 පිටත් වුණා · 🏁 ඉවරයි · 📱 phones කිහිපයක් ================= */
+const V5K={fl:1,ex:1,dep:1,fin:1,nt:1,ek:1};
+const V5_EX={fuel:'⛽ ඩීසල්',food:'🍛 කෑම',park:'🅿️ Parking / Toll',fix:'🔧 අලුත්වැඩියා',hire:'👷 කුලී',other:'🎁 වෙනත්'};
+const V5_DEN=[5000,1000,500,100,50,20,10];
+function v5Me(){return S.me||'';}
+function v5Own(T){const last={};(S.lv||[]).forEach(e=>{if(e.d!==T)return;const p=last[e.uid];if(!p||num(e.rev)>=num(p.rev))last[e.uid]=e;});return Object.values(last);}
+(function(){const _lo=lrOwn;lrOwn=function(T){const r=_lo.apply(this,arguments);try{return r.concat(v5Own(T).map(e=>({...e})));}catch(e){return r;}};})();
+/* every v5 event for the trip day (all phones, newest revision, not cancelled) */
+function v5Ev(T,withVoid){T=T||today();const m={};v5Own(T).forEach(e=>{m[e.uid]={...e,mine:1};});
+  if(S.lrO&&S.lrO.T===T)Object.values(S.lrO.o||{}).forEach(x=>(x.ev||[]).forEach(e=>{if(!e||!V5K[e.k]||!e.uid)return;const p=m[e.uid];if(!p||num(e.rev)>num(p.rev))m[e.uid]={...e,mine:0,dev:x.by||e.by};}));
+  return Object.values(m).filter(e=>withVoid||!e.void).sort((a,b)=>String(a.first||a.at).localeCompare(String(b.first||b.at)));}
+function v5Day(T){T=T||today();const ev=v5Ev(T),one=k=>ev.filter(e=>e.k===k)[0]||null,st=lrState(T);
+  const counted=st.rem.src==='count'&&!st.rem.stale,loaded=st.moves.some(e=>e.k==='l')||preTot(st.pre)>0;
+  const fl=ev.filter(e=>e.k==='fl'),ex=ev.filter(e=>e.k==='ex'),dep=one('dep'),fin=one('fin'),nt=one('nt'),ek=ev.filter(e=>e.k==='ek').slice(-1)[0]||null;
+  const step=nt?'F':fin?'E':dep?'C':counted?'B':'A';
+  return {T,ev,st,counted,loaded,fl,flT:fl.reduce((a,e)=>a+num(e.amt),0),ex,exT:ex.reduce((a,e)=>a+num(e.amt),0),dep,fin,nt,ek,step};}
+/* new / changed / cancelled event → this phone, the other phones (day doc) and the PC (mailbox) */
+function v5Put(e,label){S.lv=S.lv||[];const now=new Date().toISOString();{const ex=v5Find(e.uid,e.d||today());e.rev=Math.max(num(e.rev),ex?num(ex.rev):0)+1;if(ex&&!e.void&&ex.void&&!e.first)e.first=now;}e.at=now;e.first=e.first||now;e.by=e.by||v5Me();e.d=e.d||today();e.dev=ensureDev();
+  S.lv.push(JSON.parse(JSON.stringify(e)));S.lv=S.lv.filter(x=>x.d>=addDays(today(),-10)).slice(-400);
+  const p={uid:e.uid,rev:e.rev,k:e.k,d:e.d,at:e.at,first:e.first,by:e.by,dev:e.dev,...(e.amt!==undefined?{amt:e.amt}:{}),...(e.cat?{cat:e.cat}:{}),...(e.note?{note:e.note}:{}),...(e.den?{den:e.den}:{}),...(e.opt?{opt:e.opt}:{}),...(e.void?{void:1}:{})};
+  const text=`${label}\n\n${sbpEncode('lday',p)}`;S.sent.push({t:'lday',uid:p.uid,rev:p.rev,d:p.d,at:p.at,by:p.by,label,text});S.sent=S.sent.slice(-400);
+  if(S.cloud){const id=`lday_${p.uid}_${p.rev}`;if(!S.outbox.some(x=>x.id===id))S.outbox.push({id,code:sbpEncode('lday',p),at:p.at});S.sent[S.sent.length-1].cloudId=id;}else shareSheet(label,text,null);save();
+  try{lrSync(true).then(()=>{if(screen==='home')renderHome();});}catch(x){}try{cloudFlush();}catch(x){}}
+function v5Edit(e){return lrLeft({at:e.first||e.at})>0;}
+function v5Find(u,T){return v5Ev(T||today(),1).find(e=>e.uid===u)||null;}
+/* 🪙 සිල්ලර */
+function v5FloatSheet(u){const old=u?v5Find(u):null;window._v5den={...((old&&old.den)||{})};
+    sheet(old?'✏️ 🪙 සිල්ලර වෙනස් කරන්න':'🪙 සිල්ලර (ලොරියට දෙන මාරු සල්ලි)',`<div class="field"><label>මුළු මුදල (රු.)</label><input id="v5flA" type="number" inputmode="numeric" min="1" value="${old?num(old.amt):''}"></div>
+   <details ${old&&old.den?'open':''}><summary class="small">නෝට්ටු අනුව ගණන් කරන්න</summary><div class="v5den">${V5_DEN.map(d=>`<label>${d.toLocaleString('en-US')} ×<input type="number" inputmode="numeric" min="0" value="${num(window._v5den[d])||''}" oninput="window._v5den[${d}]=Math.max(0,Math.floor(num(this.value)));v5DenDraw()"></label>`).join('')}</div><div class="small">එකතුව රු. <b id="v5flT">0</b></div></details>`,
+   [{t:old?'💾 වෙනස සුරකින්න':'✅ දාන්න',c:'primary',f:()=>{const a=Math.round(num($('v5flA').value));if(!(a>0)||a>1000000||!/^\d+(\.\d+)?$/.test(String($('v5flA').value).trim())){toast('මුදල හරියට දාන්න','err');return;}
+      const den={};V5_DEN.forEach(d=>{if(num(window._v5den[d])>0)den[d]=num(window._v5den[d]);});const e=old?{...old}:{k:'fl',uid:uid()};delete e.mine;delete e.dev;e.amt=a;e.den=Object.keys(den).length?den:undefined;closeSheet();v5Put(e,`🪙 සිල්ලර රු. ${a.toLocaleString('en-US')}`);toast('🪙 සිල්ලර දැම්මා');}},
+    ...(old?[{t:'🗑 අයින් කරන්න',c:'light',f:()=>{if(!confirm('මේ සිල්ලර අයින් කරන්නද?'))return;const e={...old,void:1};delete e.mine;closeSheet();v5Put(e,'🪙 සිල්ලර අයින් කළා');}}]:[])]);setTimeout(()=>{if($('v5flT'))$('v5flT').textContent=V5_DEN.reduce((a,d)=>a+d*num(window._v5den[d]),0).toLocaleString('en-US');},30);}
+function v5DenDraw(){const t=V5_DEN.reduce((a,d)=>a+d*num(window._v5den[d]),0);$('v5flT').textContent=t.toLocaleString('en-US');if(t)$('v5flA').value=t;}
+/* 💸 වියදම් */
+function v5ExSheet(u,cat){const old=u?v5Find(u):null;cat=cat||(old&&old.cat)||'fuel';
+  sheet(old?'✏️ 💸 වියදම වෙනස් කරන්න':'💸 වියදමක් දාන්න',`<div class="v5cats">${Object.entries(V5_EX).map(([k,t])=>`<button class="btn sm ${k===cat?'primary':'light'}" onclick="v5ExCat('${k}')">${t}</button>`).join('')}</div><input type="hidden" id="v5exC" value="${cat}">
+   <div class="field"><label>මුදල (රු.)</label><input id="v5exA" type="text" inputmode="decimal" value="${old?num(old.amt):''}" placeholder="උදා: 3500"></div>
+   <div class="field"><label>සටහන (ඕනේ නම්)</label><input id="v5exN" maxlength="80" value="${esc(old&&old.note||'')}"></div><div class="small muted">📷 ෆොටෝ ඕනේ නැහැ.</div>`,
+   [{t:old?'💾 වෙනස සුරකින්න':'✅ දාන්න',c:'primary',f:()=>{const raw=String($('v5exA').value).replace(/,/g,'').trim();const a=Math.round(num(raw)*100)/100;if(!/^\d+(\.\d{1,2})?$/.test(raw)||!(a>0)||a>500000){toast('මුදල හරියට දාන්න (රු. 1 – 5,00,000)','err');return;}
+      const c=$('v5exC').value;if(!old){const dup=v5Day().ex.find(x=>!x.mine&&x.cat===c&&Math.abs(num(x.amt)-a)<0.01&&Math.abs(Date.now()-new Date(x.first||x.at).getTime())<15*60e3);if(dup&&!confirm(`🔁 ${dup.by||'වෙන phone එකක'}ගේ phone එකෙනුත් ${V5_EX[c]} ${a.toLocaleString('en-US')} දැම්මා (${lrHM(dup.first||dup.at)}). මේක වෙනම වියදමක්ද? (ඔව් නම් දාන්න)`))return;}
+      const e=old?{...old}:{k:'ex',uid:uid()};delete e.mine;e.cat=c;e.amt=a;e.note=$('v5exN').value.trim().slice(0,80);closeSheet();v5Put(e,`💸 ${V5_EX[c]} රු. ${a.toLocaleString('en-US')}`);toast('💸 දැම්මා');}},
+    ...(old?[{t:'🗑 අයින් කරන්න',c:'light',f:()=>{if(!confirm('මේ වියදම අයින් කරන්නද?'))return;const e={...old,void:1};delete e.mine;closeSheet();v5Put(e,'💸 වියදම අයින් කළා');}}]:[])]);}
+function v5ExCat(k){$('v5exC').value=k;document.querySelectorAll('.v5cats button').forEach(b=>{b.className='btn sm '+(b.getAttribute('onclick').includes(`'${k}'`)?'primary':'light');});}
+/* 🚚 / 🏁 / 🚫 */
+function v5Dep(){const D=v5Day();if(D.dep){toast(`${D.dep.by||''} ${lrHM(D.dep.first||D.dep.at)} ට දැනටමත් ඔබුවා`,'warn');renderHome();return;}
+  if(!D.counted&&!confirm('ලොරිය තවම ගණන් කරලා නැහැ. ඒත් පිටත් වුණාද?'))return;if(!D.loaded&&!confirm('අද පැටවීමක් නැහැ. ඒත් පිටත් වුණාද?'))return;if(!D.flT&&!confirm('🪙 සිල්ලර දාලා නැහැ. සිල්ලර නැතුවද ගියේ?'))return;
+  v5Put({k:'dep',uid:'dep-'+today()},'🚚 ලොරිය පිටත් වුණා');toast('🚚 සුබ ගමනක්!');renderHome();}
+function v5Fin(){const D=v5Day();if(D.fin){toast(`${D.fin.by||''} ${lrHM(D.fin.first||D.fin.at)} ට දැනටමත් ඔබුවා`,'warn');renderHome();return;}
+  const o=(S.ord&&S.ord.o)||[],left=o.filter(x=>!(S.ordDone||{})[x[0]]).length;if(left&&!confirm(`📋 ඇණවුම් ${left}ක් තවම “දුන්නා” කියලා නැහැ. ඒත් ඉවරද?`))return;
+  if(!D.ex.length&&!confirm('💸 වියදම් දාලා නැහැ (ඩීසල් / කෑම). වියදම් නැද්ද?'))return;
+  v5Put({k:'fin',uid:'fin-'+today()},'🏁 ගමන ඉවරයි');renderHome();}
+function v5NoTrip(){if(!confirm('🚫 අද ලොරි ගමනක් නැද්ද? (ලොරියේ බඩු කම්හලට බානවා)'))return;v5Put({k:'nt',uid:'nt-'+today()},'🚫 අද ගමනක් නැහැ');go('unload');}
+function v5EndKeep(opt){v5Put({k:'ek',uid:uid(),opt},opt==='keep'?'🚚 ඉතුරු බඩු ලොරියේම':opt==='all'?'🏭 ඉතුරු බඩු ඔක්කොම බෑවා':'🏭 ඉතුරු බඩු ටිකක් බෑවා');
+  if(opt==='all'){S.drafts.unload=null;go('unload');setTimeout(()=>{try{unloadAll();}catch(e){}},80);}else if(opt==='some')go('unload');else renderHome();}
+function v5EkUndo(){const e=v5Day().ek;if(!e)return;const x={...e,void:1};delete x.mine;v5Put(x,'↩️ ඉතුරු බඩු තේරීම වෙනස් කළා');}
+function v5Undo(k){const D=v5Day(),e=D[k];if(!e){toast('ඒක ඔබලා නැහැ','warn');return;}if(!confirm('↩️ අවලංගු කරන්නද?'))return;const x={...e,void:1};delete x.mine;v5Put(x,'↩️ අවලංගු කළා');toast('↩️ අවලංගු කළා');go('home');}
+/* the home screen by the step of the day */
+function v5Chips(D){const L=[['A','🔢 ගණන්'],['B','📦 පටවන'],['C','🛣️ ගමනේ'],['E','🏁 ඉවරයි']],ord={A:0,B:1,C:2,E:3,F:3},cur=ord[D.step];
+  return `<div class="v5chips">${L.map(([k,t],i)=>`<span class="${i<cur?'done':i===cur?'on':''}">${i<cur?'✓ ':''}${t}</span>`).join('<i>›</i>')}</div>`;}
+function v5ExCard(D,top){return `<div class="card v5ex ${top?'v5top':''}"><div class="v5hd"><h3>💸 වියදම්</h3><b>රු. ${D.exT.toLocaleString('en-US')}</b></div>${D.ex.map(e=>`<div class="v5row"><span>${V5_EX[e.cat]||e.cat}${e.note?' · '+esc(e.note):''}<small>${esc(lrHM(e.first||e.at))} · ${e.mine?'📱 මගේ':'📱 '+esc(e.by||'')}</small></span><b>${num(e.amt).toLocaleString('en-US')}</b>${e.mine&&v5Edit(e)?`<button class="btn sm light" onclick="v5ExSheet('${e.uid}')">✏️</button>`:''}</div>`).join('')||'<div class="small muted">තවම වියදම් නැහැ</div>'}
+   <div class="v5cats">${Object.entries(V5_EX).map(([k,t])=>`<button class="btn sm light" onclick="v5ExSheet('','${k}')">${t}</button>`).join('')}</div></div>`;}
+function v5FlCard(D){return `<div class="card v5fl"><div class="v5hd"><h3>🪙 සිල්ලර</h3><b>${D.flT?'අද රු. '+D.flT.toLocaleString('en-US'):'තවම නැහැ'}</b></div>${D.fl.map(e=>`<div class="v5row"><span>රු. ${num(e.amt).toLocaleString('en-US')}<small>${esc(lrHM(e.first||e.at))} · ${e.mine?'📱 මගේ':'📱 '+esc(e.by||'')}</small></span>${e.mine&&v5Edit(e)?`<button class="btn sm light" onclick="v5FloatSheet('${e.uid}')">✏️</button>`:''}</div>`).join('')}<button class="btn ${D.flT?'light':'primary'} block" onclick="v5FloatSheet()">🪙 සිල්ලර ${D.flT?'තව ':''}දාන්න</button></div>`;}
+function v5LorryCard(D){const st=D.st;return `<div class="card lr-card v5lorry"><div class="lr-top"><div><div class="lr-k">🚚 ලොරියේ දැන් — හැම බඩුවක්ම</div><div class="lr-big">${st.sum} <small>පැකට් · ${Object.keys(st.tot).length} වර්ග</small></div></div>${S.cloud?`<button class="btn light sm" onclick="lrSync(true).then(()=>renderHome())">🔄</button>`:''}</div>
+   <input type="search" class="v5q" placeholder="🔎 සොයන්න (උදා: 50g)" oninput="v5Filter(this.value)">${lrTableHtml(st)}${lrSum(st.rem.dm)?`<div class="warnbox small">⚠️ Damage ${lrSum(st.rem.dm)}ක් ලොරියේ — කම්හලට බාන්න මතක් කරන්න.</div>`:''}
+   <div class="lr-acts"><button class="btn primary" onclick="lrAdd();go('load')">➕ තව බඩු පටවන්න</button><button class="btn light" onclick="lrRemove()">➖ අයින් කරන්න</button></div></div>`;}
+function v5Filter(q){q=norm(q);document.querySelectorAll('.v5lorry .lr-t tbody tr').forEach(tr=>{const n=norm(tr.cells[0].textContent);tr.style.display=!q||q.split(' ').every(w=>n.includes(w))?'':'none';});}
+function v5Sync(){const at=S.lrO&&S.lrO.at,un=(S.outbox||[]).length;return S.cloud&&un?`<div class="small muted v5sync">${un?`⏳ යවන්න තියෙනවා ${un} · `:''}☁️ ${at?esc(lrHM(at))+' ට අන්තිමට':'තවම නැහැ'} <button class="btn sm light" onclick="lrSync(true).then(()=>renderHome())">🔄</button></div>`:'';}
+(function(){const _rh=renderHome0;renderHome0=function(){const r=_rh.apply(this,arguments);try{if(!S.cfg||!S.me||screen!=='home')return r;v5Home();}catch(e){console.warn('v5 home',e);}return r;};})();
+function v5Home(){const hb=$('homeBody');if(!hb)return;const D=v5Day(),steps=[...hb.querySelectorAll('.card.step')],[rep,cnt,ld]=steps,pre=hb.querySelector('.pre-step'),tiles=hb.querySelector('.grid2'),lrh=hb.querySelector('.lr-home');
+  const pri=S.v5pri||'all';
+  if(rep){const r=S.rep;rep.remove();cnt&&cnt.querySelector('.muted')&&cnt.querySelector('.muted').insertAdjacentHTML('beforeend',`<br>${r&&r.d>=addDays(today(),-1)?'📥 Report '+esc(r.d)+' ✓':'📥 Report තවම නැහැ — <a href="#" onclick="go(\'inbox\');return false">දාන්න</a>'}`);}
+  if(tiles&&D.step!=='F')tiles.remove();
+  if(pre&&!(D.step==='F'||(D.step==='E'&&D.ek)))pre.remove();
+  hb.insertAdjacentHTML('afterbegin',v5Chips(D));
+  const hello=hb.querySelector('.hello');const at=html=>{(hello||hb.firstChild).insertAdjacentHTML('afterend',html);};
+  if(D.step==='A'){cnt&&cnt.classList.add('v5big');if(ld){ld.classList.add('v5lock');const m=ld.querySelector('.muted');m&&m.insertAdjacentHTML('beforeend','<br>🔒 මුලින් ලොරිය ගණන් කරන්න');}
+    hb.insertAdjacentHTML('beforeend',`<button class="btn light block v5nt" onclick="v5NoTrip()">🚫 අද ගමනක් නැහැ (ලොරියේ බඩු බානවා)</button>`);}
+  if(D.step==='B'){const ready=D.loaded&&D.flT>0;hb.insertAdjacentHTML('beforeend',v5FlCard(D)+`<button class="btn ${ready?'danger':'grey'} block big v5dep" onclick="v5Dep()">🚚 ලොරිය පිටත් වුණා</button>${ready?'':`<div class="small muted center">${D.loaded?'':'📦 පටවලා '}${D.flT?'':'🪙 සිල්ලර දාලා '}ඔබන්න</div>`}`);}
+  if(D.step==='C'){cnt&&cnt.remove();ld&&ld.remove();lrh&&lrh.remove();
+    const top=v5ExCard(D,1),dep=`<div class="small muted v5dt">🚚 පිටත් වුණා ${esc(lrHM(D.dep.first||D.dep.at))}${D.dep.by?' · '+esc(D.dep.by):''}</div>`;
+    at(dep+(pri==='fl'?v5FlCard(D)+top:top));hb.insertAdjacentHTML('beforeend',v5LorryCard(D)+(pri==='fl'?'':`<button class="btn light block" onclick="v5FloatSheet()">🪙 සිල්ලර + ${D.flT?'(අද '+D.flT.toLocaleString('en-US')+')':''}</button>`)+`<button class="btn primary block big v5fin" onclick="v5Fin()">🏁 ගමන ඉවරයි</button>`);}
+  if(D.step==='E'){cnt&&cnt.remove();ld&&ld.remove();
+    const sum=`<div class="card v5sum"><h3>🏁 ගමන ඉවරයි</h3><div class="small">🚚 ${esc(lrHM(D.dep?D.dep.first||D.dep.at:''))||'—'} → 🏁 ${esc(lrHM(D.fin.first||D.fin.at))} · 🪙 රු. ${D.flT.toLocaleString('en-US')} · 💸 රු. ${D.exT.toLocaleString('en-US')} (${D.ex.length}) · 🚚 ලොරියේ ${D.st.sum}</div></div>`;
+    const q=D.ek?`<div class="card okbox">✅ ${D.ek.opt==='keep'?'🚚 ඉතුරු බඩු ලොරියේම තියනවා':D.ek.opt==='all'?'🏭 ඔක්කොම බෑවා':'🏭 ටිකක් බෑවා'} <button class="btn sm light" onclick="v5EkUndo()">වෙනස් කරන්න</button></div>`:`<div class="card"><h3>ලොරියේ ඉතුරු බඩු (${D.st.sum})?</h3><button class="btn primary block" onclick="v5EndKeep('keep')">🚚 ලොරියේම තියනවා</button><button class="btn light block" onclick="v5EndKeep('some')">🏭 ටිකක් බෑවා</button><button class="btn light block" onclick="v5EndKeep('all')">🏭 ඔක්කොම බෑවා</button></div>`;
+    at(sum+q);if(!D.ek){lrh&&lrh.remove();}}
+  if(D.step==='F'){cnt&&cnt.remove();ld&&ld.remove();at(`<div class="card warnbox">🚫 අද ගමනක් නැහැ — ලොරියේ බඩු කම්හලට බානවා. <button class="btn sm light" onclick="v5Undo('nt')">↩️ ගමනක් තියෙනවා</button></div>`);}
+  if(D.step==='C'||D.step==='E'){}else if(D.step!=='F'&&D.ex.length)hb.insertAdjacentHTML('beforeend',v5ExCard(D));
+  hb.insertAdjacentHTML('beforeend',v5Sync());}
+/* ⚙️ Ⓖ: everything that left the home screen is here */
+(function(){const _rs=renderSetup;renderSetup=function(){const r=_rs.apply(this,arguments);try{const sc=$('s-setup');let b=$('v5set');if(!b){sc.insertAdjacentHTML('afterbegin','<div id="v5set"></div>');b=$('v5set');}const D=v5Day();
+  b.innerHTML=`<div class="card"><h3>🧰 අනිත් වැඩ</h3><div class="grid2 v5g"><button class="tile" onclick="go('inbox')"><span>📥</span>Report / Code<small>${S.rep?'අන්තිම '+esc(S.rep.d):'තවම නැහැ'}</small></button><button class="tile" onclick="go('history')"><span>📜</span>යැවූ ඒවා<small>${S.sent.length}ක්</small></button><button class="tile" onclick="go('count')"><span>🔢</span>ලොරිය ගණන් කරන්න<small>${D.counted?'අද ✓':'අද නැහැ'}</small></button><button class="tile" onclick="go('unload')"><span>🏭</span>Factory එකට බෑවා<small>ඔක්කොම / ටිකක් / scan</small></button><button class="tile" onclick="goPre()"><span>🌙</span>හෙට ගමනට වෙන් කරන්න<small>කලින් දවසේ</small></button><button class="tile" onclick="v5FloatSheet()"><span>🪙</span>සිල්ලර<small>අද ${D.flT.toLocaleString('en-US')}</small></button></div>
+   ${D.dep?`<button class="btn light block" onclick="v5Undo('dep')">↩️ “පිටත් වුණා” අවලංගු (${esc(lrHM(D.dep.first||D.dep.at))})</button>`:''}${D.fin?`<button class="btn light block" onclick="v5Undo('fin')">↩️ “ගමන ඉවරයි” අවලංගු</button>`:''}${D.nt?`<button class="btn light block" onclick="v5Undo('nt')">↩️ “ගමනක් නැහැ” අවලංගු</button>`:''}
+   <div class="field" style="margin-top:8px"><label>📱 මේ phone එකේ ප්‍රධාන වැඩ</label><select onchange="S.v5pri=this.value;save()"><option value="all" ${(S.v5pri||'all')==='all'?'selected':''}>ඔක්කොම</option><option value="cnt" ${S.v5pri==='cnt'?'selected':''}>🔢 ගණන් / 📦 පටවන</option><option value="ex" ${S.v5pri==='ex'?'selected':''}>💸 වියදම්</option><option value="fl" ${S.v5pri==='fl'?'selected':''}>🪙 සිල්ලර</option></select><div class="small muted">තෝරපු දේ උඩට — අනිත් ඒවා හැංගෙන්නේ නැහැ.</div></div></div>`;}catch(e){console.warn('v5 setup',e);}return r;};})();
+/* 📜 history: the new kinds */
+try{Object.assign(TT,{lday:'📅 දවසේ වැඩ'});}catch(e){}
+/* 🔥 Firebase: fewer reads — the day doc every 20 s only on the load / unload / handover screens, 1 min on home (2 min on the trip), none while the screen is off */
+lrWatch=function(){clearInterval(lr.timer);if(!S.cloud)return;let last=0;lr.timer=setInterval(async()=>{if(document.hidden)return;if(!['load','home','unload','accept'].includes(screen))return;const now=Date.now(),D=screen==='home'?v5Day():null,gap=screen!=='home'?20e3:D&&D.step==='C'?120e3:60e3;if(now-last<gap-500)return;last=now;
+  const ch=await lrSync(true);if(ch&&!document.activeElement.matches('input,textarea')){if(screen==='load')renderLoad();else if(screen==='home')renderHome();else if(screen==='unload')renderUnload();}},10000);};
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.cloud&&['load','home','unload','accept'].includes(screen))lrSync(true).then(ch=>{if(ch&&screen==='home')renderHome();});});
+try{lrWatch();}catch(e){}
 </script>
 </body>
 </html>

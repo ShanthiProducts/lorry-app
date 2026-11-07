@@ -103,7 +103,8 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
 </head>
 <body>
 <header>
-  <button class="hb" id="hBack" onclick="go('items')" aria-label="ආපහු" style="visibility:hidden">←</button>
+  <button class="hb" id="hBack" onclick="go('items')" aria-label="ආපහු" style="display:none">←</button>
+  <button class="hb" id="hClr" onclick="clearHome()" aria-label="ගහපු ඔක්කොම මකන්න" title="ගහපු ඔක්කොම මකන්න" style="visibility:hidden">🗑️</button>
   <div class="grow"><h1 id="hTitle">🧾 කඩ බිල</h1><p id="hSub">Shanthi Food Products</p></div>
   <button class="hb" id="hSet" onclick="go('setup')" aria-label="සැකසුම්">⚙️</button>
 </header>
@@ -142,13 +143,13 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
    Offline first. The product list + wholesale prices come from the PC through Firebase (boxes/<box>/out/cfg · out/rep — the same
    messages the lorry app reads; the PC v4.7.3 sends a new one whenever a price changes). Also accepts a pasted WhatsApp message,
    and the lorry app's saved list on the same phone (read only). Nothing is ever sent anywhere. */
-const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.6',QMAX=9999;
+const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.7',QMAX=9999;
 const FS='https://firestore.googleapis.com/v1/projects/';
 const SIZE_RE=/^(\d+(?:\.\d+)?(?:g|kg|ml|l|P)|Card|Packet)$/i;
 const $=id=>document.getElementById(id);
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function num(v){const t=String(v??'').replace(/,/g,'').trim();if(!t)return 0;const n=Number(t);return Number.isFinite(n)?n:0;}
-function r2(n){return Math.round(n*100)/100;}
+function num(v){let t=String(v??'').trim();if(/^\d+,\d{1,2}$/.test(t))t=t.replace(',','.');t=t.replace(/,/g,'');if(!t)return 0;const n=Number(t);return Number.isFinite(n)?n:0;}
+function r2(n){n=Number(n)||0;const x=n*100;return Math.round(x+(x>=0?1e-7:-1e-7))/100;}/* 3×1.15 = 3.4499… → 3.45 */
 function money(n){return r2(num(n)).toLocaleString('en-LK',{maximumFractionDigits:2});}
 function norm(s){return String(s||'').toLocaleLowerCase().replace(/[\s​-‍]+/g,'');}
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove('show'),2800);}
@@ -177,6 +178,7 @@ function cleanP(arr){const seen=new Set();return (Array.isArray(arr)?arr:[]).fil
 function setCloud(p,b){p=String(p||'').toLowerCase();b=String(b||'');if(!/^[a-z][a-z0-9-]{4,29}$/.test(p)||!/^[A-Za-z0-9_-]{20,64}$/.test(b))return false;if(!S.cloud||S.cloud.p!==p||S.cloud.b!==b){S.cloud={p,b};save();}return true;}
 function takeCfg(cfg,src,force){const p=cleanP(cfg&&cfg.p);if(!p.length)return false;if(cfg.cloud&&cfg.cloud.p)setCloud(cfg.cloud.p,cfg.cloud.b);
   const at=String(cfg.at||'');if(!force&&S.at&&at&&at<S.at)return false;
+  if(!force&&src==='lorry'&&!p.some(x=>x.length>2)&&S.p.some(x=>x.length>2)&&!(at>S.at))return false;
   if(cfg.bv&&String(cfg.bv)!==S.bv){S.bv=String(cfg.bv).slice(0,10);save();verBar();}
   /* 🎁 free rules + 🚫 no-discount items + max % — sent by the PC (v4.7.3); an older PC sends none → the PC's own defaults below */
   let rch=false;if(cfg.fr&&typeof cfg.fr==='object'){const fr={};Object.entries(cfg.fr).forEach(([k,v])=>{if(Array.isArray(v)&&num(v[0])>=1&&num(v[1])>=1)fr[String(k)]=[Math.floor(num(v[0])),Math.floor(num(v[1]))];});
@@ -233,23 +235,23 @@ let FE=null;/* the row whose free editor is open */
 function freeHtml(id){if(!canFree(id))return '';const f=freeOf(id),own=hasFreeOwn(id),r=ruleOf(id),n=qty(id);
   if(FE===id&&n)return '';
   if(!n)return r?`<span class="fr">🎁 ${r.per}කට ${r.give}ක් නොමිලේ</span>`:'';
-  return `<button class="fr ${f?'on':''}" onclick="FE='${esc(id)}';redrawRow('${esc(id)}')" aria-label="නොමිලේ ගණන වෙනස් කරන්න">${f?`🎁 නොමිලේ ${f}`:'🎁 ＋ නොමිලේ'}${own?' ✋':''} ✏️</button>`;}
+  return `<button class="fr ${f?'on':''}" onclick="FE=this.closest('.row').dataset.r;redrawRow(FE)" aria-label="නොමිලේ ගණන වෙනස් කරන්න">${f?`🎁 නොමිලේ ${f}`:'🎁 ＋ නොමිලේ'}${own?' ✋':''} ✏️</button>`;}
 function fedHtml(id){if(FE!==id||!qty(id)||!canFree(id))return '';const f=freeOf(id),own=hasFreeOwn(id),r=ruleOf(id);
-  return `<span class="fed"><span>🎁 නොමිලේ</span><button class="fb" aria-label="නොමිලේ අඩු කරන්න" onclick="freeStep('${esc(id)}',-1)">−</button><b>${f}</b><button class="fb" aria-label="නොමිලේ වැඩි කරන්න" onclick="freeStep('${esc(id)}',1)">＋</button>${own&&r?`<button class="fb t" onclick="freeAuto('${esc(id)}')">↺ ඉබේම (${autoFree(id)})</button>`:''}<button class="fb t ok" onclick="FE=null;redrawRow('${esc(id)}')">✓ හරි</button></span>`;}
+  return `<span class="fed"><span>🎁 නොමිලේ</span><button class="fb" aria-label="නොමිලේ අඩු කරන්න" onclick="freeStep(this.closest('.row').dataset.r,-1)">−</button><b>${f}</b><button class="fb" aria-label="නොමිලේ වැඩි කරන්න" onclick="freeStep(this.closest('.row').dataset.r,1)">＋</button>${own&&r?`<button class="fb t" onclick="freeAuto(this.closest('.row').dataset.r)">↺ ඉබේම (${autoFree(id)})</button>`:''}<button class="fb t ok" onclick="const i=this.closest('.row').dataset.r;FE=null;redrawRow(i)">✓ හරි</button></span>`;}
 function redrawRow(id){const r=rowEl(id);let it=null;families().forEach(l=>{const x=l.find(y=>y.id===id);if(x)it=x;});if(r&&it&&r.isConnected){try{r.outerHTML=rowHtml(it);}catch(e){}}refreshRow(id);}
-function freeStep(id,d){const v=Math.min(QMAX,Math.max(0,freeOf(id)+d));S.bill.f[id]=v;if(v===autoFree(id)&&ruleOf(id))delete S.bill.f[id];save();redrawRow(id);try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}}
+function freeStep(id,d){const v=Math.min(QMAX,Math.max(0,freeOf(id)+d));S.bill.f[id]=v;if(v===autoFree(id))delete S.bill.f[id];save();redrawRow(id);try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}}
 function freeAuto(id){delete S.bill.f[id];save();redrawRow(id);}
 function noDisc(id){if(Array.isArray(S.nd))return S.nd.includes(id);const p=prod(id);return !!p&&/^සෝයා/.test(String(p[1]));}
 function billIds(){const ix=new Map(S.p.map((p,i)=>[p[0],i]));return Object.keys(S.bill.q).filter(id=>qty(id)&&ix.has(id)).sort((a,b)=>ix.get(a)-ix.get(b));}
 function totals(){let types=0,pk=0,sum=0,free=0,base=0,nd=0;billIds().forEach(id=>{types++;pk+=qty(id);sum+=line(id);free+=freeOf(id);if(noDisc(id))nd+=line(id);else base+=line(id);});return {types,pk,sum:r2(sum),free,base:r2(base),nd:r2(nd)};}
 /* % → on the lines that take a discount (like the PC: 🚫 items left out), nearest rupee (owner's choice), at most the PC's limit · රු. → as typed */
 function pctMax(){return num(S.dmax)>0?num(S.dmax):100;}
-function discount(t){if(typeof t==='number')t={sum:t,base:t};const v=num(S.bill.dv);if(!(v>0)||!(t.sum>0))return 0;const d=S.bill.dt==='%'?Math.round(t.base*Math.min(v,pctMax())/100):r2(v);return Math.min(d,t.sum);}
+function discount(t){if(typeof t==='number')t={sum:t,base:t};const v=num(S.bill.dv);if(!(v>0)||!(t.sum>0))return 0;const d=S.bill.dt==='%'?Math.round(r2(t.base*Math.min(v,pctMax())/100)):r2(v);return Math.min(d,t.sum);}
 
 /* ---- navigation ---- */
 const TITLES={items:'🧾 කඩ බිල',bill:'🧾 බිල',setup:'⚙️ සැකසුම්'};
 function go(n){if(n==='bill'&&!billIds().length)n='items';screen=n;document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('on',x.id==='s-'+n));$('hTitle').textContent=TITLES[n];
-  $('hBack').style.visibility=n==='items'?'hidden':'visible';$('hSet').style.visibility=n==='setup'?'hidden':'visible';window.scrollTo(0,0);render();}
+  $('hBack').style.display=n==='items'?'none':'';$('hBack').style.visibility='visible';{const c=$('hClr');if(c)c.style.display=n==='items'?'':'none';}$('hSet').style.visibility=n==='setup'?'hidden':'visible';window.scrollTo(0,0);render();}
 function render(){({items:renderItems,bill:renderBill,setup:renderSetup})[screen]();}
 function renderCloud(){const el=$('cline');if(el&&screen==='items'){
     if(!S.p.length)el.innerHTML='';
@@ -259,11 +261,11 @@ function renderCloud(){const el=$('cline');if(el&&screen==='items'){
 
 /* ---- screen 1: items (one product open at a time) ---- */
 const CHEV='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2.4" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>';
-function famSum(list){let pk=0,s=0,f=0;list.forEach(x=>{const n=qty(x.id);if(n){pk+=n;s+=n*price(x.id);f+=freeOf(x.id);}});return pk?`පැකට් ${pk}${f?' +🎁'+f:''} · රු. ${money(s)}`:'';}
+function famSum(list){let pk=0,s=0,f=0;list.forEach(x=>{const n=qty(x.id);if(n){pk+=n;s+=line(x.id);f+=freeOf(x.id);}});return pk?`පැකට් ${pk}${f?' +🎁'+f:''} · රු. ${money(r2(s))}`:'';}
 
 function chgOf(id){return hasOwn(id)&&price(id)!==basePrice(id);}
 function rowHtml(x){const n=qty(x.id),pr=price(x.id),chg=chgOf(x.id);
-  return `<div class="row ${n?'has':''}" data-r="${esc(x.id)}"><div class="l"><div class="t"><span class="sz">${esc(x.size)}</span><span class="amt">${n&&pr>0?'රු. '+money(n*pr):''}</span></div>
+  return `<div class="row ${n?'has':''}" data-r="${esc(x.id)}"><div class="l"><div class="t"><span class="sz">${esc(x.size)}</span><span class="amt">${n&&pr>0?'රු. '+money(line(x.id)):''}</span></div>
    <div class="pr"><label class="${chg?'chg':''}">රු.<input type="text" inputmode="decimal" autocomplete="off" value="${pr>0||hasOwn(x.id)?esc(String(pr)):''}" placeholder="මිල" aria-label="${esc(x.name)} මිල" onfocus="this.select()" onchange="setPrice(this.closest('.row').dataset.r,this.value)"></label><span class="cm">${chg?'වෙනස් කළා':''}</span><span class="need">${!(pr>0)&&!hasOwn(x.id)?'මිල දාන්න':''}</span><span class="frw">${freeHtml(x.id)}</span>${noDisc(x.id)?'<span class="ndt">🚫 වට්ටම් නැහැ</span>':''}</div></div>
    <div class="st"><button class="sb" aria-label="අඩු කරන්න" onclick="step(this.closest('.row').dataset.r,-1)">−</button><input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="${QMAX}" value="${n||''}" placeholder="0" aria-label="${esc(x.name)} ගණන" onfocus="this.select()" oninput="setQty(this.closest('.row').dataset.r,this.value)" onblur="if(this.value!==String(qty(this.closest('.row').dataset.r)||''))this.value=qty(this.closest('.row').dataset.r)||''"><button class="sb" aria-label="වැඩි කරන්න" onclick="step(this.closest('.row').dataset.r,1)">＋</button></div><div class="fedrow">${fedHtml(x.id)}</div></div>`;}
 function renderItems(){const el=$('list');renderCloud();$('qx').style.display=Q?'':'none';
@@ -281,7 +283,7 @@ function toggle(k){const fam=famKeys()[k];if(fam===undefined)return;if(Q){Q='';$
 /* typing updates only that row, its product's chip and the bar — the box keeps focus */
 function rowEl(id){return document.querySelector(`[data-r="${CSS.escape(id)}"]`);}
 function refreshRow(id){const r=rowEl(id),n=qty(id),pr=price(id),chg=chgOf(id);
-  if(r){r.classList.toggle('has',!!n);r.querySelector('.amt').textContent=n&&pr>0?'රු. '+money(n*pr):'';
+  if(r){r.classList.toggle('has',!!n);r.querySelector('.amt').textContent=n&&pr>0?'රු. '+money(line(id)):'';
     const lb=r.querySelector('.pr label');lb.classList.toggle('chg',chg);r.querySelector('.cm').textContent=chg?'වෙනස් කළා':'';r.querySelector('.need').textContent=!(pr>0)&&!hasOwn(id)?'මිල දාන්න':'';const fw=r.querySelector('.frw');if(fw)fw.innerHTML=freeHtml(id);const fd=r.querySelector('.fedrow');if(fd)fd.innerHTML=fedHtml(id);
     const f=r.closest('.fam');if(f){const fam=famKeys()[+f.dataset.f];if(fam!==undefined)f.querySelector('.chip').textContent=famSum(families().get(fam));}}
   renderBar();}
@@ -289,11 +291,11 @@ function setQty(id,v){if(!prod(id))return;const n=Math.min(QMAX,Math.max(0,Math.
 function step(id,dx){const n=Math.min(QMAX,Math.max(0,qty(id)+dx));setQty(id,n);const r=rowEl(id);if(r){const i=r.querySelector('.st input');if(i)i.value=n||'';}try{navigator.vibrate&&navigator.vibrate(12);}catch(e){}}
 /* a price typed in a bill: for an item with no saved / PC price it is remembered for every bill; otherwise it is for this bill only */
 function setPrice(id,v){if(!prod(id))return;const t=String(v??'').trim(),p=num(t),r=rowEl(id),inp=r&&r.querySelector('.pr input');
-  if(t!==''&&(!/^[\d,]*\.?\d*$/.test(t)||p<0||p>1e7)){toast('මිල හරියට දාන්න (ඉලක්කම් විතරයි)');if(inp)inp.value=price(id)>0||hasOwn(id)?String(price(id)):'';return;}
+  if(t!==''&&(!/^[\d,]*\.?\d*$/.test(t)||!/\d/.test(t)||p<0||p>1e7)){toast('මිල හරියට දාන්න (ඉලක්කම් විතරයි)');if(inp)inp.value=price(id)>0||hasOwn(id)?String(price(id)):'';return;}
   if(!basePrice(id)){if(p>0){S.prices[id]=r2(p);toast('💾 මිල මතක තියාගත්තා — ඊළඟ බිල් වලටත් වැටෙනවා');}delete S.bill.pr[id];}
   else if(t===''||r2(p)===basePrice(id))delete S.bill.pr[id];else S.bill.pr[id]=r2(p);
   save();if(inp)inp.value=price(id)>0||hasOwn(id)?String(price(id)):'';refreshRow(id);}
-function renderBar(){const b=$('bar');
+function renderBar(){const b=$('bar');{const c=$('hClr');if(c)c.style.visibility=screen==='items'&&(billIds().length||S.bill.dv)?'visible':'hidden';}
   if(screen==='items'){const t=totals();b.style.display=S.p.length?'flex':'none';
     b.innerHTML=`<div class="grow"><div class="cnt"><b>${t.types}</b> වර්ග · <b>${t.pk}</b> පැකට්${t.free?` · 🎁 <b>${t.free}</b>`:''}</div><div class="tot">රු. ${money(t.sum)}</div></div><button class="btn primary" onclick="okBill()" ${t.types?'':'disabled'}>✓ OK</button>`;}
   else if(screen==='bill'){b.style.display='flex';b.innerHTML=`<button class="btn light" style="flex:1" onclick="go('items')">← ආපහු</button><button class="btn primary" style="flex:1" onclick="clearBill()">🗑️ Clear</button>`;}
@@ -316,6 +318,11 @@ function drawPay(){const t=totals(),d=discount(t),v=num(S.bill.dv),pc=S.bill.dt=
   $('dl').innerHTML=d>0?`<span>${pc?esc(String(Math.min(v,pctMax())))+'% වට්ටම'+cap:'වට්ටම'}${!pc&&v>t.sum?' (එකතුවට වඩා වැඩියි)':''}</span><span>− රු. ${money(d)}</span>${on}`:(pc&&v>0&&t.base<=0?'<span>🚫 මේ බිලේ වට්ටම් දෙන භාණ්ඩ නැහැ</span>':'');$('payV').textContent='රු. '+money(t.sum-d);}
 function setDt(t){S.bill.dt=t==='rs'?'rs':'%';save();renderBill();}
 function setDv(el){let v=String(el.value).replace(/,/g,'.').replace(/[^\d.]/g,'');/* a phone keypad may give “,” for the decimal point */const i=v.indexOf('.');if(i>=0)v=v.slice(0,i+1)+v.slice(i+1).replace(/\./g,'');if(v!==el.value)el.value=v;S.bill.dv=v;save();drawPay();}
+/* v1.7 · 🗑️ home: OK නොකර වැරදුණොත් ගහපු ඔක්කොම එකපාර මකන්න (↩️ ආපහු ගන්නත් පුළුවන්) */
+let UNDO=null;
+function clearHome(){const t=totals();if(!t.types&&!S.bill.dv)return;if(!confirm(`ගහපු බඩු ${t.types} වර්ග (පැකට් ${t.pk}) ඔක්කොම මකන්නද?`))return;UNDO=JSON.parse(JSON.stringify(S.bill));S.bill={q:{},pr:{},f:{},dt:S.bill.dt||'%',dv:''};OPEN=null;Q='';$('q').value='';save();render();renderBar();undoBar();}
+function undoBar(){let u=$('undoBar');if(!UNDO){if(u)u.remove();return;}if(!u){$('s-items').insertAdjacentHTML('afterbegin','<div id="undoBar" class="card" style="display:flex;align-items:center;gap:8px;padding:10px 12px;margin-bottom:8px"></div>');u=$('undoBar');}u.innerHTML='<div style="flex:1;font-weight:700">🗑️ මැකුවා</div><button class="btn light" onclick="undoClear()">↩️ ආපහු ගන්න</button>';clearTimeout(undoBar.t);undoBar.t=setTimeout(()=>{UNDO=null;undoBar();},15000);}
+function undoClear(){if(!UNDO)return;S.bill=UNDO;UNDO=null;save();undoBar();render();renderBar();toast('↩️ ආපහු ගත්තා');}
 function clearBill(){if(!confirm('මේ බිල මකලා අලුත් බිලක් පටන් ගන්නද?'))return;S.bill={q:{},pr:{},f:{},dt:S.bill.dt||'%',dv:''};OPEN=null;Q='';$('q').value='';save();toast('🆕 අලුත් බිලක්');go('items');}
 
 /* ---- settings: where the list comes from + saved prices ---- */
@@ -326,7 +333,7 @@ function renderCloudInfo(){const el=$('cloudInfo');if(!el)return;
 function renderSetup(){renderCloudInfo();$('srcInfo').innerHTML=S.p.length?`දැනට භාණ්ඩ <b>${S.p.length}</b>ක් (${({cloud:'☁️ Firebase',lorry:'🚛 ලොරි app',paste:'📲 WhatsApp message'})[S.src]||''}).`:'';
   const F=families();let h='';F.forEach((list,fam)=>{h+=`<div class="small" style="font-weight:800;background:#fff7d6;padding:6px 10px;border-radius:8px;margin-top:8px">${esc(fam)}</div>`+list.map(x=>`<div class="row" style="padding:6px 4px" data-b="${esc(x.id)}"><div class="l"><span style="font-weight:700">${esc(x.size)}</span></div><div class="pr">${pcPrice(x.id)?`<b>රු. ${money(pcPrice(x.id))}</b><span class="muted">· PC</span>`:`<label>රු.<input type="text" inputmode="decimal" autocomplete="off" value="${basePrice(x.id)||''}" placeholder="මිල" aria-label="${esc(x.name)} සාමාන්‍ය මිල" onchange="setBase(this.closest('.row').dataset.b,this)"></label>`}</div></div>`).join('');});
   $('plist').innerHTML=h||'<div class="muted small">භාණ්ඩ ලැයිස්තුව දැම්මාම මෙතන පේනවා.</div>';renderBar();}
-function setBase(id,el){const t=String(el.value).trim(),p=num(t);if(t!==''&&(!/^[\d,]*\.?\d*$/.test(t)||p<0||p>1e7)){toast('මිල හරියට දාන්න');el.value=basePrice(id)||'';return;}
+function setBase(id,el){const t=String(el.value).trim(),p=num(t);if(t!==''&&(!/^[\d,]*\.?\d*$/.test(t)||!/\d/.test(t)||p<0||p>1e7)){toast('මිල හරියට දාන්න');el.value=basePrice(id)||'';return;}
   if(p>0)S.prices[id]=r2(p);else delete S.prices[id];if(hasOwn(id)&&num(S.bill.pr[id])===basePrice(id))delete S.bill.pr[id];save();el.value=basePrice(id)||'';toast('💾 මිල සුරැකුවා');}
 
 /* ---- 🔄 the PC says a newer කඩ බිල app exists (cfg.bv) ---- */
