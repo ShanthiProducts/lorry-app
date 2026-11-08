@@ -149,6 +149,9 @@ textarea.ntext{min-height:90px;font:16px/1.4 system-ui,"Noto Sans Sinhala",sans-
 @media print{body *{visibility:hidden!important}#rpDoc,#rpDoc *{visibility:visible!important}#rpDoc{position:absolute;left:0;top:0;width:100%;border:0;padding:0}
  .rp-sec{break-inside:auto}.rp-sec summary::before{content:''}.rp-tw{overflow:visible;border:0}.rp-t{font-size:10px;white-space:normal}.rp-t th{background:#eee!important;color:#000!important}.rp-k,.rp-k.gold,.rp-t tfoot td{background:#fff!important}
  details.rp-sec>*{display:block}.rp-ks{grid-template-columns:repeat(3,1fr)}.rp-t td:first-child,.rp-t td.n{white-space:nowrap}@page{size:A4;margin:10mm}}
+.v463ag{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:8px 0}.v463ag div{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:6px 2px;text-align:center;min-width:0;overflow-wrap:anywhere}.v463ag small{display:block;font-size:11px;color:#64748b}.v463ag .warn{background:#fffbeb;border-color:#fcd34d}.v463ag .bad{background:#fef2f2;border-color:#fca5a5}
+.v463hd{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}.v463hd h3{margin:0}.v463big{font-size:26px;font-weight:800}.v463b{display:flex;gap:4px;justify-content:flex-end;margin-top:4px}.v463b .btn{min-width:40px}.v463d .grow{cursor:pointer}
+.v463t>div{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);font-size:14px}.v463t .h{font-weight:800;color:#64748b;font-size:12px}.v463t input{width:100%;min-width:0}.v463t span{min-width:0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -345,7 +348,7 @@ function newLooseAdd(k){const n=$('nlName').value.trim().replace(/\s+/g,' ');if(
 function addItem(k,field,pid){const d=D(k),p=prod(pid);if(!p)return;const list=d[field];let x=list.find(i=>i[0]===pid);
   if(isW(p)){if(!x){x=[pid,0,0,k==='bill'?loosePrice(d,p):0];list.push(x);}save();render();weightPad(k,field,pid);return;}
   if(!x){x=[pid,0,0,custPrice(cust(d.c),p)];list.push(x);}x[1]+=1;if(field==='it'&&k==='bill')x[2]=freeFor(p,x[1]);save();render();setTimeout(()=>{const el=$('q_'+field+'_'+pid);if(el){el.focus();el.select();}},30);}
-function setItem(k,field,pid,i,v){const d=D(k),x=d[field].find(r=>r[0]===pid);if(!x)return;const p=prod(pid);x[i]=i===3?r2(num(v)):(i===1&&isW(p))?kg(Math.max(0,num(v))):Math.max(0,Math.floor(num(v)));if(i===1&&field==='it'&&k==='bill'&&!x.fm)x[2]=freeFor(p,x[1]);if(i===2)x.fm=1;save();totals(k);}
+function setItem(k,field,pid,i,v){const d=D(k),x=d[field].find(r=>r[0]===pid);if(!x)return;const p=prod(pid);x[i]=i===3?r2(num(v)):(i===1&&isW(p))?kg(Math.max(0,num(v))):Math.max(0,Math.floor(num(v)));if(i===1&&field==='it'&&k==='bill'&&!x.fm)x[2]=freeFor(p,x[1]);if(i===2)x.fm=1;if(i===3)x.pm=1;save();totals(k);if(k==='bill'&&field==='it'&&(i===1||i===3))v460Hint(pid);}
 function rmItem(k,field,pid){const d=D(k);d[field]=d[field].filter(r=>r[0]!==pid);save();render();}
 function itemRows(k,field,opt){opt=opt||{};const d=D(k);return d[field].map(x=>{const p=prod(x[0])||[x[0],'?'],w=isW(p);return `<div class="irow"><div class="iname">${w?'⚖️ ':''}${esc(p[1])}${p[8]?' <span class="small warn">🆕</span>':''}${opt.price&&!w&&p[3]&&x[3]<custPrice(cust(d.c),p)-0.004?' <span class="bad small">⬇️ සාමාන්‍ය '+money(custPrice(cust(d.c),p))+'</span>':''}</div>${w?`<label>බර<button class="wbtn" id="q_${field}_${esc(x[0])}" onclick="weightPad('${k}','${field}','${esc(x[0])}')">${x[1]>0?wText(x[1]):'⚖️ දාන්න'}</button></label>`:`<label>ගණන<input type="number" inputmode="numeric" min="0" id="q_${field}_${esc(x[0])}" value="${x[1]}" onchange="setItem('${k}','${field}','${esc(x[0])}',1,this.value)"></label>`}${opt.free&&!w?`<label>🎁<input type="number" inputmode="numeric" min="0" value="${x[2]||0}" onchange="setItem('${k}','${field}','${esc(x[0])}',2,this.value)"></label>`:''}${opt.price?`<label>${w?'කිලෝ මිල':'මිල'}<input type="number" inputmode="decimal" min="0" step="0.01" value="${x[3]}" onchange="setItem('${k}','${field}','${esc(x[0])}',3,this.value)"></label>`:''}${opt.price&&w&&x[1]>0?`<span class="small muted">= ${money(x[1]*x[3])}</span>`:''}${opt.kind?`<label>තත්ත්වය<select onchange="D('${k}').${field}.find(r=>r[0]==='${esc(x[0])}')[2]=this.value;save()"><option value="good" ${x[2]!=='damage'?'selected':''}>✅ හොඳයි</option><option value="damage" ${x[2]==='damage'?'selected':''}>⚠️ Damage</option></select></label>`:''}<button class="x" onclick="rmItem('${k}','${field}','${esc(x[0])}')">✕</button></div>`;}).join('')||'<div class="empty small">තවම භාණ්ඩ නැහැ</div>';}
 /* ⚖️ big number pad for a weight (g / kg) */
@@ -359,7 +362,8 @@ function wpVal(){const n=Number(wp.s||0);return kg(wp.u==='g'?n/1000:n);}
 function wpKey(b){if(b==='⌫')wp.s=wp.s.slice(0,-1);else if(b==='.'){if(wp.u==='g'||wp.s.includes('.'))return;wp.s=(wp.s||'0')+'.';}else{if(wp.s.replace('.','').length>=7)return;if(wp.s.includes('.')&&wp.s.split('.')[1].length>=3)return;wp.s=(wp.s==='0'?'':wp.s)+b;}wpDraw();}
 function wpUnit(u){if(u===wp.u)return;const v=wpVal();wp.u=u;S.wUnit=u;save();wp.s=v>0?(u==='g'?String(Math.round(v*1000)):String(v)):'';wpDraw();}
 function wpOk(){const v=wpVal();if(!(v>0)){toast('බර දාන්න','err');return;}if(v>25&&!confirm(`⚖️ ${wText(v)} — ගොඩක් බරයි. හරිද? (ග්‍රෑම් නම් “ග්‍රෑම් (g)” තෝරන්න)`))return;const x=D(wp.k)[wp.field].find(r=>r[0]===wp.pid);if(x)x[1]=v;save();wp=null;sheet();render();}
-function billCalc(d){const c=cust(d.c),pct=c?num(c[6]):0;let g=0,base=0;d.it.forEach(x=>{const v=r2(x[1]*x[3]);g+=v;const p=prod(x[0]);if(!(p&&(p[4]||isW(p))))base+=v;});const disc=r2(base*pct/100);const later=d.later.reduce((s,x)=>s+r2(x[1]*x[3]),0);return {g:r2(g),disc,net:r2(g-disc),later:r2(later),pct};}
+function rmy(n){return Math.round(((Number(n)||0)+Number.EPSILON)*100)/100;}/* = PC roundMoney */
+function billCalc(d){const c=cust(d.c),pct=c?Math.max(0,Math.min(4,num(c[6]))):0;let g=0,base=0;d.it.forEach(x=>{const v=rmy(x[1]*x[3]);g+=v;const p=prod(x[0]);if(!(p&&(p[4]||isW(p))))base+=v;});const disc=rmy(Math.max(0,base)*pct/100);const later=d.later.reduce((s,x)=>s+rmy(x[1]*x[3]),0);const nb=rmy(g-disc),ro=v460Ro(d,nb);return {g:rmy(g),disc,nb,ro,net:rmy(nb-ro),later:rmy(later),pct};}
 function totals(k){const el=$('tot_'+k);if(!el)return;const d=D(k);if(k==='bill'){const t=billCalc(d);el.innerHTML=`එකතුව ${money(t.g)}${t.disc?` · Discount ${t.pct}% -${money(t.disc)}`:''} · <strong>බිල ${money(t.net)}</strong>${t.later?`<br>⏳ පස්සේ දෙන බඩු ${money(t.later)}`:''}`;}if(k==='order'){const s=d.it.reduce((a,x)=>a+x[1]*x[3],0);el.innerHTML=`ඇණවුම ${money(s)}`;}}
 function bookPicker(d){const bt=books();if(!bt.length)return '';const f=bt.filter(b=>b[3]!=='l'),l=bt.filter(b=>b[3]==='l');const last=d.book&&S.bookLast[d.book],nx=nextNoOf(d.book),typed=Math.floor(num(d.no));
   const opt=b=>`<option value="${esc(b[0])}" ${d.book===b[0]?'selected':''}>${b[3]==='l'?'🚚 ':''}${esc(b[1])}${b[2]?' (සිල්ලර)':''}</option>`;
@@ -833,11 +837,11 @@ var QS=(function(){'use strict';
   function close(){if(!st)return;st.alive=false;clearTimeout(st.timer);try{st.stream.getTracks().forEach(function(t){t.stop();});}catch(e){}st=null;}
   /* the same QR text → what it is (bundle / batch book / raw lot) */
   function parse(t){t=String(t||'').trim();var m;
-    if((m=/^SHANTHI\s+([A-Z]{2,3}-\d{6}-\d{1,3})\s+(\S+)\s+([BC])(\d+)\/(\d+)\s+Q(\d+)/i.exec(t)))return {k:'bundle',no:m[1].toUpperCase(),size:m[2],card:m[3].toUpperCase()==='C',i:+m[4],of:+m[5],q:+m[6]};
+    if((m=/^SHANTHI\s+([A-Z]{2,3}-(?:\d{6}-\d{1,3}|[A-Z][A-L]\d{2}(?:-\d{1,3})?))\s+(\S+)\s+([BC])(\d+)\/(\d+)\s+Q(\d+)/i.exec(t)))return {k:'bundle',no:m[1].toUpperCase(),size:m[2],card:m[3].toUpperCase()==='C',i:+m[4],of:+m[5],q:+m[6]};
     if((m=/Lot\s+(R-\d{6}-\d{1,3})/i.exec(t)))return {k:'lot',no:m[1].toUpperCase()};
-    var bn=/Batch\s+([A-Z]{2,3}-\d{6}-\d{1,3})/i.exec(t);
+    var bn=/Batch\s+([A-Z]{2,3}-(?:\d{6}-\d{1,3}|[A-Z][A-L]\d{2}(?:-\d{1,3})?))/i.exec(t);
     if(bn){var bu=/(Bundle|Card)\s+(\d+)\/(\d+)\s*\|\s*(\d+)\s*packets/i.exec(t);if(bu){var seg=t.split('|').map(function(x){return x.trim();}),sz=(seg[1]||'').split(/\s+/).pop();return {k:'bundle',no:bn[1].toUpperCase(),size:sz,card:/card/i.test(bu[1]),i:+bu[2],of:+bu[3],q:+bu[4]};}return {k:'batch',no:bn[1].toUpperCase()};}
-    if((m=/^(?:SHANTHI\s+)?([A-Z]{2,3}-\d{6}-\d{1,3})(?:\s+(\S+)\s+(\d+)\s*\/\s*(\d+))?$/i.exec(t))){if(m[2])return {k:'bundle',no:m[1].toUpperCase(),size:m[2],card:false,i:+m[3],of:+m[4],q:0,typed:1};return {k:'batch',no:m[1].toUpperCase()};}
+    if((m=/^(?:SHANTHI\s+)?([A-Z]{2,3}-(?:\d{6}-\d{1,3}|[A-Z][A-L]\d{2}(?:-\d{1,3})?))(?:\s+(\S+)\s+(\d+)\s*\/\s*(\d+))?$/i.exec(t))){if(m[2])return {k:'bundle',no:m[1].toUpperCase(),size:m[2],card:false,i:+m[3],of:+m[4],q:0,typed:1};return {k:'batch',no:m[1].toUpperCase()};}
     if((m=/^SHANTHI\s+LOT\s+(R-\d{6}-\d{1,3})$/i.exec(t))||(m=/^(R-\d{6}-\d{1,3})$/i.exec(t)))return {k:'lot',no:m[1].toUpperCase()};
     return null;}
   return {open:open,close:close,parse:parse,beep:beep};
@@ -859,7 +863,10 @@ function myB(){if(!Array.isArray(S.myB))S.myB=[];return S.myB;}
 function myL(){if(!Array.isArray(S.myL))S.myL=[];return S.myL;}
 function lotVoid(no){return ((S.cfg&&S.cfg.lv)||[]).includes(no);}/* ❌ voided on the PC */
 function knownNos(){const s=new Set((S.cfg&&S.cfg.bn)||[]);myB().forEach(b=>s.add(b.no));return s;}
-function nextBatchNo(fam,d){const f=bfOf(fam),pre=(f?f[1]:'XX')+'-'+ddmmyy(d)+'-';let n=0;knownNos().forEach(no=>{if(String(no).startsWith(pre))n=Math.max(n,parseInt(String(no).slice(pre.length))||0);});BT.forEach((t,no)=>{if(no.startsWith(pre))n=Math.max(n,parseInt(no.slice(pre.length))||0);});return pre+(n+1);}
+/* v4.7.6 · කොට batch අංකය: අවුරුද්ද අකුර (A=2026 … Z=2051) + මාසය අකුර (A ජන … L දෙසැ) + දවස → MR-AK07, එදාම දෙවෙනි එක MR-AK07-2 */
+function bYMD(d){d=String(d||'');const y=+d.slice(0,4),m=+d.slice(5,7);return String.fromCharCode(65+(((y-2026)%26)+26)%26)+String.fromCharCode(64+Math.min(12,Math.max(1,m)))+d.slice(8,10);}
+function bNextFree(code,date,taken){const pre=code+'-'+bYMD(date);let n=0;taken.forEach(no=>{no=String(no||'').toUpperCase();if(no===pre)n=Math.max(n,1);else if(no.startsWith(pre+'-'))n=Math.max(n,parseInt(no.slice(pre.length+1))||0);});return n?pre+'-'+(n+1):pre;}
+function nextBatchNo(fam,d){const f=bfOf(fam),t=[];knownNos().forEach(no=>t.push(no));BT.forEach((x,no)=>t.push(no));return bNextFree(f?f[1]:'XX',d,t);}
 function nextLotNo(d){const pre='R-'+ddmmyy(d)+'-',s=new Set((S.cfg&&S.cfg.ln)||[]);myL().forEach(l=>s.add(l.no));((S.cfg&&S.cfg.rl)||[]).forEach(l=>s.add(l[0]));let n=0;s.forEach(no=>{if(String(no).startsWith(pre))n=Math.max(n,parseInt(String(no).slice(pre.length))||0);});return pre+(n+1);}
 function sizeLines(fam){const f=bfOf(fam);return f?f[4]:[];}
 function bundlesOf(t,per,q,rem){per=Math.floor(num(per));q=Math.floor(num(q));if(t==='c')return {n:q,full:q,rem:0,small:0,loose:0};if(t!=='b'||per<=0)return {n:0,full:0,rem:0,small:0,loose:q};const full=Math.floor(q/per),r=q-full*per;return {n:full+(r&&rem!=='B'?1:0),full,rem:r,small:r&&rem!=='B'?r:0,loose:r&&rem==='B'?r:0};}
@@ -1021,11 +1028,19 @@ function renderStock(){const s=S.stk,name=pid=>{for(const f of BF())for(const x 
   $('stockBody').innerHTML=`<div class="card small muted">${s&&s.at?'📦 PC එකේ ගණන් '+esc(fmtAt(s.at,true))+' දක්වා':'PC එකෙන් තොගය තවම ආවේ නැහැ (Internet + PC එක on කරලා 🔄)'}${today0.length?'<br>📱 ඊට පස්සේ phone එකෙන් හදපු: '+today0.map(b=>esc(b.no)).join(', '):''}</div>
    ${Object.keys(rows).length?Object.entries(rows).sort((a,b)=>name(a[0])[0].localeCompare(name(b[0])[0],'si')).map(([pid,r])=>{const [fam,sz]=name(pid),fq=r.f.reduce((t,x)=>t+x[1],0),lq=r.l.reduce((t,x)=>t+x[1],0);return `<div class="hist"><div class="grow"><b>${esc(fam)} ${esc(sz)}</b><div class="small">🏭 <b>${fq}</b> ${r.f.map(chip).join(' ')}</div>${lq?`<div class="small">🚚 <b>${lq}</b> ${r.l.map(chip).join(' ')}</div>`:''}</div></div>`;}).join(''):''}
    <button class="btn primary block" onclick="go('fcount')">🔢 කම්හල් තොගය ගණන් කළා</button>`;}
-function renderFCount(){const d=D('fcnt');d.c=d.c||{};$('fcountBody').innerHTML=`<div class="card">${dateField('fcnt')}<label class="check"><input type="checkbox" ${d.op?'checked':''} onchange="D('fcnt').op=this.checked?1:0;save()"> ආරම්භක තොගය (පළමු පාර)</label><div class="small muted">ගණන් කළ ඒවා විතරක් දාන්න (හිස් = ගණන් කළේ නැහැ).</div></div>
-   ${BF().map(f=>`<div class="card"><h3>${esc(f[0])}</h3>${f[4].map(s=>`<div class="irow"><label>${esc(s[0])}</label><input type="number" inputmode="numeric" min="0" value="${esc(d.c[s[3]]??'')}" onchange="const v=this.value;if(v==='')delete D('fcnt').c['${esc(s[3])}'];else D('fcnt').c['${esc(s[3])}']=v;save()"></div>`).join('')}</div>`).join('')}
-   <div class="card"><div class="field"><label>සටහන</label><input maxlength="200" value="${esc(d.note||'')}" onchange="D('fcnt').note=this.value;save()"></div></div><button class="btn primary block big" onclick="fcSend()">📤 PC එකට යවන්න</button>`;}
+function fcSys(){const m={},l={};((S.stk&&S.stk.f)||[]).forEach(([pid,x])=>{m[pid]=(x||[]).reduce((t,y)=>t+y[1],0);});((S.stk&&S.stk.l)||[]).forEach(([pid,x])=>{l[pid]=(x||[]).reduce((t,y)=>t+y[1],0);});return {f:m,l};}
+function fcBig(q,s){const d=Math.abs(q-s);return d>=5||(s>0&&d/s>=0.1&&d>=2);}
+function fcDiff(pid){const d=D('fcnt'),v=(d.c||{})[pid],el=$('fcd_'+pid);if(!el)return;if(v===undefined||v===''){el.innerHTML='';return;}const s=fcSys().f[pid]||0,x=Math.floor(num(v))-s;el.innerHTML=x>0?`<b class="good">➕ ${x} වැඩියි</b>`:x<0?`<b class="bad">➖ ${-x} අඩුයි</b>`:'<b class="good">✓</b>';}
+function renderFCount(){const d=D('fcnt');d.c=d.c||{};const sy=fcSys(),at=S.stk&&S.stk.at,old=!at||Date.now()-new Date(at).getTime()>2*3600e3;
+  $('fcountBody').innerHTML=`<div class="card">${dateField('fcnt')}<label class="check"><input type="checkbox" ${d.op?'checked':''} onchange="D('fcnt').op=this.checked?1:0;save()"> ආරම්භක තොගය (පළමු පාර)</label><div class="small muted">ගණන් කළ ඒවා විතරක් දාන්න (හිස් = ගණන් කළේ නැහැ). 🖥️ = PC එකේ ගණන · 🚚 = ලොරියේ (බලන්න විතරයි — ගණනට එකතු වෙන්නේ නැහැ).</div>
+   <div class="${old?'warnbox':'infobox'} small" style="margin-top:6px">${at?(old?'⏰ ':'')+'🖥️ PC ගණන '+esc(fmtAt(at,true)):'⏰ PC එකෙන් තොගය තවම ආවේ නැහැ'} <button class="btn sm light" onclick="sync(true).then(()=>render())">🔄</button></div></div>
+   ${BF().map(f=>`<div class="card"><h3>${esc(f[0])}</h3>${f[4].map(z=>{const pid=z[3],s=sy.f[pid]||0,l=sy.l[pid]||0;return `<div class="irow"><label>${esc(z[0])}<span class="small muted" style="display:block">🖥️ ${s}${l?' · 🚚 '+l:''}</span></label><input type="number" inputmode="numeric" min="0" placeholder="${s}" value="${esc(d.c[pid]??'')}" oninput="const v=this.value;if(v==='')delete D('fcnt').c['${esc(pid)}'];else D('fcnt').c['${esc(pid)}']=v;save();fcDiff('${esc(pid)}')"><span class="small" id="fcd_${esc(pid)}"></span></div>`;}).join('')}</div>`).join('')}
+   <div class="card"><div class="field"><label>සටහන</label><input maxlength="200" value="${esc(d.note||'')}" onchange="D('fcnt').note=this.value;save()"></div></div><button class="btn primary block big" onclick="fcSend()">📤 PC එකට යවන්න</button>`;
+  Object.keys(d.c).forEach(fcDiff);}
 async function fcSend(){const d=D('fcnt'),it=Object.entries(d.c||{}).filter(([,v])=>v!==''&&num(v)>=0).map(([pid,v])=>[pid,Math.floor(num(v))]);if(!it.length){toast('ගණනක් දාලා නැහැ','err');return;}
-  if(await send('fcnt',{it,nt:d.note||'',op:d.op?1:0},`🔢 තොග ගණන (${it.length})`)){newDraft('fcnt');toast('✅ යැව්වා');go('stock');}}
+  const sy=fcSys().f,ps=it.map(([pid])=>[pid,sy[pid]||0]),wy={};
+  if(!d.op)for(const [pid,q] of it){const s0=sy[pid]||0;if(fcBig(q,s0)){const nm=(()=>{for(const f of BF())for(const x of f[4])if(x[3]===pid)return f[0]+' '+x[0];return pid;})();const w=(prompt(`${nm}: PC ${s0} → ගණන ${q} (${q>s0?'+':''}${q-s0}). හේතුව?`,'')||'').trim();if(w.length<2){toast('ලොකු වෙනසකට හේතුව ලියන්න','err');return;}wy[pid]=w.slice(0,120);}}
+  if(await send('fcnt',{it,ps,...(Object.keys(wy).length?{wy}:{}),nt:d.note||'',op:d.op?1:0},`🔢 තොග ගණන (${it.length})`)){newDraft('fcnt');toast('✅ යැව්වා');go('stock');}}
 
 
 /* ================= v4.4.3 · 🏷️ මිල (phone එකෙන්) · 📋 වැරදි · 📦 තොගය අඩු · 🏘️ ගම · 📥 ලොරිය භාර ගැනීම ================= */
@@ -1275,7 +1290,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='4.59';
+const FA_VER='4.63';
 function faVerBar(){
   try{const want=S.cfg&&S.cfg.faVer,newer=want&&parseFloat(want)>parseFloat(FA_VER);let b=document.getElementById('faVerBar');
     if(!newer){if(b)b.remove();return;}
@@ -1578,8 +1593,8 @@ rpPdf=async function(){const r=(S.reps||[]).find(x=>x.d===rpSel);if(!r||rpPdfBus
 
 /* ================= v4.5.7 · 🏷️ Batch අංකය stamp එකට ඉරි නැතුව — MR-041126-1 → MR0411261 =================
    system එක ඇතුළේ අංකය කලින් වගේම (QR / scan / FIFO වෙනස් නැහැ). stamp / sticker / WhatsApp වල ඉරි (-) නැතුව. */
-function bStamp(no){const m=/^([A-Z]{2,3})-(\d{6})-(\d{1,3})$/.exec(String(no||'').trim().toUpperCase());return m?m[1]+m[2]+m[3]:String(no||'');}
-function bUnstamp(t){const m=/^([A-Z]{2,3})(\d{6})(\d{1,3})$/.exec(String(t||'').trim().toUpperCase());return m?m[1]+'-'+m[2]+'-'+m[3]:'';}
+function bStamp(no){no=String(no||'').trim().toUpperCase();let m=/^([A-Z]{2,3})-(\d{6})-(\d{1,3})$/.exec(no);if(m)return m[1]+m[2]+m[3];m=/^([A-Z]{2,3})-([A-Z][A-L]\d{2})(?:-(\d{1,3}))?$/.exec(no);return m?m[1]+m[2]+(m[3]||''):no;}
+function bUnstamp(t){t=String(t||'').trim().toUpperCase();let m=/^([A-Z]{2,3})(\d{6})(\d{1,3})$/.exec(t);if(m)return m[1]+'-'+m[2]+'-'+m[3];m=/^([A-Z]{2,3})([A-Z][A-L]\d{2})(\d{0,3})$/.exec(t);return m?m[1]+'-'+m[2]+(m[3]&&+m[3]>1?'-'+m[3]:''):'';}
 
 
 /* ================= v4.7.0 (app 4.58) · 🛒 මිලදී ගැනීම / අමු ද්‍රව්‍ය ලැබුණා · 🧂 අමු ද්‍රව්‍ය තොගය + ගණන් කිරීම · 📖 Recipe ගණන · batch: recipe / QC / ඉවරයි =================
@@ -1690,6 +1705,111 @@ function bxOf(bid){S.bx=S.bx&&typeof S.bx==='object'?S.bx:{};return S.bx[bid]||n
     return _s.apply(this,arguments);};
 })();
 
+
+/* ================= v4.60 · 🧾 කම්හල් app බිල PC එකේ වගේ — 🪙 වට කිරීම · 🏧 බැංකු · 📒 පරණ ණයත් එක්කම · 🏷️ මිල ඉඟි · ⚠️ අමුතු ගණන · ↩️ පරණ බඩු Return ================= */
+function v460Rm(){const v=S.cfg&&S.cfg.rm;return v===undefined||v===null?10:num(v);}
+function v460Ro(d,nb){const ro=num(d&&d.ro);if(!(ro>0))return 0;return ro<=v460Rm()+0.004&&ro<nb+0.004?rmy(ro):0;}
+function v460RoSug(nb){const r=rmy(nb-Math.floor(nb/10)*10);return r>0.004&&r<=v460Rm()+0.004?r:0;}
+function v460Cost(pid){const c=S.cfg&&S.cfg.pc;return c&&c[pid]!==undefined?num(c[pid]):null;}
+function v460Oq(pid,q){const o=S.cfg&&S.cfg.oq&&S.cfg.oq[pid];return o&&q>num(o[0])?o:null;}
+function v460Last(c,pid){if(!c)return null;const mine=S.sent.find(x=>x.k==='bill'&&x.rec&&x.rec.c===c[0]&&!x.gone&&(x.rec.it||[]).some(i=>i[0]===pid));if(mine)return num(mine.rec.it.find(i=>i[0]===pid)[3]);const l=Array.isArray(c[8])?c[8].find(x=>x[0]===pid):null;return l?num(l[2]):null;}
+function v460HintHtml(d,x){const p=prod(x[0]);if(!p||isW(p)||p[8])return '';const c=cust(d.c),H=[];
+  if(c&&c[5]&&c[5][p[0]]!==undefined)H.push(`⭐ කඩේ මිල ${money(c[5][p[0]])}`);
+  const pn=priceNow(p,d.d);if(Math.abs(pn-p[3])>0.004)H.push(`🏷️ ${d.d} මිල ${money(pn)}`);else{const f=S.cfg&&S.cfg.pf&&S.cfg.pf[p[0]];if(f&&f[1]>d.d)H.push(`🏷️ ${esc(f[1])} සිට ${money(f[0])}`);}
+  const l=v460Last(c,p[0]);if(l!==null&&Math.abs(l-x[3])>0.004)H.push(`🕘 අන්තිමට ${money(l)}`);
+  const co=v460Cost(p[0]);if(co!==null&&x[3]>0&&x[3]<co-0.004)H.push('<b class="bad">⚠️ පිරිවැයට වඩා අඩුයි</b>');
+  if(p[4])H.push('🚫 Discount නැහැ');
+  const o=v460Oq(p[0],x[1]);if(o)H.push(`<b class="warn">⚠️ අමුතු ගණනක් — සාමාන්‍යයෙන් ${Math.round(num(o[1]))}ක් විතර</b>`);
+  return H.length?`<div class="small muted v460h" id="h_${esc(p[0])}" style="margin:-4px 0 6px 4px">${H.join(' · ')}</div>`:`<div class="v460h" id="h_${esc(p[0])}"></div>`;}
+function v460Hint(pid){const el=$('h_'+pid),d=D('bill'),x=d.it.find(r=>r[0]===pid);if(!el||!x)return;const t=document.createElement('div');t.innerHTML=v460HintHtml(d,x);el.replaceWith(t.firstChild);}
+(function(){const _ir=itemRows;itemRows=function(k,field,opt){if(k!=='bill'||field!=='it')return _ir.apply(this,arguments);const d=D(k),all=d.it;if(!all.length)return _ir.apply(this,arguments);
+  try{return all.map(x=>{d.it=[x];const h=_ir.call(this,k,field,opt);d.it=all;return h+v460HintHtml(d,x);}).join('');}finally{d.it=all;}};})();
+/* 📅 another date → prices again (a price typed by hand stays) */
+function v460Reprice(d){if(d._pd===d.d)return;const first=d._pd===undefined;d._pd=d.d;if(first)return;const c=cust(d.c);d.it.forEach(x=>{const p=prod(x[0]);if(!p||isW(p)||x.pm||p[8])return;x[3]=custPrice(c,p);});save();}
+/* totals: 🪙 round off + what is received in all */
+(function(){const _t=totals;totals=function(k){_t.apply(this,arguments);if(k!=='bill')return;const el=$('tot_bill');if(!el)return;const d=D('bill'),t=billCalc(d);
+  let h='';if(t.ro>0)h+=`<div class="small">🪙 වට කළා −${money(t.ro)} <button class="btn sm light" onclick="D('bill').ro=0;save();totals('bill')">✕</button></div>`;
+  else{const r=v460RoSug(t.nb);if(r)h+=`<button class="btn sm light" onclick="D('bill').ro=${r};save();totals('bill')">🪙 ${money(t.nb)} → ${money(rmy(t.nb-r))}</button>`;}
+  const rt=(d.rt||[]).filter(x=>x[1]>0).reduce((s,x)=>s+rmy(x[1]*x[3]),0);if(rt>0)h+=`<div class="small">↩️ පරණ බඩු Return ${money(rt)} — වෙනම යනවා, ණයෙන් අඩු වෙනවා (මේ බිලේ Cash වලට බලපාන්නේ නැහැ)</div>`;
+  const m=d.pay.m,amt=m==='cash'?t.net:(m==='credit'||m==='salary')?0:rmy(num(d.pay.amt)),old=rmy(num(d.pay.old));if(old>0)h+=`<div><strong>ලැබෙන මුළු මුදල ${money(amt+old)}</strong> <span class="small muted">(මේ බිල ${money(amt)} + 📒 පරණ ණය ${money(old)})</span></div>`;
+  if(h)el.insertAdjacentHTML('beforeend','<div style="margin-top:6px">'+h+'</div>');};})();
+/* 💰 pay: 🏧 bank + 📒 old debt together */
+(function(){const _pb=payBox;payBox=function(k,t){let h=_pb.apply(this,arguments);if(k!=='bill')return h;const d=D(k),c=cust(d.c),walk=d.cn==='__walk';if(d.staff||walk)return h;
+  try{h=h.replace('🏦 චෙක්</button>',`🏦 චෙක්</button><button class="${d.pay.m==='bank'?'on':''}" onclick="D('${k}').pay.m='bank';save();render()">🏧 බැංකු</button>`);
+    let x='';if(d.pay.m==='bank')x+=`<div class="row2"><div class="field"><label>මුදල (රු.)</label><input type="number" inputmode="decimal" min="0" value="${esc(d.pay.amt)}" onchange="D('${k}').pay.amt=this.value;save();totals('bill')"></div><div class="field"><label>Reference</label><input maxlength="80" value="${esc(d.pay.ref||'')}" onchange="D('${k}').pay.ref=this.value.trim();save()"></div></div>`;
+    if(c&&num(c[3])>0.004&&!d.fixOf&&!d.editUid){const due=r2(num(c[3]));x+=`<div class="infobox small" style="margin-top:8px">📒 පරණ ණය <strong>${money(due)}</strong><div class="row2" style="margin-top:6px"><div class="field"><label>පරණ ණයට ලැබුණු මුදල</label><input type="number" inputmode="decimal" min="0" max="${due}" value="${esc(d.pay.old||'')}" onchange="D('${k}').pay.old=this.value;save();totals('bill')"></div><button class="btn sm light" style="align-self:end" onclick="D('${k}').pay.old='${due}';save();render()">සම්පූර්ණ ණය</button></div></div>`;}
+    if(x)h=h.replace(/<\/div>$/,x+'</div>');}catch(e){}return h;};})();
+(function(){const _bb=billBody;billBody=function(d,t){const b=_bb.apply(this,arguments);if(t.ro>0)b.ro=t.ro;if(d.pay.m==='bank'){b.pay.ref=String(d.pay.ref||'').slice(0,80);}const old=rmy(num(d.pay.old));if(old>0&&!d.staff&&d.c&&!d.fixOf&&!d.editUid)b.pay.old=old;return b;};})();
+/* the phone's own “📱 now ≈” debt: old debt paid with a bill */
+(function(){const _l=liveDueDelta;liveDueDelta=function(cid){let d=_l.apply(this,arguments);try{pendSent('bill',21).forEach(x=>{const r=x.rec||{};if(r.c===cid&&r.pay&&num(r.pay.old)>0)d-=num(r.pay.old);});pendSent('ret',21).forEach(x=>{const r=x.rec||{};if(r.c===cid&&r.v460&&!r.cash)d-=num(r.est);});}catch(e){}return r2(d);};})();
+/* the bill screen: reprice on another date + ↩️ old goods back (ණයෙන් අඩු) */
+(function(){const _rb=renderBill;renderBill=function(){const d=D('bill');d.rt=d.rt||[];v460Reprice(d);const r=_rb.apply(this,arguments);
+  try{if(d.c&&!d.staff&&d.cn!=='__walk'&&!d.fixOf&&!d.editUid){const box=$('tot_bill');if(box&&!$('v460rt'))box.insertAdjacentHTML('beforebegin',`<details class="card" id="v460rt" ${d.rt.length?'open':''}><summary><strong>↩️ පරණ බඩු Return (ණයෙන් අඩු)</strong></summary><div class="small muted">කඩේ ආපහු දුන්න පරණ බඩු. බිල යැව්වාම වෙනම “↩️ Return” එකක් යනවා — ණයෙන් අඩු වෙනවා, මේ බිලේ Cash වලට බලපාන්නේ නැහැ.</div>${itemPicker('bill','rt')}${itemRows('bill','rt',{kind:1,price:1})}</details>`);}}catch(e){}return r;};})();
+(function(){const _sb=sendBill;sendBill=async function(next){const d=D('bill'),c=cust(d.c),t=billCalc(d),m=d.pay.m;
+  if(!d.fixOf&&!d.editUid){
+    const old=rmy(num(d.pay.old));if(old<0){toast('පරණ ණය මුදල වැරදියි','err');return;}if(old>0&&(!c||old>rmy(num(c[3]))+0.004)){toast(`📒 පරණ ණයට (${money(c?c[3]:0)}) වඩා දාන්න බැහැ`,'err');return;}
+    if(m==='bank'&&!(num(d.pay.amt)>0)){toast('🏧 බැංකු මුදල දාන්න','err');return;}
+    if(['part','cheque','bank'].includes(m)&&num(d.pay.amt)>t.net+0.004){const over=rmy(num(d.pay.amt)-t.net),room=c?rmy(num(c[3])-old):0;
+      if(c&&room>0.004&&confirm(`ලැබුණු මුදල බිලට (${money(t.net)}) වඩා ${money(over)} වැඩියි. වැඩිය 📒 පරණ ණයට දාන්නද?`)){const mv=Math.min(over,room);d.pay.old=String(rmy(old+mv));d.pay.amt=String(rmy(num(d.pay.amt)-mv));save();render();toast('📒 වැඩිය පරණ ණයට දැම්මා — බලලා ආයෙත් යවන්න');return;}
+      toast('ලැබුණු මුදල බිලට වඩා වැඩියි','err');return;}
+    const low=d.it.filter(x=>{const co=v460Cost(x[0]);return x[1]>0&&co!==null&&x[3]<co-0.004;});if(low.length&&!confirm(`⚠️ ${low.map(x=>prod(x[0])[1]).join(', ')} — පිරිවැයට වඩා අඩු මිලක්. හරිද?`))return;
+    const odd=d.it.filter(x=>x[1]>0&&v460Oq(x[0],x[1]));if(odd.length&&!confirm(`⚠️ අමුතු ගණනක්: ${odd.map(x=>prod(x[0])[1]+' '+x[1]+' (සාමාන්‍ය '+Math.round(num(v460Oq(x[0],x[1])[1]))+')').join(', ')}. හරිද?`))return;}
+  const rt=(d.rt||[]).filter(x=>x[1]>0).map(x=>[x[0],x[1],x[2]==='damage'?'damage':'good',x[3]]),rc=d.c,rd=d.d,fix=d.fixOf||d.editUid;
+  await _sb.apply(this,arguments);
+  if(!fix&&rt.length&&rc&&S.drafts.bill!==d){const cc=cust(rc),est=rmy(rt.reduce((s,x)=>s+x[1]*x[3],0));await send('ret',{d:rd,c:rc,it:rt.map(x=>[x[0],x[1],x[2]]),cash:false,note:'↩️ බිල එක්ක පරණ බඩු Return',v460:1,est},`↩️ ${cc?cc[1]:''} — ${rt.length}ක් (බිල එක්ක)`);}};})();
+
+/* ================= v4.63 · 📒 ණය PC එකේ වගේ — බිල් අනුව · වයස · ණය ලැයිස්තුව · 🎯 බිල් තෝරලා ගෙවීම · 🏧 බැංකු · 📞 / 💬 ================= */
+function v463Ob(cid){const o=S.cfg&&S.cfg.ob;return o&&Array.isArray(o[cid])?o[cid]:[];}
+function v463Age(d){if(!d)return 0;return Math.max(0,Math.round((new Date(today()+'T00:00:00')-new Date(d+'T00:00:00'))/864e5));}
+function v463Now(c){return r2(num(c[3])+liveDueDelta(c[0]));}
+function v463Ages(cid){const b=[0,0,0,0];v463Ob(cid).forEach(x=>{if(!x[0])return;const a=v463Age(x[2]);b[a<=30?0:a<=60?1:a<=90?2:3]+=num(x[3]);});return b.map(r2);}
+function v463Oldest(cid){const l=v463Ob(cid).filter(x=>x[0]&&x[2]);return l.length?v463Age(l[0][2]):0;}
+function v463AgeTag(a){return a>90?`<span class="badge bad">🔴 දින ${a}</span>`:a>60?`<span class="badge warn">🟠 දින ${a}</span>`:a>30?`<span class="badge warn">🟡 දින ${a}</span>`:a?`<span class="small muted">දින ${a}</span>`:'';}
+function v463Wa(c){const n=digits(c[7]);if(n.length<9)return '';const intl=n.length===10&&n[0]==='0'?'94'+n.slice(1):n;const biz=(S.cfg&&S.cfg.biz)||'Shanthi Food Products';
+  const t=`${biz}\n\nආයුබෝවන් ${c[1]},\nඔබේ ගිණුමේ ඉතිරි ණය රු. ${money(v463Now(c)).replace('රු. ','')}.${v463Oldest(c[0])>30?` (පරණම බිල දින ${v463Oldest(c[0])})`:''}\nකරුණාකර ගෙවන්න. ස්තුතියි! 🙏`;return 'https://wa.me/'+intl+'?text='+encodeURIComponent(t);}
+let V463={q:'',r:'',sort:'amt'};
+function v463DebtList(){const all=C().filter(c=>!c[11]&&v463Now(c)>0.004);if(!all.length)return '<div class="card small muted">✅ ණය තියෙන කඩ නැහැ</div>';
+  const q=norm(V463.q),routes=[...new Set(all.map(c=>c[2]).filter(Boolean))].sort();
+  let l=all.filter(c=>(!q||norm(c[1]).includes(q)||digits(c[7]).includes(digits(V463.q)||'~'))&&(!V463.r||c[2]===V463.r));
+  l.sort((a,b)=>V463.sort==='old'?v463Oldest(b[0])-v463Oldest(a[0]):V463.sort==='name'?String(a[1]).localeCompare(String(b[1]),'si'):v463Now(b)-v463Now(a));
+  const tot=r2(l.reduce((s,c)=>s+v463Now(c),0)),ag=[0,0,0,0];l.forEach(c=>v463Ages(c[0]).forEach((v,i)=>ag[i]+=v));
+  return `<div class="card"><h3>📒 ණය තියෙන කඩ (${l.length}) — ${money(tot)}</h3>
+   <div class="v463ag">${['0–30','31–60','61–90','90+'].map((t,i)=>`<div class="${i===3&&ag[3]>0?'bad':i>=1&&ag[i]>0?'warn':''}"><small>දින ${t}</small><b>${Math.round(ag[i]).toLocaleString('en-US')}</b></div>`).join('')}</div>
+   <div class="row2"><input type="search" placeholder="🔎 නම / 📞" value="${esc(V463.q)}" oninput="V463.q=this.value;v463Redraw()"><select onchange="V463.r=this.value;v463Redraw()"><option value="">සියලු Route</option>${routes.map(r=>`<option ${r===V463.r?'selected':''}>${esc(r)}</option>`).join('')}</select></div>
+   <div class="seg">${[['amt','💰 වැඩිම'],['old','⏳ පරණම'],['name','🔤 නම']].map(([k,t])=>`<button class="${V463.sort===k?'on':''}" onclick="V463.sort='${k}';v463Redraw()">${t}</button>`).join('')}</div>
+   ${l.slice(0,80).map(c=>{const now=v463Now(c),od=v463Oldest(c[0]),over=c[4]>0&&now>c[4]+0.004,wa=v463Wa(c);return `<div class="hist v463d"><div class="grow" onclick="setCust('pay','${esc(c[0])}')"><b>${esc(c[1])}</b>${over?' <span class="badge bad">⚠️ සීමාව</span>':''} ${v463AgeTag(od)}<div class="small muted">${esc(c[2]||'Route නැහැ')}${c[7]?' · 📞 '+esc(c[7]):''}</div></div><div style="text-align:right"><b>${money(now)}</b><div class="v463b">${c[7]?`<a class="btn sm light" href="tel:${esc(digits(c[7]))}">📞</a>`:''}${wa?`<a class="btn sm light" target="_blank" rel="noopener" href="${esc(wa)}">💬</a>`:''}<button class="btn sm primary" onclick="setCust('pay','${esc(c[0])}')">💰</button></div></div></div>`;}).join('')||'<div class="small muted">හමු වුණේ නැහැ</div>'}</div>`;}
+function v463Redraw(){const el=$('v463list');if(!el)return;const a=document.activeElement,id=a&&a.matches('#v463list input[type=search]');el.innerHTML=v463DebtList();if(id){const i=el.querySelector('input[type=search]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}}}
+/* allocation: ✨ oldest first (like the PC) or 🎯 amounts per bill */
+function v463Alloc(d,c,amt){const ob=v463Ob(c[0]).filter(x=>x[0]);if(d.pick){return ob.map(x=>({x,pay:r2(Math.max(0,num((d.al||{})[x[0]])))}));}let left=r2(Math.min(amt,ob.reduce((s,x)=>s+num(x[3]),0)));return ob.map(x=>{const p=r2(Math.max(0,Math.min(left,num(x[3]))));left=r2(left-p);return {x,pay:p};});}
+function v463Card(d,c){const now=v463Now(c),dd=liveDueDelta(c[0]),ag=v463Ages(c[0]),cn=S.cfg&&S.cfg.cn&&S.cfg.cn[c[0]],lp=S.cfg&&S.cfg.lpd&&S.cfg.lpd[c[0]],ob=v463Ob(c[0]);
+  return `<div class="card"><div class="v463hd"><div><div class="small muted">📒 ඉතිරි ණය</div><div class="v463big">${money(now)}</div>${Math.abs(dd)>0.004?`<div class="small muted">PC එකේ ${money(c[3])} · 📱 තවම PC එකට නොගිය ${dd>0?'+':''}${money(dd)}</div>`:''}</div>${c[4]>0?`<div class="small ${now>c[4]?'bad':'muted'}" style="text-align:right">සීමාව<br><b>${money(c[4])}</b></div>`:''}</div>
+   <div class="v463ag">${['0–30','31–60','61–90','90+'].map((t,i)=>`<div class="${i===3&&ag[3]>0?'bad':i>=1&&ag[i]>0?'warn':''}"><small>දින ${t}</small><b>${Math.round(ag[i]).toLocaleString('en-US')}</b></div>`).join('')}</div>
+   ${cn?`<div class="infobox small">🎟 Credit note ${money(cn)} තියෙනවා — PC එකේ ණයට දාන්න පුළුවන්.</div>`:''}${lp?`<div class="small muted">අන්තිම ගෙවීම ${esc(lp[0])} · ${money(lp[1])} (${v463Age(lp[0])} දිනකට කලින්)</div>`:''}
+   ${!ob.length&&c[3]>0?'<div class="small muted">බිල් අනුව ලැයිස්තුව PC එකෙන් තවම ආවේ නැහැ (🔄)</div>':''}</div>`;}
+function v463Bills(d,c){const amt=r2(num(d.amt)),rows=v463Alloc(d,c,amt),ob=v463Ob(c[0]);if(!ob.length)return '';
+  const sum=r2(rows.reduce((s,r)=>s+r.pay,0));
+  return `<div class="card"><div class="v463hd"><h3>🧾 බිල් අනුව</h3><div class="seg"><button class="${d.pick?'':'on'}" onclick="D('pay').pick=0;save();render()">✨ පරණම මුලින්</button><button class="${d.pick?'on':''}" onclick="D('pay').pick=1;D('pay').al=D('pay').al||{};save();render()">🎯 බිල් තෝරන්න</button></div></div>
+   <div class="v463t"><div class="h"><span>බිල</span><span>දිනය</span><span>ඉතිරි</span><span>මෙයින්</span></div>${ob.map(x=>{const r=rows.find(y=>y.x===x),a=v463Age(x[2]);return x[0]?`<div><span>${esc(x[1])}${x[4]==='f'?' 🏭':''}</span><span>${esc(String(x[2]).slice(5).replace('-','/'))} ${a>60?'<b class="bad">'+a+'d</b>':''}</span><span>${money(x[3]).replace('රු. ','')}</span><span>${d.pick?`<input type="number" inputmode="decimal" min="0" max="${num(x[3])}" value="${esc((d.al||{})[x[0]]||'')}" oninput="v463Pick('${esc(x[0])}',this.value)">`:r&&r.pay>0?'<b class="good">'+money(r.pay).replace('රු. ','')+'</b>':'—'}</span></div>`:`<div class="small muted"><span>${esc(x[1])}</span><span></span><span>${money(x[3]).replace('රු. ','')}</span><span></span></div>`;}).join('')}</div>
+   <div class="small" id="v463sum">${d.pick?(Math.abs(sum-amt)>0.004?`<b class="bad">තෝරපු එකතුව ${money(sum)} — ලැබුණු ${money(amt)} ට සමාන වෙන්න ඕනේ</b>`:`✅ තෝරපු ${money(sum)}`):amt>0?`ගෙවීමෙන් පසු ඉතිරි ණය ${money(Math.max(0,v463Now(c)-amt))}`:''}</div></div>`;}
+function v463Pick(id,v){const d=D('pay');d.al=d.al||{};const n=r2(num(v));if(!(n>0))delete d.al[id];else d.al[id]=n;save();const c=cust(d.c);if(c){const amt=r2(num(d.amt)),sum=r2(Object.values(d.al).reduce((s,x)=>s+num(x),0)),el=$('v463sum');if(el)el.innerHTML=Math.abs(sum-amt)>0.004?`<b class="bad">තෝරපු එකතුව ${money(sum)} — ලැබුණු ${money(amt)} ට සමාන වෙන්න ඕනේ</b> <button class="btn sm light" onclick="D('pay').amt='${sum}';save();render()">ලැබුණු මුදල ${money(sum)} කරන්න</button>`:`✅ තෝරපු ${money(sum)}`;}}
+renderPay=function(){const d=D('pay'),c=cust(d.c);d.pay=d.pay||{m:'cash'};const m=d.pay.m||'cash';
+  if(!c){$('payBody').innerHTML=`${dateBanner(d)}<div class="card">${dateField('pay')}</div>${custPicker('pay',false)}<div id="v463list">${v463DebtList()}</div>`;return;}
+  const seg=(v,l)=>`<button class="${m===v?'on':''}" onclick="D('pay').pay.m='${v}';save();render()">${l}</button>`,now=v463Now(c);
+  $('payBody').innerHTML=`${dateBanner(d)}<div class="card">${dateField('pay')}</div>${custPicker('pay',false)}${v463Card(d,c)}
+  <div class="card"><div class="field"><label>ලැබුණු මුදල (රු.)</label><div class="row2"><input type="number" inputmode="decimal" min="0" value="${esc(d.amt)}" oninput="D('pay').amt=this.value;save()" onchange="render()">${now>0?`<button class="btn sm light" onclick="D('pay').amt='${now}';D('pay').pick=0;save();render()">සම්පූර්ණ ණය</button>`:''}</div></div>
+  <div class="seg">${seg('cash','💵 Cash')}${seg('cheque','🏦 චෙක්')}${seg('bank','🏧 බැංකු')}</div>
+  ${m==='cheque'?`<div class="row2"><div class="field"><label>චෙක් අංකය</label><input value="${esc(d.pay.no||'')}" onchange="D('pay').pay.no=this.value;save()"></div><div class="field"><label>බැංකුව</label><input value="${esc(d.pay.bank||'')}" onchange="D('pay').pay.bank=this.value;save()"></div></div><div class="field"><label>චෙක් දිනය</label><input type="date" value="${esc(d.pay.cd||'')}" onchange="D('pay').pay.cd=this.value;save()"></div>${photoField('pay')}`:''}
+  ${m==='bank'?`<div class="field"><label>Reference</label><input maxlength="80" value="${esc(d.pay.ref||'')}" onchange="D('pay').pay.ref=this.value.trim();save()"></div>`:''}</div>
+  ${v463Bills(d,c)}<button class="btn primary block big" onclick="sendPay()">📤 PC එකට යවන්න</button>`;};
+sendPay=async function(){const d=D('pay'),c=cust(d.c),amt=r2(num(d.amt)),m=(d.pay&&d.pay.m)||'cash';if(!c){toast('කඩය තෝරන්න','err');return;}if(!(amt>0)||amt>1e8){toast('මුදල දාන්න','err');return;}
+  if(m==='cheque'&&(!d.pay.no||!d.pay.cd)){toast('චෙක් අංකය සහ දිනය දාන්න','err');return;}
+  if(m==='bank'&&!String(d.pay.ref||'').trim()&&!confirm('🏧 බැංකු Reference එකක් නැහැ. ඒත් යවන්නද?'))return;
+  let al=null;if(d.pick&&v463Ob(c[0]).length){al=Object.entries(d.al||{}).filter(([,v])=>num(v)>0).map(([id,v])=>[id,r2(num(v))]);const ob=v463Ob(c[0]);
+    for(const [id,v] of al){const x=ob.find(y=>y[0]===id);if(!x||v>num(x[3])+0.004){toast(`${x?x[1]:'බිල'} ට උපරිමය ${money(x?x[3]:0)}`,'err');return;}}
+    const sum=r2(al.reduce((s,x)=>s+x[1],0));if(Math.abs(sum-amt)>0.004){toast(`තෝරපු එකතුව ${money(sum)} — ලැබුණු ${money(amt)} ට සමාන වෙන්න ඕනේ`,'err');return;}if(!al.length)al=null;}
+  const dup=S.sent.find(x=>x.k==='pay'&&!x.gone&&x.rec&&x.rec.c===c[0]&&x.d===d.d&&Math.abs(num(x.rec.amt)-amt)<0.01);if(dup&&!confirm(`⚠️ ${c[1]} ගෙන් ${d.d} දින ${money(amt)} ගෙවීමක් දැනටමත් යැව්වා (${fmtAt(dup.at,true)}). වෙනම ගෙවීමක්ද?`))return;
+  const now=v463Now(c);if(amt>now+0.004&&!confirm(`${c[1]} ගේ ණය ${money(now)} — ඊට වඩා ${money(amt-now)} වැඩියි. ඉතිරිය advance (හිමි ශේෂය) විදිහට PC එකේ දානවා. යවන්නද?`))return;
+  if(await send('pay',{d:d.d,c:c[0],amt,m,no:d.pay.no||'',bank:d.pay.bank||'',cd:d.pay.cd||'',...(m==='bank'?{ref:String(d.pay.ref||'').slice(0,80)}:{}),...(al?{al}:{}),...(m==='cheque'&&d.pay.ph?{ph:d.pay.ph}:{})},`💰 ${c[1]} ${money(amt)}${m==='bank'?' 🏧':m==='cheque'?' 🏦':''}`)){rememberCust(c[0]);newDraft('pay');toast('✅ යැව්වා');go('home');}};
 </script>
 </body>
 </html>
