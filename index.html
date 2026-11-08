@@ -1105,8 +1105,8 @@ function lrKey(pid,name){if(products().some(p=>p[0]===pid))return pid;if(name){c
 /* this phone's own events for trip date T (latest revision of every uid) */
 function lrOwn(T){const last={};S.sent.forEach(x=>{if(x.t==='count'){if(dayOf(x.at)!==T)return;}else if(x.t==='load'){if(x.pre||x.d!==T)return;}else if(x.t==='unload'){if(x.d!==T)return;}else return;const p=last[x.uid];if(!p||num(x.rev)>=num(p.rev))last[x.uid]=x;});
   const cd=S.drafts.count;return Object.values(last).map(x=>{const e={k:x.t==='count'?'c':x.t==='load'?'l':'u',uid:x.uid,rev:num(x.rev),at:x.at,by:x.by||S.me,d:x.d,i:x.i||{}};if(x.t==='count'&&cd&&cd.uid===x.uid){const dm={};Object.entries(cd.c||{}).forEach(([k,v])=>{if(v&&num(v.dmg)>0)dm[k]=num(v.dmg);});e.dm=dm;}if(x.add)e.add=1;if(x.rs)e.rs=x.rs;if(x.first)e.first=x.first;return e;});}
-async function lrPush(T){T=T||today();const url=lsDoc(T);if(!url)return;const ev=lrOwn(T);const body=JSON.stringify({by:S.me,at:new Date().toISOString(),ev});const key='lrSent_'+T;if(S[key]===body)return;
-  try{const r=await fetch(`${url}?updateMask.fieldPaths=code&updateMask.fieldPaths=${lrField()}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:'SBP1:lscan:0:00000000'},[lrField()]:{stringValue:body}}})});if(r.ok){Object.keys(S).filter(k=>k.startsWith('lrSent_')&&k!==key).forEach(k=>delete S[k]);S[key]=body;save();}}catch(e){}}
+async function lrPush(T){T=T||today();const url=lsDoc(T);if(!url)return;const ev=lrOwn(T);const body=JSON.stringify({by:S.me,at:new Date().toISOString(),ev}),sig=JSON.stringify(ev);const key='lrSent_'+T;if(S[key]===sig)return;
+  try{const r=await fetch(`${url}?updateMask.fieldPaths=code&updateMask.fieldPaths=${lrField()}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:'SBP1:lscan:0:00000000'},[lrField()]:{stringValue:body}}})});if(r.ok){Object.keys(S).filter(k=>k.startsWith('lrSent_')&&k!==key).forEach(k=>delete S[k]);S[key]=sig;save();}}catch(e){}}
 async function lrPull(T){T=T||today();const url=lsDoc(T);if(!url)return false;try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)return false;const j=await r.json(),me=lrField(),o={};
   Object.entries(j.fields||{}).forEach(([k,v])=>{if(!k.startsWith('k_')||k===me)return;try{const x=JSON.parse(v.stringValue||'{}');if(Array.isArray(x.ev))o[k]=x;}catch(e){}});
   const sig=JSON.stringify(o),ch=sig!==JSON.stringify(S.lrO&&S.lrO.T===T?S.lrO.o:{});S.lrO={T,o,at:new Date().toISOString()};save();lr.pulled=S.lrO.at;return ch;}catch(e){return false;}}
@@ -1213,7 +1213,18 @@ function lrChip(k){const el=document.querySelector(`#loadList [data-lrow="${CSS.
 
 
 /* ================= v4.5.2 · 🕓 04:00 වැඩ දවස · 🔐 encrypt (lx) · 📋 කම්හලේ අලුත් ඇණවුම් + 🔴 hold live · 🔄 update තීරුව ================= */
-const LA_VER='5.0';
+const LA_VER='5.1.2';
+/* v5.1 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
+   v5.1.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
+(function(){const K='sbpFuL',A='l',_f=window.fetch.bind(window);
+  const day=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+  const get=()=>{let u;try{u=JSON.parse(localStorage.getItem(K)||'null');}catch(e){}if(!u||typeof u!=='object')u={};if(!u.id)u.id=Math.random().toString(36).slice(2,10);if(u.d!==day()){u.d=day();u.r=0;u.w=0;u.x=0;}return u;};
+  const put=u=>{try{localStorage.setItem(K,JSON.stringify(u));}catch(e){}};
+  const OFF=K+'Off',off=()=>{try{return localStorage.getItem(OFF)===day();}catch(e){return false;}};
+  window.fetch=async function(url,opt){const s=String(url&&url.url||url||'');if(!s.startsWith('https://firestore.googleapis.com/'))return _f(url,opt);
+    const m=String(opt&&opt.method||'GET').toUpperCase(),k=m==='GET'?'r':m==='DELETE'?'x':'w';let u=get();u[k]=(u[k]||0)+1;put(u);let o2=null;
+    try{if(m==='POST'&&/\/in\?documentId=/.test(s)&&opt&&typeof opt.body==='string'&&!off()){const b=JSON.parse(opt.body);if(b&&b.fields){b.fields.fu={stringValue:JSON.stringify({a:A,id:u.id,d:u.d,r:u.r,w:u.w,at:new Date().toISOString()})};o2={...opt,body:JSON.stringify(b)};}}}catch(e){}
+    try{const r=await _f(url,o2||opt);if(o2&&(r.status===400||r.status===403)){try{localStorage.setItem(OFF,day());}catch(e){}return await _f(url,opt);}return r;}catch(e){u=get();u[k]=Math.max(0,(u[k]||0)-1);put(u);throw e;}};})();
 /* 🕓 "today" = the work day (PC setting, e.g. before 04:00 = yesterday) — same rule as the PC and the factory app */
 const _calToday=today;
 today=function(){const t=_calToday();try{const de=String((S.cfg&&S.cfg.de)||'00:00');if(!/^\d\d:\d\d$/.test(de)||de==='00:00')return t;
@@ -1221,7 +1232,7 @@ today=function(){const t=_calToday();try{const de=String((S.cfg&&S.cfg.de)||'00:
   const hm=`${String(p.hour).padStart(2,'0')}:${String(p.minute).padStart(2,'0')}`;if(hm<de){const d=new Date(t+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);}}catch(e){}return t;};
 /* keep the PC's extra settings (work-day end, newest app version) that the old cfg reader drops */
 (function(){const _ac=applyCodes;applyCodes=function(codes){const ex=(codes||[]).map(c=>c&&!c.error&&(c.type==='cfg'?c.data:(c.type==='rep'&&c.data?c.data.cfg:null))).filter(x=>x&&typeof x==='object').pop();
-  const r=_ac.apply(this,arguments);try{if(ex&&S.cfg){if(ex.de!==undefined)S.cfg.de=String(ex.de).slice(0,5);if(ex.lv!==undefined)S.cfg.lv=String(ex.lv).slice(0,8);save();laVerBar();}}catch(e){}return r;};})();
+  const r=_ac.apply(this,arguments);try{if(ex&&S.cfg){if(ex.de!==undefined)S.cfg.de=String(ex.de).slice(0,5);if(ex.lv!==undefined)S.cfg.lv=String(ex.lv).slice(0,16);save();laVerBar();}}catch(e){}return r;};})();
 /* a count button on a row that is no longer on the screen does nothing (was an error) */
 (function(){const _ca=countAdd;countAdd=function(id){if(!document.querySelector(`[data-cin="${CSS.escape(String(id))}"]`))return;return _ca.apply(this,arguments);};})();
 
@@ -1275,7 +1286,9 @@ async function livePush(){if(!lxOn())return;const url=liveUrl();if(!url)return;c
 (function(){const _cp=cloudPull;cloudPull=async function(){const r=await _cp.apply(this,arguments);try{const ch=await livePull();await livePush();if(ch&&screen==='home')render();}catch(e){}laVerBar();return r;};})();
 
 /* ---------- 🔄 the PC says a newer lorry app exists ---------- */
-function laVerBar(){try{const want=S.cfg&&S.cfg.lv,newer=want&&parseFloat(want)>parseFloat(LA_VER);let b=document.getElementById('laVerBar');
+/* part-by-part version compare: '5.1.1'<'5.1.2', '4.9'<'4.10'; bad/empty → false */
+function laVerNewer(w,h){try{const p=s=>String(s==null?'':s).trim().split('.').map(x=>/^\d+$/.test(x)?+x:NaN);const a=p(w),b=p(h);if(!a.length||a.some(isNaN))return false;for(let i=0;i<Math.max(a.length,b.length);i++){const x=a[i]||0,y=isNaN(b[i])?0:(b[i]||0);if(x!==y)return x>y;}return false;}catch(e){return false;}}
+function laVerBar(){try{const want=S.cfg&&S.cfg.lv,newer=!!want&&laVerNewer(want,LA_VER);let b=document.getElementById('laVerBar');
   if(!newer){if(b)b.remove();return;}
   if(!b){b=document.createElement('div');b.id='laVerBar';b.style.cssText='position:sticky;top:0;z-index:999;background:#fef3c7;color:#78350f;border-bottom:2px solid #f59e0b;padding:8px 12px;font-weight:700;font-size:14px';document.body.prepend(b);}
   b.innerHTML='🔄 App එකේ අලුත් version එකක් තියෙනවා (v'+String(want).replace(/[^0-9.]/g,'')+') — internet එක්ක app එක <u>සම්පූර්ණයෙන් වහලා</u> ආයෙත් අරින්න. <button type="button" style="margin-left:6px;padding:4px 10px;border-radius:8px;border:1px solid #b45309;background:#fff;font-weight:700" onclick="laUpdateNow()">🔄 දැන්</button>';}catch(e){}}
@@ -1437,6 +1450,20 @@ lrWatch=function(){clearInterval(lr.timer);if(!S.cloud)return;let last=0;lr.time
   const ch=await lrSync(true);if(ch&&!document.activeElement.matches('input,textarea')){if(screen==='load')renderLoad();else if(screen==='home')renderHome();else if(screen==='unload')renderUnload();}},10000);};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.cloud&&['load','home','unload','accept'].includes(screen))lrSync(true).then(ch=>{if(ch&&screen==='home')renderHome();});});
 try{lrWatch();}catch(e){}
+/* ================= 016 · 🔥 Firebase guard: 80% of this phone's daily share → auto refresh every 10 min; 100% → only the manual 🔄; 429 → nothing automatic for 1 hour (never a retry loop) ================= */
+const FBG=(function(){const K='sbpFbG',LIM=8000;const day=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Los_Angeles'}).format(new Date());
+  const get=()=>{let u;try{u=JSON.parse(localStorage.getItem(K)||'null');}catch(e){}if(!u||typeof u!=='object')u={};if(u.d!==day()){u.d=day();u.r=0;}return u;},put=u=>{try{localStorage.setItem(K,JSON.stringify(u));}catch(e){}};
+  const _f=window.fetch;window.fetch=async function(url,opt){const s=String(url&&url.url||url||'');if(!s.startsWith('https://firestore.googleapis.com/'))return _f.apply(this,arguments);if(String(opt&&opt.method||'GET').toUpperCase()==='GET'){const u=get();u.r=(u.r||0)+1;put(u);}const r=await _f.apply(this,arguments);if(r&&r.status===429){const u=get();u.hold=Date.now()+36e5;put(u);}return r;};
+  let last=0;return {level(){const u=get();return u.r>=LIM?2:u.r>=LIM*0.8?1:0;},held(){return (get().hold||0)>Date.now();},
+    /* true = an automatic refresh may run now */
+    auto(){if(this.held()||this.level()===2)return false;if(this.level()===1&&Date.now()-last<6e5)return false;last=Date.now();return true;},
+    msg(){return this.held()?'⚠️ Firebase අද සීමාවට ආවා — පැයකින් ආයේ. 🔄 ඔබලා අතින් අලුත් කරන්න පුළුවන්.':this.level()===2?'⚠️ අද Firebase කොටස ඉවරයි — 🔄 ඔබලා අතින් විතරක් අලුත් කරන්න. යවන ඒවා phone එකේ ආරක්ෂිතයි.':this.level()===1?'⚠️ Firebase අද 80% — විනාඩි 10කට වරක් අලුත් වෙනවා.':'';},LIM};})();
+
+/* 016 · code only, the screens are untouched: no touch for a while → refresh less often; any touch or returning to the app → back to normal */
+(function(){let act=Date.now(),lastC=0,lastL=0;['pointerdown','keydown'].forEach(e=>document.addEventListener(e,()=>{act=Date.now();},{passive:true}));document.addEventListener('visibilitychange',()=>{if(!document.hidden){act=Date.now();lastC=0;lastL=0;}});const gap=()=>{const i=Date.now()-act;return i<12e4?0:i<6e5?12e4:3e5;};
+  const _c=cloudSync;cloudSync=function(manual){if(!manual){if(gap()&&Date.now()-lastC<gap()&&!S.outbox.length)return Promise.resolve();if(!FBG.auto()){const m=FBG.msg();if(m){S.cloudErr=m;save();}/* unsent bills / money still go: sending is writes, the guard counts reads */return !FBG.held()&&S.outbox.length?cloudFlush():Promise.resolve();}lastC=Date.now();}return _c.apply(this,arguments);};
+  /* timers and the 🔄 buttons both call lrSync(true): a touch just now = the person pressed it */const _l=lrSync;lrSync=function(){if(Date.now()-act>1500){if(FBG.held())return Promise.resolve(false);const g=Math.max(gap(),FBG.level()===1?6e5:0);if(FBG.level()===2||(g&&Date.now()-lastL<g)){/* own events still reach the other phone (one write, only if changed) */return Promise.resolve(lrPush(today())).then(()=>false,()=>false);}}lastL=Date.now();return _l.apply(this,arguments);};})();
+
 </script>
 </body>
 </html>
