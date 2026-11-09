@@ -277,7 +277,7 @@ function renderHome0(){
   const r=S.rep,cd=S.drafts.count,ld=S.drafts.load,c=S.cfg;
   if(!c){$('homeBody').innerHTML=S.cloud?`<div class="card hero"><div class="big">☁️</div><h2>ආයුබෝවන්!</h2><p>භාණ්ඩ ලැයිස්තුව ඉබේම ගන්නවා… (Internet ඕනේ)</p><button class="btn primary block" onclick="cloudSync(true)">🔄 දැන් ගන්න</button><p class="small muted">වැඩ නොකළොත් WhatsApp එකෙන් ආපු “📲 භාණ්ඩ ලැයිස්තුව” message එක දාන්න.</p><button class="btn light block" onclick="go('inbox')">📥 Message එක දාන්න</button></div>`:`<div class="card hero"><div class="big">👋</div><h2>ආයුබෝවන්!</h2><p>මුලින්ම ඔයාට WhatsApp එකෙන් ආපු <strong>“📲 භාණ්ඩ ලැයිස්තුව”</strong> message එක සම්පූර්ණයෙන්ම copy කරලා මෙතන දාන්න.</p><button class="btn primary block" onclick="go('inbox')">📥 Message එක දාන්න</button></div>`;return;}
   if(!S.me){go('setup');toast('මුලින්ම ඔයාගේ නම දාන්න','warn');return;}
-  const counted=r&&lastSent('count',r.d),loadToday=lastSent('load',today());
+  const counted=(r&&lastSent('count',r.d))||(lrState(today()).rem.src==='empty'?{rev:'🚛 හිස්'}:null),loadToday=lastSent('load',today());
   const step=(n,done,title,sub,act,btn,cls)=>`<div class="card step ${done?'done':''}"><div class="num">${done?'✓':n}</div><div class="grow"><h3>${title}</h3><div class="muted">${sub}</div></div><button class="btn ${cls||'primary'}" onclick="${act}">${btn}</button></div>`;
   $('homeBody').innerHTML=`<div class="hello">ආයුබෝවන් <strong>${esc(S.me)}</strong> 👋 <span class="muted">· ${today()}</span></div>${cloudLine()}
    ${step(1,!!r&&r.d>=(lastSent('load')||{d:''}).d,'📥 Report එක දාන්න',r?`අන්තිම Report: <strong>${esc(r.d)}</strong>`:'තවම Report එකක් නැහැ','go(\'inbox\')','දාන්න','light')}
@@ -334,6 +334,30 @@ function sendLoad(){
 /* ---------------- COUNT ---------------- */
 let countQ='',countFilter='all';
 function repRows(){const r=S.rep;const m={};if(r)(r.rows||[]).forEach(x=>{m[x[0]]={id:x[0],opening:x[1],loaded:x[2],sold:x[3],free:x[4],unloaded:x[5],expected:x[6]};});return m;}
+/* v5.1.3: leftovers taken OFF the lorry before they were counted (morning: ➖ first, 🔢 after) — the count missed them.
+   Unloads of today's trip that happened before today's first load and before this count → offer to add them into the count. */
+function cntPreUnl(){const c=S.drafts.count;if(!c||!c.d||c.d>=today())return null;const T=today(),ev=lrEvents(T),first={};
+  S.sent.forEach(x=>{if(x.uid&&(!first[x.uid]||String(x.at)<first[x.uid]))first[x.uid]=String(x.at);});const t0=e=>first[e.uid]||String(e.at||'');
+  const cs=S.sent.filter(x=>x.t==='count'&&x.uid===c.uid).map(x=>String(x.at)).sort()[0]||new Date().toISOString();
+  const ld=ev.filter(e=>e.k==='l').map(t0).sort()[0]||'9999';
+  const u=ev.filter(e=>e.k==='u'&&t0(e)<cs&&t0(e)<ld&&!(c.ub||[]).includes(e.uid));if(!u.length)return null;
+  const i={};u.forEach(e=>Object.entries(e.i||{}).forEach(([k,v])=>{if(num(v)>0)i[k]=(i[k]||0)+num(v);}));const sum=lrSum(i);if(!sum)return null;
+  return {u,i,sum,txt:u.map(e=>lrHM(e.at)+(e.by?' · '+e.by:'')).join(', ')};}
+function cntPreUnlAdd(){const c=countDraft(),x=cntPreUnl();if(!x)return;if(isLocked(c)){toast('මුලින් “✏️ නිවැරදි කිරීමක්” ඔබන්න','warn');return;}
+  Object.entries(x.i).forEach(([k,v])=>{const e=c.c[k]||(c.c[k]={parts:[],dmg:0});e.parts.push(v);if(!c.extra.includes(k)&&!repRows()[k])c.extra.push(k);});
+  c.ub=(c.ub||[]).concat(x.u.map(e=>e.uid));save();vibrate();toast(`➕ අයින් කළ ${x.sum} ගණනට එකතු කළා`);renderCount();}
+function cntPreUnlHtml(){const x=cntPreUnl();if(!x)return '';const c=S.drafts.count;
+  return `<div class="card warnbox">⚠️ <b>ගණන් කරන්න කලින් ලොරියෙන් බඩු ${x.sum}ක් අයින් කළා</b> (${esc(x.txt)}).<div class="small">ඒවා ඊයේ ලොරියේ ඉතිරි වුණ ඒවා — ගණනට එකතු නොකළොත් ලොරියේ ගණන වැරදෙනවා.</div>${isLocked(c)?'<div class="small">👉 පහළ <b>“✏️ නිවැරදි කිරීමක්”</b> ඔබලා, ඊට පස්සේ මේ බොත්තම ඔබන්න.</div>':''}<button class="btn primary" onclick="cntPreUnlAdd()">➕ අයින් කළ ${x.sum} ගණනට එකතු කරන්න</button></div>`;}
+/* v5.1.3: everything taken off the lorry before today's first load = yesterday's leftovers → that IS the count (no 2nd counting) */
+function lrAutoCount(d,at){try{const r=S.rep;if(!S.cloud||!r||!r.d||r.d>=d.d||lastSent('count',r.d))return;const T=d.d;
+  if(S.sent.some(x=>x.t==='load'&&!x.pre&&x.d===T&&String(x.at)<at))return;
+  const items=Object.entries(d.i||{}).filter(([k,v])=>num(v)>0).sort((a,b)=>porder(a[0])-porder(b[0])).map(([k,v])=>[k,num(v),pname(k),0,'']);if(!items.length)return;
+  const c=countDraft(),cat=new Date(new Date(at).getTime()-1000).toISOString(),note='🚛 ලොරියේ ඉතිරි ඔක්කොම කම්හලට බෑවා — බෑව ගණනම ඉතිරිය';
+  const payload={v:1,d:r.d,rev:1,uid:c.uid,by:S.me,at:cat,note,rd:!!c.rd,sig:r.sig||'',i:items,why:'',dev:ensureDev(),auto:1};
+  const id=`count_${payload.uid}_1`;if(!S.outbox.some(x=>x.id===id))S.outbox.push({id,code:sbpEncode('count',payload),at:new Date().toISOString()});
+  c.c=Object.fromEntries(items.map(x=>[x[0],{parts:[x[1]],dmg:0}]));c.sentRev=1;c.unlock=false;c.note=note;c.ub=[d.uid];
+  S.sent.push({t:'count',uid:c.uid,rev:1,d:r.d,at:cat,total:items.reduce((t,x)=>t+x[1],0),i:Object.fromEntries(items.map(x=>[x[0],x[1]])),text:'',why:'',auto:1,cloudId:id});save();cloudFlush();
+  toast('🔢 ඊයේ ඉතිරිය = බෑව ගණන — ඉබේම යැව්වා');}catch(e){console.warn('auto count',e);}}
 function countDraft(){
   const r=S.rep,d=r?r.d:today();let c=S.drafts.count;
   if(!c||c.d!==d){if(c&&!c.sentRev&&Object.keys(c.c||{}).length&&c.d!==d){/* keep the unfinished one in history so nothing is lost */S.sent.push({t:'count-draft',uid:c.uid,rev:0,d:c.d,at:new Date().toISOString(),total:0,c:c.c,text:''});}
@@ -366,6 +390,7 @@ function countBar(){const ids=countIds(),c=countDraft();let done=0,bad=0,over=0;
 function renderCount(){
   if(!S.cfg){go('inbox');return;}const r=S.rep,c=countDraft();
   $('countHead').innerHTML=r?`<div class="card infobox"><strong>📅 ${esc(r.d)}</strong> Report එකට ගණන් කරනවා${r.route?' · '+esc(r.route):''}<div class="small">Report ආවේ: ${esc(fmtAt(r.at))}</div></div>`:`<div class="card warnbox">⚠️ තවම Report එකක් නැහැ. Report එක නැතුව ගණන් කළොත් “තියෙන්න ඕනේ” ප්‍රමාණ පේන්නේ නැහැ. <button class="btn light sm" onclick="go('inbox')">📥 Report දාන්න</button></div>`;
+  $('countHead').innerHTML+=cntPreUnlHtml();
   const rd=(r&&r.rd)||[];
   $('countRD').innerHTML=rd.length?`<div class="card"><h3>↩ Factory එකට භාර දෙන්න (Return / Damage)</h3>${rd.map(x=>`<div class="rdrow"><span>${esc(pname(x[0]))}</span><span>${x[1]?'Return '+x[1]:''}${x[1]&&x[2]?' · ':''}${x[2]?'Damage '+x[2]:''}</span></div>`).join('')}<label class="check"><input type="checkbox" ${c.rd?'checked':''} onchange="countDraft().rd=this.checked;save()"> මේවා Factory එකට භාර දුන්නා</label></div>`:'';
   $('countQ').value=countQ;document.querySelectorAll('#countFilters button').forEach(b=>b.classList.toggle('on',b.dataset.f===countFilter));
@@ -386,6 +411,7 @@ function reviewCount(){
   let h='';
   if(todo.length)h+=`<div class="warnbox">⚠️ ගණන් නොකළ භාණ්ඩ <strong>${todo.length}</strong>ක් තියෙනවා:<div class="small">${todo.slice(0,12).map(id=>esc(pname(id))).join(', ')}${todo.length>12?' …':''}</div></div>`;
   if(diff.length)h+=`<div class="warnbox">🔍 අඩු / වැඩි <strong>${diff.length}</strong>ක් තියෙනවා. යවන්න කලින් ආයෙත් හොයලා බලන්න:<div class="small">${diff.slice(0,12).map(id=>{const s=cState(id);return `${esc(pname(id))} (${s.diff>0?'අඩු '+s.diff:'වැඩි '+(-s.diff)})`;}).join(', ')}</div></div>`;
+  {const pu=cntPreUnl();if(pu)h+=`<div class="warnbox">⚠️ ගණන් කරන්න කලින් ලොරියෙන් අයින් කළ <strong>${pu.sum}</strong> තාම ගණනට එකතු කළේ නැහැ. <button class="btn light sm" onclick="closeSheet();cntPreUnlAdd()">➕ එකතු කරන්න</button></div>`;}
   if(!todo.length&&!diff.length)h+='<div class="okbox">🎉 ඔක්කොම හරි! යවන්න පුළුවන්.</div>';
   if(S.rep&&S.rep.rd&&S.rep.rd.length&&!c.rd)h+='<div class="warnbox">↩ Return / Damage Factory එකට භාර දුන්නා කියලා tick කරලා නැහැ.</div>';
   sheet('🔢 යවන්න කලින් බලන්න',h,[diff.length?{t:'🔍 ආයෙත් බලන්න',c:'light',f:()=>{countFilter='diff';closeSheet();renderCount();}}:null,todo.length?{t:'ගණන් නොකළ ඒවා 0 ලෙස යවන්න',c:'light',f:()=>sendCount(true)}:null,{t:todo.length?'ගණන් කළ ඒවා විතරක් යවන්න':'✅ හරි, යවන්න',c:'primary',f:()=>sendCount(false)}].filter(Boolean));
@@ -412,13 +438,13 @@ function lorryNow(){
 }
 function unloadDraft(){let d=S.drafts.unload;if(!d||d.sentRev&&d.d!==today()){d=S.drafts.unload={uid:uid(),d:today(),rev:0,sentRev:0,by:S.me,i:{},all:false,note:''};save();}return d;}
 function unloadAll(){const d=unloadDraft(),est=lorryNow();if(isLocked(d)){toast('🔒 යැව්වා — වෙනස් කරන්න බැහැ','warn');return;}if(!Object.keys(est).length){toast('ලොරියේ බඩු තියෙනවා කියලා දන්නේ නැහැ. අතින් දාන්න.','warn');return;}d.i={...est};d.all=true;save();renderUnload();toast('ලොරියේ තියෙන්න ඕනේ ඔක්කොම දැම්මා. බාපු ප්‍රමාණ හරියට බලන්න.');}
-function unloadSet(id,v){const d=unloadDraft();const n=Math.max(0,Math.floor(Number(v)||0));if(n)d.i[id]=n;else delete d.i[id];d.all=false;save();unloadBar();}
+function unloadSet(id,v){const d=unloadDraft();const n=Math.max(0,Math.floor(Number(v)||0));if(n)d.i[id]=n;else delete d.i[id];save();unloadBar();}
 function unloadBar(){const d=unloadDraft(),v=Object.values(d.i);if(isLocked(d)){$('unloadBar').innerHTML=`<div class="grow"><strong>${v.reduce((a,b)=>a+b,0)}</strong> පැකට්<div class="small">🔒 යැව්වා (සංශෝධනය ${d.sentRev})</div></div>`;return;}$('unloadBar').innerHTML=`<div class="grow"><strong>${v.length}</strong> වර්ග · <strong>${v.reduce((a,b)=>a+b,0)}</strong> පැකට්${d.sentRev?'<div class="small">✅ යැව්වා (සංශෝධනය '+d.sentRev+')</div>':''}</div><button class="btn primary" onclick="sendUnload()" ${v.length?'':'disabled'}>යවන්න ➜</button>`;}
 function renderUnload(){
   if(!S.cfg){go('inbox');return;}const d=unloadDraft(),est=lorryNow();$('unloadDate').value=d.d;if(!(ls.scanOn==='unload'&&$('camBox')))$('unloadScan').innerHTML=isLocked(d)&&!(d.sc||[]).length?'':scanHtml('unload');else scanSumDraw('unload');$('unloadNote').value=d.note||'';
   if(isLocked(d)){$('unloadList').innerHTML=lockHtml('unload',lockRows(d.i));unloadBar();return;}
   const ids=[...new Set([...Object.keys(est),...Object.keys(d.i)])];
-  $('unloadList').innerHTML=(d.sentRev&&d.unlock?`<div class="card warnbox">✏️ නිවැරදි කරනවා — හේතුව: “${esc(d.why||'')}”</div>`:'')+(ids.length?groupHtml(ids,(id,label)=>`<div class="row ${d.i[id]?'has':''}"><div class="lbl">${esc(label)}<small class="muted"> · ලොරියේ ${est[id]||0}</small></div><div class="stepper"><input type="number" inputmode="numeric" min="0" value="${d.i[id]||''}" placeholder="0" onfocus="this.select()" oninput="unloadSet('${esc(id)}',this.value)"></div></div>`):'<div class="empty">ලොරියේ බඩු ගැන දත්ත නැහැ. පහළින් භාණ්ඩයක් එකතු කරන්න.</div>');
+  $('unloadList').innerHTML=`<div class="card ${d.all?'okbox':''}"><label class="check"><input type="checkbox" ${d.all?'checked':''} onchange="unloadDraft().all=this.checked;save();renderUnload()"> 🚛 <b>ලොරිය සම්පූර්ණයෙන් හිස් කළා</b> (ලොරියේ කිසිම බඩුවක් ඉතුරු නැහැ)</label>${d.all?'<div class="small">✅ ඊළඟට පටවනකම් ලොරිය = 0. උදේ පැටවීමට කලින් නම් ඊයේ ඉතිරිය = මේ බෑව ගණන — ආයේ ගණන් කරන්න ඕනේ නැහැ.</div>':''}</div>`+(d.sentRev&&d.unlock?`<div class="card warnbox">✏️ නිවැරදි කරනවා — හේතුව: “${esc(d.why||'')}”</div>`:'')+(ids.length?groupHtml(ids,(id,label)=>`<div class="row ${d.i[id]?'has':''}"><div class="lbl">${esc(label)}<small class="muted"> · ලොරියේ ${est[id]||0}</small></div><div class="stepper"><input type="number" inputmode="numeric" min="0" value="${d.i[id]||''}" placeholder="0" onfocus="this.select()" oninput="unloadSet('${esc(id)}',this.value)"></div></div>`):'<div class="empty">ලොරියේ බඩු ගැන දත්ත නැහැ. පහළින් භාණ්ඩයක් එකතු කරන්න.</div>');
   unloadBar();
 }
 function unloadAddItem(){const q=prompt('බාපු භාණ්ඩයේ නම type කරන්න:');if(!q)return;const hits=products().filter(p=>norm(p[1]).includes(norm(q)));if(!hits.length){toast('හම්බ වුණේ නැහැ','warn');return;}let pick=hits[0];if(hits.length>1){const n=prompt(hits.slice(0,15).map((p,i)=>`${i+1}. ${p[1]}`).join('\n')+'\n\nඅංකය:','1');const k=Number(n)-1;if(!(k>=0&&k<hits.length))return;pick=hits[k];}const v=prompt(pick[1]+' — බාපු පැකට් ගණන:');if(v===null)return;unloadSet(pick[0],v);renderUnload();}
@@ -428,7 +454,7 @@ function sendUnload(){
   if(d.sentRev&&!d.unlock){toast('🔒 යැව්වා — නිවැරදි කරන්න නම් “✏️ නිවැරදි කිරීමක්”','warn');return;}
   const payload={v:1,d:d.d,rev,uid:d.uid,by:S.me,at:new Date().toISOString(),note:d.note,all:!!d.all,...(d.rs?{rs:d.rs}:{}),i:items,why:rev>1?(d.why||''):'',...(btOf(d).length?{bt:btOf(d)}:{})};
   const text=`🏭 *Factory එකට බෑවා* — ${d.d}\n${rev>1?'✏️ සංශෝධනය '+rev:'සංශෝධනය 1'} · ${S.me}${d.all?'\n🚛 ලොරිය සම්පූර්ණයෙන් හිස් කළා':''}\n\n`+items.map(x=>`• ${x[2]} — ${x[1]}`).join('\n')+`\n\nඑකතුව: ${total} පැකට්${d.note?'\nසටහන: '+d.note:''}\n━━━━━━━━━━\n${sbpEncode('unload',payload)}`;
-  beforeSend('unload',payload,text,t2=>sendOut('🏭 බාපු බඩු යවන්න',t2,'unload',payload,()=>{d.sentRev=rev;d.unlock=false;d.why='';S.sent.push({t:'unload',...(d.rs?{rs:d.rs}:{}),uid:d.uid,rev,d:d.d,at:new Date().toISOString(),total,i:{...d.i},text:t2,why:payload.why});trimSent();save();renderUnload();}));
+  beforeSend('unload',payload,text,t2=>sendOut('🏭 බාපු බඩු යවන්න',t2,'unload',payload,()=>{d.sentRev=rev;d.unlock=false;d.why='';const _at=new Date().toISOString();S.sent.push({t:'unload',...(d.rs?{rs:d.rs}:{}),...(d.all?{all:1}:{}),uid:d.uid,rev,d:d.d,at:_at,total,i:{...d.i},text:t2,why:payload.why});if(d.all){S.lrEmpty={at:_at,d:d.d,uid:d.uid,by:S.me};lrAutoCount(d,_at);}trimSent();save();renderUnload();}));
 }
 
 /* ---------------- INBOX: paste report / items code ---------------- */
@@ -1104,7 +1130,7 @@ function lrField(){return 'k_'+ensureDev().replace(/[^A-Za-z0-9_]/g,'_');}
 function lrKey(pid,name){if(products().some(p=>p[0]===pid))return pid;if(name){const hit=products().find(p=>norm(p[1])===norm(name));if(hit)return hit[0];}return pid;}
 /* this phone's own events for trip date T (latest revision of every uid) */
 function lrOwn(T){const last={};S.sent.forEach(x=>{if(x.t==='count'){if(dayOf(x.at)!==T)return;}else if(x.t==='load'){if(x.pre||x.d!==T)return;}else if(x.t==='unload'){if(x.d!==T)return;}else return;const p=last[x.uid];if(!p||num(x.rev)>=num(p.rev))last[x.uid]=x;});
-  const cd=S.drafts.count;return Object.values(last).map(x=>{const e={k:x.t==='count'?'c':x.t==='load'?'l':'u',uid:x.uid,rev:num(x.rev),at:x.at,by:x.by||S.me,d:x.d,i:x.i||{}};if(x.t==='count'&&cd&&cd.uid===x.uid){const dm={};Object.entries(cd.c||{}).forEach(([k,v])=>{if(v&&num(v.dmg)>0)dm[k]=num(v.dmg);});e.dm=dm;}if(x.add)e.add=1;if(x.rs)e.rs=x.rs;if(x.first)e.first=x.first;return e;});}
+  const cd=S.drafts.count;return Object.values(last).map(x=>{const e={k:x.t==='count'?'c':x.t==='load'?'l':'u',uid:x.uid,rev:num(x.rev),at:x.at,by:x.by||S.me,d:x.d,i:x.i||{}};if(x.t==='count'&&cd&&cd.uid===x.uid){const dm={};Object.entries(cd.c||{}).forEach(([k,v])=>{if(v&&num(v.dmg)>0)dm[k]=num(v.dmg);});e.dm=dm;}if(x.add)e.add=1;if(x.all)e.all=1;if(x.rs)e.rs=x.rs;if(x.first)e.first=x.first;return e;});}
 async function lrPush(T){T=T||today();const url=lsDoc(T);if(!url)return;const ev=lrOwn(T);const body=JSON.stringify({by:S.me,at:new Date().toISOString(),ev}),sig=JSON.stringify(ev);const key='lrSent_'+T;if(S[key]===sig)return;
   try{const r=await fetch(`${url}?updateMask.fieldPaths=code&updateMask.fieldPaths=${lrField()}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:'SBP1:lscan:0:00000000'},[lrField()]:{stringValue:body}}})});if(r.ok){Object.keys(S).filter(k=>k.startsWith('lrSent_')&&k!==key).forEach(k=>delete S[k]);S[key]=sig;save();}}catch(e){}}
 async function lrPull(T){T=T||today();const url=lsDoc(T);if(!url)return false;try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)return false;const j=await r.json(),me=lrField(),o={};
@@ -1127,8 +1153,11 @@ function lrState(T,skipUid){T=T||today();const ev=lrEvents(T),rem={src:'',at:'',
   else if(pc&&pc.d){const x=pcMap();Object.assign(rem,{src:'pc',at:pc.at||'',by:pc.by||'',d:pc.d,i:x.i,dm:x.dm,ok:true,stale:dayOf(pc.at||pc.d)!==T});}
   else if(S.rep&&S.rep.d<T){(S.rep.rows||[]).forEach(x=>{if(num(x[6])>0)rem.i[x[0]]=num(x[6]);});rem.src=Object.keys(rem.i).length?'rep':'';rem.d=S.rep.d;rem.stale=true;}
   if(rem.src==='count'&&dayOf(rem.at)!==T)rem.stale=true;
+  /* v5.1.3: 🚛 lorry emptied (unload "all") after the last count → lorry = 0 from then; only what happened after it counts (also days later) */
+  {const em=[];ev.filter(e=>e.k==='u'&&e.all).forEach(e=>em.push({at:String(e.at),by:e.by}));if(S.lrEmpty&&S.lrEmpty.at)em.push({at:String(S.lrEmpty.at),by:S.lrEmpty.by});if(pc&&pc.empty&&pc.at)em.push({at:String(pc.at),by:pc.by});
+    const E=em.sort((a,b)=>a.at.localeCompare(b.at)).pop();if(E&&E.at>String(rem.src==='pc'&&pc&&pc.empty?'':(rem.at||''))&&dayOf(E.at)<=T)Object.assign(rem,{src:'empty',at:E.at,by:E.by||'',ok:true,stale:false,i:{},dm:{},d:dayOf(E.at)});}
   const pre=loadMode==='pre'?{}:preFor(T);
-  const moves=ev.filter(e=>(e.k==='l'||e.k==='u')&&e.uid!==skipUid);
+  const moves=ev.filter(e=>(e.k==='l'||e.k==='u')&&e.uid!==skipUid&&!(rem.src==='empty'&&String(e.at)<=rem.at));
   const tot={};const add=(i,s)=>Object.entries(i||{}).forEach(([k,v])=>{const n=num(v)*s;if(!n)return;tot[k]=(tot[k]||0)+n;});
   add(rem.i,1);add(pre,1);moves.forEach(e=>add(e.i,e.k==='l'?1:-1));Object.keys(tot).forEach(k=>{if(tot[k]<=0)delete tot[k];});
   return {T,rem,pre,moves,tot,sum:Object.values(tot).reduce((a,b)=>a+b,0),cnt:cnts.length};}
@@ -1138,7 +1167,8 @@ function lrLeft(x){if(!x||!x.at)return 0;return Math.max(0,new Date(x.at).getTim
 function lrLeftTxt(ms){const m=Math.ceil(ms/60000);return m>=60?`පැය ${Math.floor(m/60)}යි${m%60?` මිනිත්තු ${m%60}යි`:''}`:`මිනිත්තු ${m}යි`;}
 const LR_RS={back:'🏭 කම්හලට ආපහු',dmg:'⚠️ Damage',wrong:'❌ වැරදියට පැටෙව්වා',other:'🎁 වෙනත්'};
 function lrHistHtml(st){const r=st.rem,rows=[];
-  if(r.src){const dmt=lrSum(r.dm);rows.push(`<div class="lr-h"><span class="lr-ic">🔢</span><div class="grow"><b>ඉතිරි (ලොරියේ තිබ්බා)</b><small>${r.src==='rep'?'📄 Report අනුව — තවම ගණන් කළේ නැහැ':`ගණන් කළේ ${esc(fmtAt(r.at))}${r.by?' · '+esc(r.by):''} · ${r.ok?'✅ PC අනුමතයි':'⏳ PC අනුමත නැහැ'}`}${dmt?` · ඉන් ⚠️ Damage ${dmt}`:''}</small></div><span class="lr-n">${lrSum(r.i)}</span></div>`);}
+  if(r.src==='empty')rows.push(`<div class="lr-h"><span class="lr-ic">🚛</span><div class="grow"><b>ලොරිය හිස් කළා (ඔක්කොම බෑවා)</b><small>${esc(fmtAt(r.at))}${r.by?' · '+esc(r.by):''} · ඉතිරිය ගණන් කරන්න ඕනේ නැහැ</small></div><span class="lr-n">0</span></div>`);
+  else if(r.src){const dmt=lrSum(r.dm);rows.push(`<div class="lr-h"><span class="lr-ic">🔢</span><div class="grow"><b>ඉතිරි (ලොරියේ තිබ්බා)</b><small>${r.src==='rep'?'📄 Report අනුව — තවම ගණන් කළේ නැහැ':`ගණන් කළේ ${esc(fmtAt(r.at))}${r.by?' · '+esc(r.by):''} · ${r.ok?'✅ PC අනුමතයි':'⏳ PC අනුමත නැහැ'}`}${dmt?` · ඉන් ⚠️ Damage ${dmt}`:''}</small></div><span class="lr-n">${lrSum(r.i)}</span></div>`);}
   const pt=preTot(st.pre);if(pt)rows.push(`<div class="lr-h"><span class="lr-ic">🌙</span><div class="grow"><b>කලින් දවසේ වෙන් කළා</b><small>ගමනට කලින් පටවලා තිබ්බා</small></div><span class="lr-n plus">+${pt}</span></div>`);
   let nl=0;st.moves.forEach(e=>{const s=lrSum(e.i);if(e.k==='l'){nl++;rows.push(`<div class="lr-h"><span class="lr-ic">${nl===1&&!e.add?'📦':'➕'}</span><div class="grow"><b>${nl===1&&!e.add?'පැටවීම':'එකතු කළා'}${e.rev>1?' · ✏️ නිවැරදි කළා':''}</b><small>${esc(lrHM(e.at))}${e.by?' · '+esc(e.by):''}${e.mine?'':' · 📱 වෙන phone'} · ${Object.keys(e.i).slice(0,3).map(k=>esc(pname(k))+' '+e.i[k]).join(', ')}${Object.keys(e.i).length>3?' …':''}</small></div><span class="lr-n plus">+${s}</span></div>`);}
     else rows.push(`<div class="lr-h"><span class="lr-ic">➖</span><div class="grow"><b>ලොරියෙන් අයින් කළා</b><small>${esc(lrHM(e.at))}${e.by?' · '+esc(e.by):''}${e.rs?' · '+esc(LR_RS[e.rs]||e.rs):''} · ${Object.keys(e.i).slice(0,3).map(k=>esc(pname(k))+' '+e.i[k]).join(', ')}</small></div><span class="lr-n minus">−${s}</span></div>`);});
@@ -1213,7 +1243,7 @@ function lrChip(k){const el=document.querySelector(`#loadList [data-lrow="${CSS.
 
 
 /* ================= v4.5.2 · 🕓 04:00 වැඩ දවස · 🔐 encrypt (lx) · 📋 කම්හලේ අලුත් ඇණවුම් + 🔴 hold live · 🔄 update තීරුව ================= */
-const LA_VER='5.1.2';
+const LA_VER='5.1.3';
 /* v5.1 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v5.1.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuL',A='l',_f=window.fetch.bind(window);
@@ -1362,7 +1392,7 @@ function v5Ev(T,withVoid){T=T||today();const m={};v5Own(T).forEach(e=>{m[e.uid]=
   if(S.lrO&&S.lrO.T===T)Object.values(S.lrO.o||{}).forEach(x=>(x.ev||[]).forEach(e=>{if(!e||!V5K[e.k]||!e.uid)return;const p=m[e.uid];if(!p||num(e.rev)>num(p.rev))m[e.uid]={...e,mine:0,dev:x.by||e.by};}));
   return Object.values(m).filter(e=>withVoid||!e.void).sort((a,b)=>String(a.first||a.at).localeCompare(String(b.first||b.at)));}
 function v5Day(T){T=T||today();const ev=v5Ev(T),one=k=>ev.filter(e=>e.k===k)[0]||null,st=lrState(T);
-  const counted=st.rem.src==='count'&&!st.rem.stale,loaded=st.moves.some(e=>e.k==='l')||preTot(st.pre)>0;
+  const counted=(st.rem.src==='count'&&!st.rem.stale)||st.rem.src==='empty',loaded=st.moves.some(e=>e.k==='l')||preTot(st.pre)>0;
   const fl=ev.filter(e=>e.k==='fl'),ex=ev.filter(e=>e.k==='ex'),dep=one('dep'),fin=one('fin'),nt=one('nt'),ek=ev.filter(e=>e.k==='ek').slice(-1)[0]||null;
   const step=nt?'F':fin?'E':dep?'C':counted?'B':'A';
   return {T,ev,st,counted,loaded,fl,flT:fl.reduce((a,e)=>a+num(e.amt),0),ex,exT:ex.reduce((a,e)=>a+num(e.amt),0),dep,fin,nt,ek,step};}

@@ -120,7 +120,7 @@ textarea.ntext{min-height:90px;font:16px/1.4 system-ui,"Noto Sans Sinhala",sans-
 .qs-msg{position:absolute;left:0;right:0;bottom:46px;text-align:center;color:#fff;font-weight:700;text-shadow:0 1px 3px #000}.qs-btns{position:absolute;right:8px;bottom:8px;display:flex;gap:6px}
 .kv{display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:14px;margin:4px 0}.kv span{color:#64748b}.kv b.bad,.bad{color:#b91c1c}.kv b.warn,.warn{color:#c2410c}
 .holdcard{border:3px solid #dc2626}.shoplist div{padding:4px 0;border-bottom:1px solid #eee}
-.badge.bad{background:#fee2e2;color:#b91c1c}.badge.warn{background:#ffedd5;color:#c2410c}
+.badge.bad{background:#fee2e2;color:#b91c1c}.badge.old{background:#e5e7eb;color:#374151}.badge.warn{background:#ffedd5;color:#c2410c}
 .irow .bcalc{grid-column:1/-1}.chip small{opacity:.7}
 #bnewBody .irow{display:grid;grid-template-columns:76px 110px 1fr;align-items:center;gap:8px}#bnewBody .irow .bcalc{grid-column:auto}#bnewBody .irow select{max-width:100%;padding:6px}
 /* v4.4.3 */
@@ -1024,9 +1024,11 @@ function ldUndo(){const m=ldMine();m.sc.pop();save();ldDraw();ldPush();}
 function renderStock(){const s=S.stk,name=pid=>{for(const f of BF())for(const x of f[4])if(x[3]===pid)return [f[0],x[0]];return [pid,''];};
   const rows={};((s&&s.f)||[]).forEach(([pid,l])=>{(rows[pid]=rows[pid]||{f:[],l:[]}).f=l;});((s&&s.l)||[]).forEach(([pid,l])=>{(rows[pid]=rows[pid]||{f:[],l:[]}).l=l;});
   const today0=myB().filter(b=>b.d>=addDays(today(),-1)&&!(S.stk&&S.stk.at&&b.at<S.stk.at));
-  const chip=([b,q])=>{const t=BT.get(b),dl=t?daysTo(t.x):null;return `<span class="badge ${t&&t.s==='hold'?'bad':dl!==null&&dl<30?'warn':''}">${b?esc(b):'පරණ'} · ${q}</span>`;};
+  const chip=([b,q])=>{const t=BT.get(b),dl=t?daysTo(t.x):null;return `<span class="badge ${!b?'old':t&&t.s==='hold'?'bad':dl!==null&&dl<30?'warn':''}">${b?esc(b):'පරණ'} · ${q}</span>`;};
+  /* 4.69: same order as the PC product list (families → sizes), not A-Z */
+  const ord={};let oi=0;BF().forEach(f=>(f[4]||[]).forEach(x=>{if(x&&x[3]!==undefined&&ord[x[3]]===undefined)ord[x[3]]=oi++;}));const po=pid=>ord[pid]!==undefined?ord[pid]:1e6;
   $('stockBody').innerHTML=`<div class="card small muted">${s&&s.at?'📦 PC එකේ ගණන් '+esc(fmtAt(s.at,true))+' දක්වා':'PC එකෙන් තොගය තවම ආවේ නැහැ (Internet + PC එක on කරලා 🔄)'}${today0.length?'<br>📱 ඊට පස්සේ phone එකෙන් හදපු: '+today0.map(b=>esc(b.no)).join(', '):''}</div>
-   ${Object.keys(rows).length?Object.entries(rows).sort((a,b)=>name(a[0])[0].localeCompare(name(b[0])[0],'si')).map(([pid,r])=>{const [fam,sz]=name(pid),fq=r.f.reduce((t,x)=>t+x[1],0),lq=r.l.reduce((t,x)=>t+x[1],0);return `<div class="hist"><div class="grow"><b>${esc(fam)} ${esc(sz)}</b><div class="small">🏭 <b>${fq}</b> ${r.f.map(chip).join(' ')}</div>${lq?`<div class="small">🚚 <b>${lq}</b> ${r.l.map(chip).join(' ')}</div>`:''}</div></div>`;}).join(''):''}
+   ${Object.keys(rows).length?Object.entries(rows).sort((a,b)=>po(a[0])-po(b[0])||name(a[0])[0].localeCompare(name(b[0])[0],'si')).map(([pid,r])=>{const [fam,sz]=name(pid),fq=r.f.reduce((t,x)=>t+x[1],0),lq=r.l.reduce((t,x)=>t+x[1],0);return `<div class="hist"><div class="grow"><b>${esc(fam)} ${esc(sz)}</b><div class="small">🏭 <b>${fq}</b> ${r.f.map(chip).join(' ')}</div>${lq?`<div class="small">🚚 <b>${lq}</b> ${r.l.map(chip).join(' ')}</div>`:''}</div></div>`;}).join(''):''}
    <button class="btn primary block" onclick="go('fcount')">🔢 කම්හල් තොගය ගණන් කළා</button>`;}
 function fcSys(){const m={},l={};((S.stk&&S.stk.f)||[]).forEach(([pid,x])=>{m[pid]=(x||[]).reduce((t,y)=>t+y[1],0);});((S.stk&&S.stk.l)||[]).forEach(([pid,x])=>{l[pid]=(x||[]).reduce((t,y)=>t+y[1],0);});return {f:m,l};}
 function fcBig(q,s){const d=Math.abs(q-s);return d>=5||(s>0&&d/s>=0.1&&d>=2);}
@@ -1290,7 +1292,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='4.68';
+const FA_VER='4.69';
 /* v4.64 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v4.64.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuF',A='f',_f=window.fetch.bind(window);
