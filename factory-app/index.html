@@ -212,7 +212,6 @@ async function getKey(){if(ckey)return ckey;if(!S.cloud||!S.cloud.k)throw new Er
 async function seal(type,obj){const iv=crypto.getRandomValues(new Uint8Array(12));const ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},await getKey(),new TextEncoder().encode(JSON.stringify(obj))));const b=b64(new TextEncoder().encode(JSON.stringify({v:1,iv:b64(iv),ct:b64(ct)})));return `SBP1:${type}:${b}:${fnv(type+':'+b)}`;}
 async function unseal(code,type){const m=/SBP1:([a-z]+):([A-Za-z0-9+/=\s]+):([0-9a-f]{8})/.exec(code||'');if(!m||m[1]!==type)throw new Error('bad');const b=m[2].replace(/\s+/g,'');if(fnv(type+':'+b)!==m[3])throw new Error('checksum');const box=JSON.parse(new TextDecoder().decode(unb64(b)));const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(box.iv)},await getKey(),unb64(box.ct));return JSON.parse(new TextDecoder().decode(pt));}
 /* ---------- link: #f=project~box~key (opened from the link, or pasted inside the app) ---------- */
-function applyFLink(t){const m=/[#&]f=([a-z][a-z0-9-]{4,29})~([A-Za-z0-9_-]{20,64})~([A-Za-z0-9_-]{40,60})/.exec(String(t||''));if(!m)return false;{const c={p:m[1],b:m[2],k:m[3]};if(!S.cloud||S.cloud.b!==c.b||S.cloud.k!==c.k){if(S.outbox.length&&S.cloud&&!confirm('⚠️ තවම PC එකට නොගිය දේවල් '+S.outbox.length+'ක් තියෙනවා. අලුත් link එකට මාරු වුණොත් ඒවා අලුත් යතුරෙන් යනවා. හරිද?')){}S.cloud=c;S.cfg=null;ckey=null;save();}}return true;}
 (function(){if(applyFLink(location.hash)){try{history.replaceState(null,'','#home');}catch(e){}}})();
 function useLink(t){if(!applyFLink(String(t||'').trim())){toast('මේක කම්හල් app link එක නෙවෙයි. PC එකෙන් එවපු “🏭 කම්හල් App” link එකම copy කරන්න.','err');return false;}toast('🔑 සකස් කළා ✅');sync(true).then(()=>render());go(S.me?'home':'setup');return true;}
 /* v4.3.6 · iPhone: Safari and the Home-screen icon keep separate data */
@@ -223,16 +222,6 @@ async function pasteLink(){try{const t=await navigator.clipboard.readText();$('l
 
 function fsBase(){return `${FS}${S.cloud.p}/databases/(default)/documents/boxes/${S.cloud.b}`;}
 function cloudErrText(st,j){const s=((j||{}).error||{}).status||'';if(st===429||s==='RESOURCE_EXHAUSTED')return 'Firebase අද සීමාව ඉවරයි — හෙට ඉබේම යනවා (බිල් phone එකේ ආරක්ෂිතයි)';if(st===403||s==='PERMISSION_DENIED')return 'Firebase Rules හරි නැහැ';if(st===404)return 'Firebase project / mailbox හමු වුණේ නැහැ';return 'Firebase දෝෂය '+st;}
-async function flush(){
-  if(!S.cloud||!S.outbox.length)return true;
-  for(const m of S.outbox.slice()){
-    let r;try{r=await fetch(`${fsBase()}/in?documentId=${encodeURIComponent(m.id)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:m.code},at:{stringValue:m.at}}})});}
-    catch(e){S.cloudErr='Internet නැහැ — signal ආපු ගමන් ඉබේම යනවා';save();return false;}
-    if(r.ok||r.status===409){S.outbox=S.outbox.filter(x=>x.id!==m.id);const h=S.sent.find(x=>x.uid===m.uid);if(h)h.up=new Date().toISOString();S.cloudErr='';S.cloudOk=new Date().toISOString();save();}
-    else{let j={};try{j=await r.json();}catch(e){}S.cloudErr=cloudErrText(r.status,j);save();return false;}
-  }
-  return true;
-}
 async function pull(){
   if(!S.cloud)return;let r;try{r=await fetch(`${fsBase()}/out/fcfg`,{cache:'no-store'});}catch(e){S.cloudErr='Internet නැහැ';save();return;}
   if(r.status===404){S.cloudErr=S.cfg?'⚠️ මේ phone එකේ link එක පරණයි (PC එකෙන් අලුත් යතුරක් හැදුවා). PC එකෙන් අලුත් link එක අරන් open කරන්න. තවම නොගිය බිල් phone එකේ ආරක්ෂිතයි.':'PC එකෙන් තවම ලැයිස්තුව ආවේ නැහැ (PC එකේ “🏭 කම්හල් App” පිටුව එක පාරක් open කරන්න)';save();return;}
@@ -243,15 +232,6 @@ async function pull(){
   try{await pullBatches();}catch(e){console.warn('batches',e);}
 }
 async function sync(manual){if(!S.cloud){if(manual)toast('Link එකෙන් open කරලා නැහැ. PC එකෙන් “🏭 කම්හල් app link” එක ගන්න.','warn');return;}if(cloudBusy)return;cloudBusy=true;try{await flush();await pull();}finally{cloudBusy=false;}if(manual)toast(S.cloudErr?'⚠️ '+S.cloudErr:'☁️ යැව්වා / ගත්තා ✅',S.cloudErr?'warn':'ok');if(['home','history','setup'].includes(screen))render();}
-async function send(k,body,label,quiet){
-  if(!S.cloud||!S.cfg){toast('PC එකෙන් ලැයිස්තුව තවම ආවේ නැහැ.','err');return false;}
-  if((body.d||'')>today()){toast('අනාගත දිනයක් දාන්න බැහැ — දිනය හරි කරන්න.','err');return false;}
-  const rec={uid:ensureDev()+'-'+(++S.seq),rev:1,k,d:body.d||workDay(),at:new Date().toISOString(),by:S.me||'',pv:S.cfg.pv||'',...body};
-  let code;try{code=await seal('fx',rec);}catch(e){toast('Encrypt කරන්න බැරි වුණා: '+e.message,'err');return false;}
-  S.outbox.push({id:'fx_'+rec.uid.replace(/[^A-Za-z0-9_-]/g,'_'),uid:rec.uid,code,at:rec.at});
-  if(!quiet){const keep=JSON.parse(JSON.stringify(rec));if(keep.ph)keep.ph=1;if(keep.pay&&keep.pay.ph)keep.pay.ph=1;S.sent.unshift({uid:rec.uid,k,d:rec.d,at:rec.at,label,rec:keep});S.sent=S.sent.slice(0,400);}save();
-  flush().then(()=>{if(['home','history'].includes(screen))render();});return true;
-}
 /* ---------- lists from the PC ---------- */
 /* p: [id,name,code,price,noDisc,freePer,freeGive,kind('l' loose | 'r' raw | 0 packet)]
    c: [id,name,route,debt,limit,prices,disc%,phone,lastBill[[pid,qty,price]],usuallyCredit,routeId,staff] */
@@ -334,7 +314,7 @@ function staffSet(name){const d=D('bill'),c=C().find(x=>x[11]&&norm(x[1])===norm
 function lastBillOf(cid){const mine=S.sent.find(x=>x.k==='bill'&&x.rec&&x.rec.c===cid&&!x.gone);if(mine)return mine.rec.it.map(x=>[x[0],x[1]]);const c=cust(cid);return c&&Array.isArray(c[8])?c[8].map(x=>[x[0],x[1]]):null;}
 function sameAsLastBtn(d){if(!d.c)return '';const l=lastBillOf(d.c);if(!l||!l.length)return '';const ok=l.filter(x=>P().some(p=>p[0]===x[0]));if(!ok.length)return '';return `<button class="btn light block" onclick="sameAsLast()">🔁 අන්තිම බිල වගේම <span class="small muted">(${ok.map(x=>esc(prod(x[0])[1])+' '+qText(prod(x[0]),x[1])).slice(0,4).join(', ')}${ok.length>4?' …':''})</span></button>`;}
 function sameAsLast(){const d=D('bill'),c=cust(d.c),l=(lastBillOf(d.c)||[]).filter(x=>P().some(p=>p[0]===x[0]));d.it=l.map(([pid,q])=>{const p=prod(pid);return [pid,q,freeFor(p,q),isW(p)?loosePrice(d,p):custPrice(c,p)];});save();render();toast('🔁 දැම්මා — ගණන් වෙනස් කරන්න පුළුවන්');}
-function loosePrice(d,p){const lp=(S.cfg&&S.cfg.lp)||{},key=(d.c||'_')+'|'+p[0];const mine=S.sent.find(x=>x.k==='bill'&&x.rec&&(x.rec.c||'')===(d.c||'')&&(d.c||x.rec.cn===d.cn)&&x.rec.it.some(i=>i[0]===p[0]));if(mine)return mine.rec.it.find(i=>i[0]===p[0])[3];return lp[key]!==undefined?lp[key]:(p[3]||0);}
+function loosePrice(d,p){const lp=(S.cfg&&(S.cfg.lpz||(S.cfg.lp&&typeof S.cfg.lp==='object'?S.cfg.lp:null)))||{},/* 4.73: “lp” is also the Firebase project (a text) — the loose prices come as “lpz” */key=(d.c||'_')+'|'+p[0];const mine=S.sent.find(x=>x.k==='bill'&&x.rec&&(x.rec.c||'')===(d.c||'')&&(d.c||x.rec.cn===d.cn)&&x.rec.it.some(i=>i[0]===p[0]));if(mine)return mine.rec.it.find(i=>i[0]===p[0])[3];return lp[key]!==undefined?lp[key]:(p[3]||0);}
 function itemPicker(k,field){return `<div class="field"><input type="search" id="pq_${field}" placeholder="🔎 භාණ්ඩය (නම / කේතය)" oninput="prodList('${k}','${field}')" autocomplete="off"></div><div id="pl_${field}"></div>`;}
 function prodOk(k,field,p){if(!isW(p))return true;return (k==='bill'&&field==='it')||k==='ret';}
 function prodList(k,field){const q=norm($('pq_'+field).value),l=q?P().filter(p=>prodOk(k,field,p)&&(norm(p[1]).includes(q)||(p[2]&&norm(p[2])===q))).slice(0,20):[];$('pl_'+field).innerHTML=l.map(p=>`<button class="pick" onclick="addItem('${k}','${field}','${esc(p[0])}')"><span>${p[2]?`<em>${esc(p[2])}</em> `:''}${isW(p)?'⚖️ ':''}${esc(p[1])}</span><b>${isW(p)?'කිලෝවකට':money(custPrice(cust(D(k).c),p))}</b></button>`).join('');}
@@ -426,9 +406,7 @@ function renderPay(){const d=D('pay'),c=cust(d.c);$('payBody').innerHTML=`${date
   <div class="seg"><button class="${d.pay.m!=='cheque'?'on':''}" onclick="D('pay').pay.m='cash';save();render()">💵 Cash</button><button class="${d.pay.m==='cheque'?'on':''}" onclick="D('pay').pay.m='cheque';save();render()">🏦 චෙක්</button></div>
   ${d.pay.m==='cheque'?`<div class="row2"><div class="field"><label>චෙක් අංකය</label><input value="${esc(d.pay.no||'')}" onchange="D('pay').pay.no=this.value;save()"></div><div class="field"><label>බැංකුව</label><input value="${esc(d.pay.bank||'')}" onchange="D('pay').pay.bank=this.value;save()"></div></div><div class="field"><label>චෙක් දිනය</label><input type="date" value="${esc(d.pay.cd||'')}" onchange="D('pay').pay.cd=this.value;save()"></div>${photoField('pay')}`:''}</div>
   <button class="btn primary block big" onclick="sendPay()">📤 PC එකට යවන්න</button>`;}
-async function sendPay(){const d=D('pay'),c=cust(d.c),amt=r2(num(d.amt));if(!c){toast('කඩය තෝරන්න','err');return;}if(!(amt>0)){toast('මුදල දාන්න','err');return;}if(d.pay.m==='cheque'&&(!d.pay.no||!d.pay.cd)){toast('චෙක් අංකය සහ දිනය දාන්න','err');return;}
-  if(amt>c[3]+0.004&&!confirm(`${c[1]} ගේ ණය ${money(c[3])} — ඊට වඩා වැඩියි. ඉතිරිය advance විදිහට PC එකේ බලනවා. යවන්නද?`))return;
-  if(await send('pay',{d:d.d,c:c[0],amt,m:d.pay.m==='cheque'?'cheque':'cash',no:d.pay.no||'',bank:d.pay.bank||'',cd:d.pay.cd||'',...(d.pay.m==='cheque'&&d.pay.ph?{ph:d.pay.ph}:{})},`💰 ${c[1]} ${money(amt)}`)){rememberCust(c[0]);newDraft('pay');toast('✅ යැව්වා');go('home');}}
+async function sendPay(){}/* 4.74 clean-up: the real body is set later */
 /* ---------- return ---------- */
 function renderRet(){const d=D('ret');$('retBody').innerHTML=`${dateBanner(d)}<div class="card">${dateField('ret')}</div>${custPicker('ret',false)}
   <div class="card"><h3>↩️ ආපහු ගත්ත බඩු</h3>${itemPicker('ret','it')}${itemRows('ret','it',{kind:1})}</div>
@@ -482,10 +460,6 @@ async function fixVoid(uid){const x=S.sent.find(s=>s.uid===uid);if(!x)return;
   const why=(prompt('❌ අවලංගු කරන්න — හේතුව (අනිවාර්යයි):','')||'').trim();if(why.length<3){toast('හේතුව ලියන්න','err');return;}
   if(await send('fix',{d:x.d,ref:uid,act:'void',why},`❌ අවලංගු ඉල්ලීම — ${x.label.slice(2)}`)){x.fix='void';save();toast('✅ ඉල්ලීම යැව්වා — PC එකේ අනුමත කරනවා');render();}}
 /* change a message that is still on this phone (not sent yet): same uid, new code */
-async function resend(uid,body,label){const o=S.outbox.find(x=>x.uid===uid),h=S.sent.find(x=>x.uid===uid);if(!o||!h){toast('මේක දැනටමත් PC එකට ගියා — “✏️” ආයෙත් ඔබන්න (ඉල්ලීමක් විදිහට යනවා)','warn');return false;}
-  const rec={...h.rec,...body,uid,rev:(h.rec.rev||1)+1,at:new Date().toISOString(),pv:S.cfg.pv||''};let code;try{code=await seal('fx',rec);}catch(e){toast('Encrypt කරන්න බැරි වුණා','err');return false;}
-  if(!S.outbox.some(x=>x.uid===uid)){toast('මේ අතරේ PC එකට ගියා — ඉල්ලීමක් විදිහට යවන්න','warn');return false;}
-  o.code=code;o.at=rec.at;const keep=JSON.parse(JSON.stringify(rec));if(keep.pay&&keep.pay.ph)keep.pay.ph=1;h.rec=keep;h.label=label+' ✏️';h.at=rec.at;h.d=rec.d;save();flush().then(()=>{if(['home','history'].includes(screen))render();});return true;}
 /* ---------- history / setup ---------- */
 function renderHistory(){const ok=okSet(),rj=rjMap(),out=new Set(S.outbox.map(x=>x.uid));
   $('historyBody').innerHTML=cloudLine()+(S.sent.length?S.sent.slice(0,120).map(x=>{const st=x.gone?'<span class="muted">—</span>':rj.has(x.uid)&&/^phone එකෙන්/.test(rj.get(x.uid))?'<span class="muted">🔁 වෙනස් කළා</span>':rj.has(x.uid)?`<span class="bad">❌ ප්‍රතික්ෂේප</span>`:ok.has(x.uid)?'<span class="ok">✅ PC එකේ</span>':out.has(x.uid)?'<span class="bad">📱 phone එකේ</span>':'<span class="wait">☁️ ගියා</span>';
@@ -855,7 +829,6 @@ function BF(){return (S.cfg&&S.cfg.bf)||[];}/* [fam, code, en, expMonths, [[size
 function bfOf(fam){return BF().find(f=>f[0]===fam)||null;}
 function bfPkd(fam){const f=bfOf(fam);return !!(f&&f[5]);}/* ⚙️ PKD (packed date) separate for this product */
 function bfByCode(code){return BF().find(f=>f[1]===String(code||'').toUpperCase())||null;}
-function ddmmyy(d){return d.slice(8,10)+d.slice(5,7)+d.slice(2,4);}
 function dmy(d){return d?d.slice(8,10)+'.'+d.slice(5,7)+'.'+d.slice(0,4):'';}
 function addMonths(d,m){const y=+d.slice(0,4),mo=+d.slice(5,7)-1+Math.round(num(m)),dd=+d.slice(8,10),t=new Date(Date.UTC(y,mo,1)),last=new Date(Date.UTC(t.getUTCFullYear(),t.getUTCMonth()+1,0)).getUTCDate();t.setUTCDate(Math.min(dd,last));return t.toISOString().slice(0,10);}
 function daysTo(d){const a=Date.parse(today()+'T00:00:00Z'),b=Date.parse(String(d||'')+'T00:00:00Z');return Number.isFinite(b)?Math.round((b-a)/864e5):null;}
@@ -900,7 +873,7 @@ function batchTiles(){if(!bOn())return '';const todayB=myB().filter(b=>b.d===wor
 /* ---------- 🏷️ today's batches ---------- */
 function renderBatches(){const d=workDay(),mine=myB().filter(b=>b.d>=addDays(d,-2)).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
   $('batchesBody').innerHTML=`<button class="btn primary block big" onclick="bNew()">＋ අලුත් Batch එකක්</button>
-   ${mine.length?mine.map(b=>{const f=bfOf(b.fam),tot=b.sz.reduce((s,x)=>s+num(x[1]),0);return `<div class="card"><div class="bno">${esc(b.no)}</div><div><strong>${esc(b.fam)}</strong> · ${esc(b.d)} · ${BST[b.st]||''}</div><div class="small muted">${b.sz.filter(x=>num(x[1])>0).map(x=>esc(sizeOfPid(b.fam,x[0]))+' × '+x[1]).join(' · ')||'පැකට් ගණන තවම නැහැ'}${tot?' · එකතුව '+tot:''}</div>
+   ${mine.length?mine.map(b=>{const f=bfOf(b.fam),tot=b.sz.reduce((s,x)=>s+num(x[1]),0);return `<div class="card"><div class="bno">${esc(b.no)}</div><div><strong>${esc(b.fam)}</strong> · ${esc(b.d)} · ${BST[b.st]||''}</div><div class="small muted">${b.sz.filter(x=>num(x[1])>0).map(x=>esc(sizeOfPid(b.fam,x[0]))+' × '+x[1]).join(' · ')||'පැකට් ගණන තවම නැහැ'}${tot?' · එකතුව '+tot:''}</div>${window.v471BW?v471BW(b):''}
      <div class="hbtns"><button class="btn sm light" onclick="bShow('${esc(b.bid)}')">🔢 අංකය / QR</button><button class="btn sm light" onclick="bEdit('${esc(b.bid)}')">✏️ ${b.st==='making'?'පැකට් ගණන දාන්න':'වෙනස් කරන්න'}</button><button class="btn sm light" onclick="bWa('${esc(b.bid)}')">💬 සේවකයන්ට</button></div>${outbox(b.uidLast)?'<div class="small bad">📤 තවම PC එකට ගියේ නැහැ</div>':''}</div>`;}).join(''):'<div class="card empty">අද batch නැහැ</div>'}
    <button class="btn light block" onclick="bWaAll()">💬 අද batch ලැයිස්තුව සේවකයන්ට (WhatsApp)</button>`;}
 function outbox(uid){return uid&&S.outbox.some(x=>x.uid===uid);}
@@ -918,10 +891,11 @@ function renderBNew(){if(!bd){bNew();return;}const fams=BF();
     <div class="field"><label>📅 කල් ඉකුත් (EXP) <span class="small muted">— ඉබේම ${dmy(exp)} (මාස ${f?f[3]:8})</span></label><input type="date" id="bdExp" min="${esc(bd.d)}" value="${esc(bExp())}" onchange="bd.x=(this.value&&this.value!==bAutoExp())?this.value:'';render()">${bd.x?`<div class="small"><span class="warn">✏️ මේ batch එකට වෙනස් කළ EXP</span> · <a href="#" onclick="bd.x='';render();return false">↩️ ඉබේම එකට</a></div>`:''}</div>
     ${bfPkd(bd.fam)||bd.pk?`<div class="field"><label>📦 ඇසුරුම් කළ දිනය (PKD)</label><input type="date" id="bdPk" min="${esc(bd.d)}" max="${today()}" value="${esc(bd.pk||'')}" onchange="bd.pk=this.value"></div>`:''}</div>
    <div class="card"><h3>📦 හදපු පැකට් ගණන <span class="small muted">(පස්සේ දාන්නත් පුළුවන්)</span></h3>${sizeLines(bd.fam).map(([size,t,n,pid])=>{const q=bd.sz[pid]||'',bb=bundlesOf(t,n,q,bd.rem[pid]);return `<div class="irow"><label><strong>${esc(size)}</strong><small class="muted">${t==='b'?'බණ්ඩලයට '+n:t==='c'?'කාඩ්':'තනි'}</small></label><input type="number" inputmode="numeric" min="0" value="${esc(q)}" oninput="bd.sz['${esc(pid)}']=this.value;bCalc(this,'${esc(pid)}','${esc(t)}',${num(n)})"><div class="bcalc small" id="bc_${esc(pid)}">${bCalcText(t,n,q,bd.rem[pid],pid)}</div></div>`;}).join('')}</div>
+   ${window.v471W?v471W():''}
    <div class="card"><h3>🌶️ අමු ද්‍රව්‍ය (මලු 2–3 මිශ්‍ර නම් ඔක්කොම)</h3><div class="chips">${lots.map(l=>`<button class="chip ${bd.raw.includes(l.no)?'ok':''}" data-lot="${esc(l.no)}" ${l.qc==='rej'&&!bd.raw.includes(l.no)?'disabled':''} onclick="bToggleLot('${esc(l.no)}')">${esc(l.no)} · ${esc(l.mat)}<small> ${faLeftTxt(l)}${esc(l.sn||'')} ${faMarks(l)}</small></button>`).join('')||'<span class="small muted">Lot නැහැ — “🌶️ අමු ද්‍රව්‍ය ලැබුණා” එකෙන් දාන්න, නැත්නම් පහළ ලියන්න.</span>'}</div><div id="faAutoBox" class="small" style="margin:6px 0"></div><label class="check"><input type="checkbox" ${S.lotAll?'checked':''} onchange="S.lotAll=this.checked?1:0;render()"> ඉවර ඒවාත් පෙන්නන්න</label>
     <button class="btn sm light" onclick="scanFor='lot';go('scan')">📷 මල්ලේ QR scan කරන්න</button>
-    <div class="field"><label>නැත්නම් (සැපයුම්කරු + ගෙනාපු දිනය)</label><input maxlength="200" value="${esc(bd.rt)}" onchange="bd.rt=this.value"></div><div class="field"><label>අමු ද්‍රව්‍ය බර kg (අස්වැන්න %)</label><input type="number" inputmode="decimal" min="0" value="${esc(bd.kg)}" onchange="bd.kg=this.value"></div></div>
-   <div class="card"><div class="field"><label>නාස්තිය (ඕනේ නම්)</label><input maxlength="60" value="${esc(bd.w)}" onchange="bd.w=this.value" placeholder="උදා: 0.3 kg"></div><div class="field"><label>සටහන</label><input maxlength="240" value="${esc(bd.nt)}" onchange="bd.nt=this.value"></div><label class="check"><input type="checkbox" ${bd.sm?'checked':''} onchange="bd.sm=this.checked?1:0"> 🧪 Sample පැකට් 1–2 තියාගත්තා</label>${bd.bid?`<div class="field"><label>වෙනස් කරන හේතුව</label><input id="bdWhy" maxlength="200"></div>`:''}</div>
+    <div class="field"><label>නැත්නම් (සැපයුම්කරු + ගෙනාපු දිනය)</label><input maxlength="200" value="${esc(bd.rt)}" onchange="bd.rt=this.value"></div>${window.v471W?'':`<div class="field"><label>අමු ද්‍රව්‍ය බර kg</label><input type="number" inputmode="decimal" min="0" value="${esc(bd.kg)}" onchange="bd.kg=this.value"></div>`}</div>
+   <div class="card"><div class="field"><label>♻️ නාස්තියේ හේතුව / සටහන <small class="muted">(ඕනේ නම්)</small></label><input maxlength="60" value="${esc(bd.w)}" onchange="bd.w=this.value" placeholder="උදා: නටු, දූවිලි"></div><div class="field"><label>සටහන</label><input maxlength="240" value="${esc(bd.nt)}" onchange="bd.nt=this.value"></div><label class="check"><input type="checkbox" ${bd.sm?'checked':''} onchange="bd.sm=this.checked?1:0"> 🧪 Sample පැකට් 1–2 තියාගත්තා</label>${bd.bid?`<div class="field"><label>වෙනස් කරන හේතුව</label><input id="bdWhy" maxlength="200"></div>`:''}</div>
    <button class="btn primary block big" onclick="bSave()">${bd.bid?'💾 සුරකින්න / PC එකට':'✅ Batch අංකය ගන්න'}</button>`;}
 function dateField0(v,id){return `<div class="field"><label>📅 හැදුව දිනය</label><input type="date" id="${id}" max="${today()}" value="${esc(v)}" onchange="bd.d=this.value;render()"></div>`;}
 function bCalcText(t,n,q,rem,pid){const b=bundlesOf(t,n,q,rem);if(!num(q))return '';if(t==='c')return `${b.n} කාඩ්`;if(t!=='b')return 'තනි පැකට්';return `බණ්ඩල ${b.full}${b.rem?` + ඉතුරු ${b.rem} <select onchange="bd.rem['${pid}']=this.value;bCalc(null,'${pid}','${t}',${n})"><option value="A" ${rem!=='B'?'selected':''}>🅰️ පොඩි බණ්ඩලය</option><option value="B" ${rem==='B'?'selected':''}>🅱️ ලිහිල්</option></select>`:''}`;}
@@ -931,10 +905,12 @@ async function bSave(){if(!bd||!bd.fam){toast('භාණ්ඩය තෝරන�
   bd.d=($('bdDate')||{}).value||bd.d;if(bd.d>today()){toast('අනාගත දිනයක් බැහැ','err');return;}
   if($('bdPk'))bd.pk=$('bdPk').value||'';const exp=bExp();if(exp<=bd.d){toast('EXP හදපු දිනයට පස්සේ වෙන්න ඕනේ','err');return;}if(bd.pk&&bd.pk<bd.d){toast('PKD හදපු දිනයට කලින් බැහැ','err');return;}
   const sz=sizeLines(bd.fam).map(([size,t,n,pid])=>[pid,Math.max(0,Math.floor(num(bd.sz[pid]))),bd.rem[pid]==='B'?'B':'A']).filter(x=>x[1]>0||bd.bid);
-  const why=bd.bid?(($('bdWhy')||{}).value||'').trim():'';const old=bd.bid?myB().find(x=>x.bid===bd.bid):null;
+  let why=bd.bid?(($('bdWhy')||{}).value||'').trim():'';const old=bd.bid?myB().find(x=>x.bid===bd.bid):null;
+  if(old&&why.length<2&&window.v471OnlyW&&v471OnlyW(old,sz,exp))why='⚖️ බර: අමු '+(num(bd.kg)||0)+' kg · කුඩු '+(num(bd.okg)||0)+' kg';
   if(old&&old.st!=='making'&&why.length<2){toast('වෙනස් කරන හේතුව ලියන්න','err');return;}
+  if(window.v471NoKg&&v471NoKg(sz))return;
   const st=sz.some(x=>x[1]>0)?(old&&old.st==='hold'?'hold':'ok'):'making';
-  const b={bid:bd.bid||('FB'+ensureDev()+'-'+(++S.seq)),no:bd.no||nextBatchNo(bd.fam,bd.d),fam:bd.fam,d:bd.d,exp,pk:bd.pk||'',sz,raw:bd.raw.filter(n=>!lotVoid(n)),rt:bd.rt||'',kg:num(bd.kg)||0,w:bd.w||'',nt:bd.nt||'',sm:bd.sm?1:0,st,rv:(old?num(old.rv):0)+1,at:new Date().toISOString(),by:S.me};
+  const b={bid:bd.bid||('FB'+ensureDev()+'-'+(++S.seq)),no:bd.no||nextBatchNo(bd.fam,bd.d),fam:bd.fam,d:bd.d,exp,pk:bd.pk||'',sz,raw:bd.raw.filter(n=>!lotVoid(n)),rt:bd.rt||'',kg:num(bd.kg)||0,ok:num(bd.okg)||0,...(old&&old.lu?{lu:old.lu}:(!old&&Array.isArray(bd.autoL)&&!bd.rawEd?{lu:bd.autoL.map(o=>[o.no,Math.round(o.g)])}:{})),w:bd.w||'',nt:bd.nt||'',sm:bd.sm?1:0,st,rv:(old?num(old.rv):0)+1,at:new Date().toISOString(),by:S.me};
   const ok=await send('batch',{bid:b.bid,no:b.no,rv:b.rv,fam:b.fam,d:b.d,x:bd.x?b.exp:'',pk:b.pk,sz:b.sz,raw:b.raw,rt:b.rt,kg:b.kg,w:b.w,nt:b.nt,sm:b.sm,st:b.st,why},`🏷️ ${b.no} ${b.fam}`);if(!ok)return;
   b.uidLast=S.sent[0]&&S.sent[0].uid;const i=myB().findIndex(x=>x.bid===b.bid);if(i>=0)myB()[i]=b;else myB().unshift(b);S.myB=myB().filter(x=>x.d>=addDays(today(),-60)).slice(0,300);save();
   const t=BT.get(b.no);if(!t)BT.set(b.no,localTuple(b));bd=null;toast(old?'💾 යැව්වා':'✅ '+b.no);if(!old)bShow(b.bid);else go('batches');}
@@ -1039,10 +1015,7 @@ function renderFCount(){const d=D('fcnt');d.c=d.c||{};const sy=fcSys(),at=S.stk&
    ${BF().map(f=>`<div class="card"><h3>${esc(f[0])}</h3>${f[4].map(z=>{const pid=z[3],s=sy.f[pid]||0,l=sy.l[pid]||0;return `<div class="irow"><label>${esc(z[0])}<span class="small muted" style="display:block">🖥️ ${s}${l?' · 🚚 '+l:''}</span></label><input type="number" inputmode="numeric" min="0" placeholder="${s}" value="${esc(d.c[pid]??'')}" oninput="const v=this.value;if(v==='')delete D('fcnt').c['${esc(pid)}'];else D('fcnt').c['${esc(pid)}']=v;save();fcDiff('${esc(pid)}')"><span class="small" id="fcd_${esc(pid)}"></span></div>`;}).join('')}</div>`).join('')}
    <div class="card"><div class="field"><label>සටහන</label><input maxlength="200" value="${esc(d.note||'')}" onchange="D('fcnt').note=this.value;save()"></div></div><button class="btn primary block big" onclick="fcSend()">📤 PC එකට යවන්න</button>`;
   Object.keys(d.c).forEach(fcDiff);}
-async function fcSend(){const d=D('fcnt'),it=Object.entries(d.c||{}).filter(([,v])=>v!==''&&num(v)>=0).map(([pid,v])=>[pid,Math.floor(num(v))]);if(!it.length){toast('ගණනක් දාලා නැහැ','err');return;}
-  const sy=fcSys().f,ps=it.map(([pid])=>[pid,sy[pid]||0]),wy={};
-  if(!d.op)for(const [pid,q] of it){const s0=sy[pid]||0;if(fcBig(q,s0)){const nm=(()=>{for(const f of BF())for(const x of f[4])if(x[3]===pid)return f[0]+' '+x[0];return pid;})();const w=(prompt(`${nm}: PC ${s0} → ගණන ${q} (${q>s0?'+':''}${q-s0}). හේතුව?`,'')||'').trim();if(w.length<2){toast('ලොකු වෙනසකට හේතුව ලියන්න','err');return;}wy[pid]=w.slice(0,120);}}
-  if(await send('fcnt',{it,ps,...(Object.keys(wy).length?{wy}:{}),nt:d.note||'',op:d.op?1:0},`🔢 තොග ගණන (${it.length})`)){newDraft('fcnt');toast('✅ යැව්වා');go('stock');}}
+async function fcSend(){}/* 4.74 clean-up: the real body is set later */
 
 
 /* ================= v4.4.3 · 🏷️ මිල (phone එකෙන්) · 📋 වැරදි · 📦 තොගය අඩු · 🏘️ ගම · 📥 ලොරිය භාර ගැනීම ================= */
@@ -1226,27 +1199,7 @@ function rpPdfBytes(pages,foot){/* pages: [{jpg:Uint8Array,w,h (px),hpt}] → mi
   put(`trailer\n<< /Size ${N} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
   const out=new Uint8Array(len);let o=0;parts.forEach(b=>{out.set(b,o);o+=b.length;});return out;}
 let rpPdfBusy=false;
-async function rpPdf(){const r=(S.reps||[]).find(x=>x.d===rpSel);if(!r||rpPdfBusy)return;rpPdfBusy=true;toast('📥 PDF හදනවා…');let host=null;
-  try{host=document.createElement('div');host.style.cssText=`position:fixed;left:-20000px;top:0;width:${RP_W}px;background:#fff;color:#0f172a;font-family:system-ui,'Noto Sans Sinhala','Iskoola Pota',sans-serif;font-size:14px;line-height:1.45`;
-    host.innerHTML=`<div id="rpDocPdf" class="rp-doc" style="border:0;border-radius:0;padding:0 2px">${rpHtml(r).replace(/<details/g,'<details open')}</div>`;document.body.appendChild(host);
-    const doc=host.firstElementChild;doc.querySelectorAll('.rp-tw').forEach(x=>{x.style.overflow='visible';});doc.querySelectorAll('.rp-t').forEach(x=>{x.style.whiteSpace='normal';});doc.querySelectorAll('.rp-t th').forEach(x=>{x.style.position='static';});doc.querySelectorAll('.rp-t').forEach(x=>{x.style.fontSize='11px';});doc.querySelectorAll('.rp-t td').forEach(c=>{if(c.textContent.trim().length<=14)c.style.whiteSpace='nowrap';c.style.padding='4px 4px';});doc.querySelectorAll('.rp-t th').forEach(c=>{c.style.whiteSpace='normal';c.style.padding='4px 4px';});doc.querySelectorAll('.rp-t').forEach(t=>{const w=t.scrollWidth;if(w>RP_W-6)t.style.zoom=((RP_W-6)/w).toFixed(3);});
-    await new Promise(z=>setTimeout(z,60));const total=Math.ceil(doc.getBoundingClientRect().height)+4,cuts=rpPdfCuts(doc,total);
-    const css=[...document.querySelectorAll('style')].map(s=>s.textContent).join('\n');
-    const xh=new XMLSerializer().serializeToString(doc),SC=2,pages=[];
-    for(let i=0;i<cuts.length-1;i++){const s=cuts[i],h=cuts[i+1]-s;
-      const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${RP_W}" height="${h}"><foreignObject x="0" y="0" width="${RP_W}" height="${h}"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${RP_W}px;height:${h}px;overflow:hidden;background:#fff;color:#0f172a;font-family:system-ui,'Noto Sans Sinhala','Iskoola Pota',sans-serif;font-size:14px;line-height:1.45"><style>${css.replace(/<\/style/gi,'')}
-/* v4.4.9 වැරදි */
-.rp-er{border:1px solid #fde68a;border-left:4px solid #d97706;border-radius:10px;padding:8px 10px;margin:6px 0;background:#fffdf5}.rp-er.done{border-left-color:#16a34a;opacity:.8}.rp-er-h{display:flex;justify-content:space-between;gap:8px}.rp-er-a{font-weight:800;color:#b91c1c;white-space:nowrap}.rp-er .small{margin-top:3px;line-height:1.4}.rp-er-todo{color:#92400e;font-weight:600}
-@media print{.rp-er{background:#fff!important;break-inside:avoid}}
-</style><div style="margin-top:${-s}px">${xh}</div></div></foreignObject></svg>`;
-      const im=await rpPdfImg(svg),cv=document.createElement('canvas');cv.width=RP_W*SC;cv.height=Math.max(1,Math.round(h*SC));const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);g.scale(SC,SC);g.drawImage(im,0,0);
-      const bin=atob(cv.toDataURL('image/jpeg',0.82).split(',')[1]),u=new Uint8Array(bin.length);for(let j=0;j<bin.length;j++)u[j]=bin.charCodeAt(j);
-      pages.push({jpg:u,w:cv.width,h:cv.height,hpt:h*RP_PX});}
-    const pdf=rpPdfBytes(pages,`Shanthi Food Products - Daily report ${r.d}`),name=`Shanthi_Report_${r.d}.pdf`,blob=new Blob([pdf],{type:'application/pdf'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},4000);
-    S.rpSaved=S.rpSaved||{};S.rpSaved[r.d]=new Date().toISOString();save();toast(`✅ ${name} — phone එකේ Downloads folder එකට save වුණා (පිටු ${pages.length})`);renderRpt();
-  }catch(e){console.warn('rpPdf',e);toast('PDF හදන්න බැරි වුණා — 🖨️ Print → “Save as PDF” පාවිච්චි කරන්න ('+e.message+')','err');}
-  finally{if(host)host.remove();rpPdfBusy=false;}}
+async function rpPdf(){}/* 4.74 clean-up: the real body is set later */
 (function(){const _rr=renderRpt;renderRpt=function(){const r=_rr.apply(this,arguments);try{const sv=S.rpSaved||{};document.querySelectorAll('#rptBody .rp-days .chip-btn').forEach(b=>{const m=/rpSel='([^']+)'/.exec(b.getAttribute('onclick')||'');if(m&&sv[m[1]])b.insertAdjacentHTML('beforeend',' ✓');});
   const d=rpSel,L=Array.isArray(S.reps)?S.reps:[];const info=$('rpSaveInfo');if(info)info.textContent=sv[d]?`✓ ${d} save කළා · phone එකේ app එකේ දවස් ${L.length}ක වාර්තා තියෙනවා (දවස් 30ක් තියාගන්නවා)`:`app එකේ දවස් ${L.length}ක වාර්තා තියෙනවා (දවස් 30ක්) · save කරපු PDF Downloads folder එකේ සදහටම`;}catch(e){}return r;};})();
 
@@ -1260,16 +1213,7 @@ function applyFLink(t){const m=/[#&]f=([a-z][a-z0-9-]{4,29})~([A-Za-z0-9_-]{20,6
    outbox entry it posted (not one that was replaced while the POST was in flight) */
 let _flushP=null,_flushAgain=false;
 async function flush(){if(_flushP){_flushAgain=true;return _flushP;}_flushP=(async()=>{let ok=true;do{_flushAgain=false;ok=await flush0();}while(_flushAgain&&ok);return ok;})();try{return await _flushP;}finally{_flushP=null;}}
-async function flush0(){
-  if(!S.cloud||!S.outbox.length)return true;
-  for(const m of S.outbox.slice()){const id=m.id,code=m.code;
-    let r;try{r=await fetch(`${fsBase()}/in?documentId=${encodeURIComponent(id)}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:code},at:{stringValue:m.at}}})});}
-    catch(e){S.cloudErr='Internet නැහැ — signal ආපු ගමන් ඉබේම යනවා';save();return false;}
-    if(r.ok||r.status===409){S.outbox=S.outbox.filter(x=>!(x.id===id&&x.code===code));const h=S.sent.find(x=>x.uid===m.uid);if(h&&!S.outbox.some(x=>x.uid===m.uid))h.up=new Date().toISOString();S.cloudErr='';S.cloudOk=new Date().toISOString();save();}
-    else{let j={};try{j=await r.json().catch(()=>({}));}catch(e){}S.cloudErr=cloudErrText(r.status,j);save();return false;}
-  }
-  return true;
-}
+async function flush0(){}/* 4.74 clean-up: the real body is set later */
 async function resend(uid,body,label){const o=S.outbox.find(x=>x.uid===uid),h=S.sent.find(x=>x.uid===uid);if(!o||!h){toast('මේක දැනටමත් PC එකට ගියා — “✏️” ආයෙත් ඔබන්න (ඉල්ලීමක් විදිහට යනවා)','warn');return false;}
   const rec={...h.rec,...body,uid,rev:(h.rec.rev||1)+1,at:new Date().toISOString(),pv:S.cfg.pv||''};let code;try{code=await seal('fx',rec);}catch(e){toast('Encrypt කරන්න බැරි වුණා','err');return false;}
   if(!S.outbox.some(x=>x.uid===uid)){toast('මේ අතරේ PC එකට ගියා — ඉල්ලීමක් විදිහට යවන්න','warn');return false;}
@@ -1292,7 +1236,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='4.69';
+const FA_VER='4.74';
 /* v4.64 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v4.64.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuF',A='f',_f=window.fetch.bind(window);
@@ -1497,14 +1441,7 @@ function v455LorryMoves(pcAt){const out={l:{},u:{},any:false},T=workDay();(ld.le
 (function(){const _sd=stockDelta;stockDelta=function(){const D=_sd.apply(this,arguments);try{const pcAt=(S.stk&&S.stk.at)||'',L=v455LorryMoves(pcAt);
   if(L.any){Object.values(D).forEach(e=>{e.l=0;});Object.entries(L.l).forEach(([pid,q])=>{const e=D[pid]||(D[pid]={b:0,s:0,l:0});e.l+=q;});}
   Object.entries(L.u).forEach(([pid,q])=>{const e=D[pid]||(D[pid]={b:0,s:0,l:0});e.l-=q;});}catch(e){}return D;};})();
-(function(){const _rs=renderStock;renderStock=function(){const r=_rs.apply(this,arguments);try{const box=$('stockBody');if(!box)return r;let add='';
-  const T=workDay(),mk=myB().filter(b=>b&&b.d===T&&b.st==='making');
-  if(mk.length)add+=`<div class="card warnbox small">🟡 අද batch ${mk.length}ක පැකට් ගණන තාම නැහැ (${mk.map(b=>esc(b.no)).join(', ')}) — උදේ පැක් කරලා ලොරියට දුන්නත් කමක් නැහැ, හවස ගණන දාන්න. එතකොට තොගය ගැළපෙනවා.</div>`;
-  const D=S.stk?stockDelta():{},mkF=new Set(mk.map(b=>b.fam)),neg=Object.entries(D).filter(([pid,e])=>{const pc=(((S.stk&&S.stk.f)||[]).find(x=>x[0]===pid)||[0,[]])[1].reduce((t,x)=>t+num(x[1]),0);const p=prod(pid),fam=p?String(p[1]).replace(/\s+\S+$/,''):'';return pc+e.b-e.s-e.l<0&&!mkF.has(fam);});
-  if(neg.length)add+=`<div class="card warnbox small">⚠️ තොගයට වඩා ලොරියට / විකුණලා: ${neg.map(([pid])=>esc((prod(pid)||[0,pid])[1])).join(', ')} — batch එකක ගණන දාන්න අමතක වුණාද? (රෑ PC එකේ ගළපනවා)</div>`;
-  const dx=S.stk&&Array.isArray(S.stk.dx)?S.stk.dx:[];
-  if(dx.length)add+=`<div class="card"><h3 style="margin:0 0 6px">⚠️ අඩු / වැඩි <span class="small muted">(PC ${esc(S.stk.dxd||'')})</span></h3>${dx.map(x=>`<div class="row" style="justify-content:space-between;border-bottom:1px solid #eef2f7;padding:4px 0"><span>${x[3]==='l'?'🚚':'🏭'} ${esc((prod(x[0])||[0,x[0]])[1])}</span><b class="${x[1]<0?'bad':'warn'}">${x[1]>0?'+':''}${x[1]}${x[2]?' · '+esc(x[2]):''}</b></div>`).join('')}</div>`;
-  try{box.innerHTML=box.innerHTML.replace('අද ලොරියට scan කරපු ඒවා','අද ලොරියට පටවපු / බාපු ඒවා (ලොරි app එකෙන් — scan නැතුවත්)');}catch(e){}if(add)box.insertAdjacentHTML('afterbegin',add);}catch(e){console.warn('v455 stock',e);}return r;};})();
+(function(){const _rs=renderStock;})();
 /* ================= v4.5.6 · M3 · app එක දෙපාරක් open වුණත් (Home-screen app + Chrome tab) නොගිය බිල් නැති වෙන්නේ නැහැ =================
    save() first merges what the other open copy wrote: its new outbox items / history are kept; an item one copy already sent
    or deleted is remembered (S.obDone) so no copy sends it again. */
@@ -1609,7 +1546,6 @@ rpPdf=async function(){const r=(S.reps||[]).find(x=>x.d===rpSel);if(!r||rpPdfBus
 /* ================= v4.5.7 · 🏷️ Batch අංකය stamp එකට ඉරි නැතුව — MR-041126-1 → MR0411261 =================
    system එක ඇතුළේ අංකය කලින් වගේම (QR / scan / FIFO වෙනස් නැහැ). stamp / sticker / WhatsApp වල ඉරි (-) නැතුව. */
 function bStamp(no){no=String(no||'').trim().toUpperCase();let m=/^([A-Z]{2,3})-(\d{6})-(\d{1,3})$/.exec(no);if(m)return m[1]+m[2]+m[3];m=/^([A-Z]{2,3})-([A-Z][A-L]\d{2})(?:-(\d{1,3}))?$/.exec(no);return m?m[1]+m[2]+(m[3]||''):no;}
-function bUnstamp(t){t=String(t||'').trim().toUpperCase();let m=/^([A-Z]{2,3})(\d{6})(\d{1,3})$/.exec(t);if(m)return m[1]+'-'+m[2]+'-'+m[3];m=/^([A-Z]{2,3})([A-Z][A-L]\d{2})(\d{0,3})$/.exec(t);return m?m[1]+'-'+m[2]+(m[3]&&+m[3]>1?'-'+m[3]:''):'';}
 
 
 /* ================= v4.7.0 (app 4.58) · 🛒 මිලදී ගැනීම / අමු ද්‍රව්‍ය ලැබුණා · 🧂 අමු ද්‍රව්‍ය තොගය + ගණන් කිරීම · 📖 Recipe ගණන · batch: recipe / QC / ඉවරයි =================
@@ -1708,7 +1644,7 @@ function bxOf(bid){S.bx=S.bx&&typeof S.bx==='object'?S.bx:{};return S.bx[bid]||n
     const L=rcFor(bd.fam),pk=()=>Object.values(bd.sz||{}).reduce((s,v)=>s+Math.floor(num(v)),0),cur=L.find(x=>x.i===bd.rc)||L.find(x=>(x.z||[]).length&&sizeLines(bd.fam).some(s=>num(bd.sz[s[3]])>0&&x.z.includes(s[0])))||L[0]||null;bd.qc=Array.isArray(bd.qc)?bd.qc:[];
     window._bxDraw=()=>{const o=$('bxOut');if(o&&cur)o.innerHTML=rcTable(cur,bd.kg,pk());};
     btn.insertAdjacentHTML('beforebegin',`${cur?`<div class="card"><h3>📖 Recipe අනුව ද්‍රව්‍ය</h3>${L.length>1?`<div class="chips">${L.map(x=>`<button class="chip ${x.i===cur.i?'ok':''}" onclick="bd.rc='${esc(x.i)}';render()">${esc(x.n)}</button>`).join('')}</div>`:`<div class="small muted">${esc(cur.n)} v${cur.v} · ${cur.m==='p'?'පැකට් ගණනින්':'kg = '+esc(cur.bt)}</div>`}<div id="bxOut" style="margin-top:6px">${rcTable(cur,bd.kg,pk())}</div></div>`:''}
-     <div class="card"><div class="field"><label>හැදුණු කුඩු kg (කිරලා දන්නවා නම්)</label><input type="number" inputmode="decimal" min="0" value="${esc(bd.okg||'')}" onchange="bd.okg=this.value"></div>
+     <div class="card">${window.v471W?'':`<div class="field"><label>හැදුණු කුඩු kg (කිරලා දන්නවා නම්)</label><input type="number" inputmode="decimal" min="0" value="${esc(bd.okg||'')}" onchange="bd.okg=this.value"></div>`}
       <label class="check"><input type="checkbox" ${bd.pd?'checked':''} onchange="bd.pd=this.checked?1:0"> ✅ මේ batch එකේ කුඩු ඔක්කොම පැක් කරලා ඉවරයි</label><div class="small muted">ටික් නොකළොත් ඉතිරි කුඩු PC එකේ “🥣 පැකට් නොකළ කුඩු” එකේ පේනවා — පස්සේ දවසක ✏️ එකෙන් පැකට් ගණන දාන්න.</div></div>
      ${QCL().length?`<div class="card"><h3>✅ QC <span class="small muted">(ඕනේ නම්)</span></h3>${QCL().map(([k,t])=>`<label class="check"><input type="checkbox" ${bd.qc.includes(k)?'checked':''} onchange="const i=bd.qc.indexOf('${esc(k)}');if(this.checked){if(i<0)bd.qc.push('${esc(k)}');}else if(i>=0)bd.qc.splice(i,1)"> ${esc(t)}</label>`).join('')}</div>`:''}`);
     /* typing kg / packets redraws the recipe amounts (the fields themselves are not redrawn) */
@@ -1825,6 +1761,8 @@ sendPay=async function(){const d=D('pay'),c=cust(d.c),amt=r2(num(d.amt)),m=(d.pa
   const dup=S.sent.find(x=>x.k==='pay'&&!x.gone&&x.rec&&x.rec.c===c[0]&&x.d===d.d&&Math.abs(num(x.rec.amt)-amt)<0.01);if(dup&&!confirm(`⚠️ ${c[1]} ගෙන් ${d.d} දින ${money(amt)} ගෙවීමක් දැනටමත් යැව්වා (${fmtAt(dup.at,true)}). වෙනම ගෙවීමක්ද?`))return;
   const now=v463Now(c);if(amt>now+0.004&&!confirm(`${c[1]} ගේ ණය ${money(now)} — ඊට වඩා ${money(amt-now)} වැඩියි. ඉතිරිය advance (හිමි ශේෂය) විදිහට PC එකේ දානවා. යවන්නද?`))return;
   if(await send('pay',{d:d.d,c:c[0],amt,m,no:d.pay.no||'',bank:d.pay.bank||'',cd:d.pay.cd||'',...(m==='bank'?{ref:String(d.pay.ref||'').slice(0,80)}:{}),...(al?{al}:{}),...(m==='cheque'&&d.pay.ph?{ph:d.pay.ph}:{})},`💰 ${c[1]} ${money(amt)}${m==='bank'?' 🏧':m==='cheque'?' 🏦':''}`)){rememberCust(c[0]);newDraft('pay');toast('✅ යැව්වා');go('home');}};
+/* 4.74: this full sendPay replaced the P7 double-tap guard → guard it again (a double tap = two payments) */
+(function(){const f=sendPay;let busy=false;sendPay=async function(){if(busy){toast('යවමින්…','warn');return;}busy=true;try{return await f.apply(this,arguments);}finally{busy=false;}};})();
 
 /* ================= app 4.65 (PC v4.9.0 · 4A) · 🔧 යන්ත්‍ර නඩත්තු · ⚙️ නැවතුණා · ⚖️ තරාදි පරීක්ෂාව — දත්ත දාන්න විතරයි (වාර්තා / මුදල් PC එකේ) =================
    The asset names come from the owner's PC (S.cfg.as — no prices). A cfg without the list (sent by a manager's PC) keeps the last one.
@@ -1873,10 +1811,7 @@ function faLeftTxt(l){if(l.left===null)return '';if(l.u==='kg'||l.u==='g')return
 function faPick(){const ch=new Set(bd?bd.raw:[]);return faLots().filter(l=>ch.has(l.no)||S.lotAll||(!l.done&&(l.left===null||l.left>0.5))).sort(faOld).slice(0,60);}
 function faCurRc(){const L=rcFor(bd.fam);return L.find(x=>x.i===bd.rc)||L.find(x=>(x.z||[]).length&&sizeLines(bd.fam).some(s=>num(bd.sz[s[3]])>0&&x.z.includes(s[0])))||L[0]||null;}
 /* 🤖 new batches only, until a lot is changed by hand: oldest sack first, several sacks when one is not enough */
-function faAuto(){if(!bd||!bd.fam||bd.bid||bd.rawEd||!(S.cfg&&S.cfg.la))return false;const r=faCurRc();if(!r)return false;const pk=Object.values(bd.sz||{}).reduce((s,v)=>s+Math.floor(num(v)),0),L=rcLines(r,bd.kg,pk);if(!L.length)return false;
-  const id=n=>{const m=mtByName(n);return m?m[0]:norm(n);},lots=faLots().filter(x=>!x.done&&x.qc!=='rej'&&!(x.exp&&x.exp<today())&&x.left>0).sort(faOld),out=[],miss=[];
-  L.forEach(l=>{if(l.fam||!(l.g>0))return;let need=l.g,got=0;lots.filter(x=>id(x.mat)===id(l.n)).forEach(x=>{if(need<=0.5)return;const t=Math.min(need,x.left);out.push({no:x.no,g:t});x.left-=t;need-=t;got++;});if(!got)miss.push(l.n);});
-  bd.raw=[...new Set(out.map(o=>o.no))];bd.autoL=out;bd.autoM=miss;bd._v454=1;return true;}
+function faAuto(){}/* 4.74 clean-up: the real body is set later */
 function faAutoTxt(){if(!bd||bd.bid||bd.rawEd||!bd.autoL)return '';const a=bd.autoL,g=x=>x>=1000?Math.round(x/100)/10+'kg':Math.round(x)+'g';return (a.length?'🤖 '+a.map(o=>`<strong>${esc(o.no)}</strong> ${g(o.g)}`).join(' + ')+' (පරණම) · ✏️ ඔබලා වෙනස් කරන්න':'')+((bd.autoM||[]).length?`<div>⚪ lot නැහැ: ${esc(bd.autoM.join(', '))}</div>`:'');}
 function faPaint(){const b=$('faAutoBox');if(b)b.innerHTML=faAutoTxt();document.querySelectorAll('#bnewBody .chip[data-lot]').forEach(c=>c.classList.toggle('ok',bd.raw.includes(c.dataset.lot)));}
 (function(){const _r=renderBNew;renderBNew=function(){try{faAuto();}catch(e){console.warn('fifo',e);}const r=_r.apply(this,arguments);try{faPaint();}catch(e){}return r;};
@@ -1979,6 +1914,226 @@ function ftFind(q){q=String(q||'').trim().toLowerCase();const box=$('homeBody');
   /* Android back: inner screen → home, never out of the app from an inner screen */
   let pushed=false;const _g=go;go=function(n){const r=_g.apply(this,arguments);try{if(n!=='home'&&!pushed){history.pushState({fa:1},'','#'+n);pushed=true;}}catch(e){}return r;};window.addEventListener('popstate',()=>{pushed=false;if(screen!=='home')_g('home');});})();
 
+</script>
+<script>
+/* ================= 4.70 (2026-11-09) · 📦 තොගය — අලුත් පිටුව (අයිතිකරු 16:29: "තොග ගණන වෙන වෙනම පිළිවෙළට · අඩු / වැඩි · බණ්ඩල වෙනම · සුපිරියට")
+   one clean page, three tabs: 🏭 කම්හල (now = PC + this phone since) · ⚖️ අඩු / වැඩි (PC count + this phone's count waiting) · 🚚 ලොරිය
+   🔢 count: bundles + loose typed separately · "තියෙන්න ඕනේ" (PC + phone) · live අඩු / වැඩි · reasons inline (no pop-ups) · review before sending */
+(function(){
+const css=`.v470h{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.v470h .grow{flex:1}
+.v470f{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:800}.v470f.g{background:#d1fae5;color:#065f46}.v470f.o{background:#ffedd5;color:#9a3412}.v470f.r{background:#fee2e2;color:#991b1b}
+.v470k{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}.v470k div{background:#f8fafc;border:1px solid var(--line);border-radius:12px;padding:8px 4px;text-align:center}.v470k b{display:block;font-size:20px;line-height:1.2}.v470k small{color:var(--muted);font-size:11px}
+.v470k .bd b{color:#b91c1c}.v470k .ov b{color:#b45309}
+.v470fam{margin:0 0 4px;font-size:15px;color:#334155}.v470r{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-bottom:1px solid #f1f5f9;align-items:center}.v470r:last-child{border-bottom:0}
+.v470r .sz{font-weight:800}.v470r .q{font-size:22px;font-weight:900;text-align:right;line-height:1}.v470r .q.z{color:#cbd5e1}.v470r .q.n{color:#b91c1c}
+.v470r .sub{grid-column:1/-1;font-size:13px;color:#475569}.v470r .bt{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:4px}
+.v470bn{display:inline-flex;gap:4px;align-items:center;background:#eef2ff;color:#3730a3;border-radius:8px;padding:1px 7px;font-weight:800;font-size:12px}.v470bn.l{background:#f1f5f9;color:#334155}.v470bn.c{background:#fef9c3;color:#854d0e}
+.v470d{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-bottom:1px solid #f1f5f9}.v470d .v{font-size:20px;font-weight:900;text-align:right}.v470d .v.bd{color:#b91c1c}.v470d .v.ov{color:#b45309}.v470d .s{grid-column:1/-1;font-size:13px;color:#475569}
+.v470sec{font-weight:900;margin:12px 0 2px;font-size:14px}.v470sec.bd{color:#b91c1c}.v470sec.ov{color:#b45309}
+.v470in{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}.v470in label{font-size:12px;color:var(--muted);font-weight:700}.v470in input{width:100%;font-size:20px;padding:10px;border-radius:10px;border:1px solid #cbd5e1;text-align:center}
+.v470in.one{grid-template-columns:1fr}.v470c{padding:10px 0;border-bottom:1px solid #f1f5f9}.v470c.done{background:linear-gradient(90deg,#f0fdf4,transparent)}
+.v470c .t{display:flex;justify-content:space-between;align-items:baseline;gap:8px}.v470c .t b{font-size:16px}.v470c .exp{font-size:12px;color:#475569}
+.v470p{font-weight:900;border-radius:999px;padding:2px 10px;font-size:13px;white-space:nowrap}.v470p.ok{background:#d1fae5;color:#065f46}.v470p.bd{background:#fee2e2;color:#991b1b}.v470p.ov{background:#ffedd5;color:#9a3412}
+.v470why{margin-top:6px}.v470why input{width:100%;padding:9px;border-radius:10px;border:2px solid #f59e0b;font:inherit}
+.v470bar{position:sticky;bottom:calc(70px + env(safe-area-inset-bottom));background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:0 6px 20px rgba(15,23,42,.12);margin-top:10px}
+.v470tabs button{flex:1 1 0!important;padding:11px 4px!important;font-size:14px}.badge.v470b{background:#dbeafe;color:#1e40af}
+.v470srch{width:100%;padding:11px 12px;border-radius:12px;border:1px solid #cbd5e1;font:inherit;margin-bottom:8px}`;
+document.head.insertAdjacentHTML('beforeend','<style>'+css+'</style>');
+window.V470={tab:'f',q:'',zero:false,cq:''};
+const sizeOf=pid=>{for(const f of BF())for(const x of (f[4]||[]))if(x[3]===pid)return {fam:f[0],size:x[0],t:x[1],n:num(x[2])};const p=prod(pid);return {fam:p?p[1]:pid,size:'',t:'s',n:0};};
+const nm=pid=>{const s=sizeOf(pid);return (s.fam+' '+s.size).trim();};
+/* 📦 bundles: 15 + 4 */
+function v470Split(pid,q){q=Math.round(num(q));const s=sizeOf(pid),neg=q<0,a=Math.abs(q);if(s.t==='b'&&s.n>0){const b=Math.floor(a/s.n),l=a-b*s.n;return {b,l,c:0,n:s.n,neg};}if(s.t==='c')return {b:0,l:0,c:a,n:0,neg};return {b:0,l:a,c:0,n:0,neg};}
+function v470Bn(pid,q){const x=v470Split(pid,q);if(!Math.round(num(q)))return '';const p=[];if(x.b)p.push(`<span class="v470bn">📦 බණ්ඩල ${x.b}</span>`);if(x.l)p.push(`<span class="v470bn l">${x.b?'+ ':''}ලිහිල් ${x.l}</span>`);if(x.c)p.push(`<span class="v470bn c">🃏 කාඩ් ${x.c}</span>`);return p.join(' ');}
+window.v470Bn=v470Bn;
+/* now = PC figure + this phone since the PC figure */
+function v470Now(){const pc={},bt={};((S.stk&&S.stk.f)||[]).forEach(([pid,l])=>{pc[pid]=(l||[]).reduce((t,x)=>t+num(x[1]),0);bt[pid]=l||[];});let D={};try{D=S.stk?stockDelta():{};}catch(e){}
+  const keys=new Set([...Object.keys(pc),...Object.keys(D)]);BF().forEach(f=>(f[4]||[]).forEach(x=>x[3]&&keys.add(x[3])));
+  const out={};keys.forEach(pid=>{const e=D[pid]||{b:0,s:0,l:0},p=pc[pid]||0;out[pid]={pc:p,b:e.b||0,s:e.s||0,l:e.l||0,now:p+(e.b||0)-(e.s||0)-(e.l||0),bt:bt[pid]||[]};});return out;}
+window.v470Now=v470Now;
+const order=()=>{const o={};let i=0;BF().forEach(f=>(f[4]||[]).forEach(x=>{if(x&&x[3]!==undefined&&o[x[3]]===undefined)o[x[3]]=i++;}));return pid=>o[pid]!==undefined?o[pid]:1e6;};
+function fresh(){const at=S.stk&&S.stk.at;if(!at)return `<span class="v470f r">🔴 PC එකෙන් තොගය තවම ආවේ නැහැ</span>`;const m=Math.round((Date.now()-new Date(at).getTime())/60000),t=m<60?`මිනිත්තු ${Math.max(m,0)}කට කලින්`:m<1440?`පැය ${Math.round(m/60)}කට කලින්`:`දින ${Math.round(m/1440)}කට කලින්`;return `<span class="v470f ${m<=120?'g':m<=720?'o':'r'}">${m<=120?'🟢':m<=720?'🟠':'🔴'} PC ${esc(fmtAt(at,true))} · ${t}</span>`;}
+/* the phone's own count that the PC hasn't taken yet */
+function v470Pend(){const at=(S.stk&&S.stk.at)||'';const x=(S.sent||[]).find(s=>s.k==='fcnt'&&s.rec&&!(at&&String(s.at)<=at)&&!s.void);return x||null;}
+function diffs(){const dx=S.stk&&Array.isArray(S.stk.dx)?S.stk.dx:[];const f=[],l=[];dx.forEach(x=>{const r={pid:x[0],d:num(x[1]),t:x[2]||'',e:x[4],c:x[5]};(x[3]==='l'?l:f).push(r);});const P=v470Pend(),p=[];
+  if(P){const ps=new Map((P.rec.ps||[]).map(y=>[y[0],num(y[1])]));(P.rec.it||[]).forEach(([pid,q])=>{const e=ps.has(pid)?ps.get(pid):0,d=num(q)-e;if(Math.abs(d)>1e-9)p.push({pid,d,e,c:num(q),t:(P.rec.wy||{})[pid]||''});});}
+  return {f,l,p,P};}
+window.v470Diffs=diffs;
+function dRow(r,icon){const cls=r.d<0?'bd':'ov';return `<div class="v470d"><div><b>${icon||''}${esc(nm(r.pid))}</b></div><div class="v ${cls}">${r.d>0?'+':'−'}${Math.abs(Math.round(r.d))}</div>
+  <div class="s">${r.e!==undefined&&r.e!==null?`තියෙන්න ඕනේ <b>${Math.round(num(r.e))}</b> · ගණන් කළා <b>${Math.round(num(r.c))}</b> · `:''}${v470Bn(r.pid,r.d)}${r.t?` · 📝 ${esc(r.t)}`:''}</div></div>`;}
+function groups(list,icon){const bd=list.filter(r=>r.d<0).sort((a,b)=>a.d-b.d),ov=list.filter(r=>r.d>0).sort((a,b)=>b.d-a.d),sb=bd.reduce((t,r)=>t-r.d,0),so=ov.reduce((t,r)=>t+r.d,0);
+  return (bd.length?`<div class="v470sec bd">➖ අඩු — ${bd.length}ක් · පැකට් ${Math.round(sb)}</div>${bd.map(r=>dRow(r,icon)).join('')}`:'')+(ov.length?`<div class="v470sec ov">➕ වැඩි — ${ov.length}ක් · පැකට් ${Math.round(so)}</div>${ov.map(r=>dRow(r,icon)).join('')}`:'');}
+renderStock=function(){const V=window.V470,N=v470Now(),po=order(),q=norm(V.q),dif=diffs(),T=workDay();
+  const fac=Object.entries(N),tot={q:0,b:0,l:0,c:0};fac.forEach(([pid,r])=>{if(r.now>0){tot.q+=r.now;const x=v470Split(pid,r.now);tot.b+=x.b;tot.l+=x.l;tot.c+=x.c;}});
+  const lor=((S.stk&&S.stk.l)||[]).map(([pid,l])=>[pid,(l||[]).reduce((t,x)=>t+num(x[1]),0),l||[]]).filter(x=>x[1]>0),lq=lor.reduce((t,x)=>t+x[1],0);
+  const nd=dif.f.length+dif.p.length,bdN=[...dif.f,...dif.p].filter(r=>r.d<0).length,ovN=nd-bdN;
+  let warn='';try{const mk=myB().filter(b=>b&&b.d===T&&b.st==='making');if(mk.length)warn+=`<div class="warnbox small">🟡 අද batch ${mk.length}ක පැකට් ගණන තාම නැහැ (${mk.map(b=>esc(b.no)).join(', ')}) — හවස ගණන දාන්න.</div>`;
+    const neg=fac.filter(([pid,r])=>r.now<0);if(neg.length)warn+=`<div class="warnbox small">⚠️ තොගයට වඩා විකුණලා / ලොරියට: ${neg.map(([pid])=>esc(nm(pid))).join(', ')} — batch එකක පැකට් ගණන දාන්න අමතක වුණාද?</div>`;}catch(e){}
+  const head=`<div class="card"><div class="v470h"><b class="grow">📦 තොගය</b><button class="btn sm light" onclick="sync(true).then(()=>render())">🔄</button></div><div style="margin-top:4px">${fresh()}</div>
+    <div class="v470k"><div><b>${Math.round(tot.q)}</b><small>🏭 කම්හලේ පැකට්</small></div><div><b>${tot.b}</b><small>📦 බණ්ඩල${tot.l?` + ලිහිල් ${tot.l}`:''}${tot.c?` · 🃏 ${tot.c}`:''}</small></div><div><b>${Math.round(lq)}</b><small>🚚 ලොරියේ</small></div>
+    <div class="${bdN?'bd':''}"><b>${bdN}</b><small>➖ අඩු</small></div><div class="${ovN?'ov':''}"><b>${ovN}</b><small>➕ වැඩි</small></div><div><b>${dif.p.length?'⏳':(S.stk&&S.stk.dxd)||'—'}</b><small>${dif.p.length?'PC අනුමත නැහැ':'අන්තිම ගණන'}</small></div></div></div>${warn}
+    <div class="seg v470tabs"><button class="${V.tab==='f'?'on':''}" onclick="V470.tab='f';render()">🏭 කම්හල</button><button class="${V.tab==='d'?'on':''}" onclick="V470.tab='d';render()">⚖️ අඩු / වැඩි${nd?' ('+nd+')':''}</button><button class="${V.tab==='l'?'on':''}" onclick="V470.tab='l';render()">🚚 ලොරිය</button></div>`;
+  let body='';
+  if(V.tab==='f'){const chip=([b,qq])=>{const t=BT.get(b),dl=t?daysTo(t.x):null;return `<span class="badge ${!b?'old':t&&t.s==='hold'?'bad':dl!==null&&dl<30?'warn':'v470b'}">${b?esc(b):'පරණ'} · ${qq}</span>`;};
+    const fams=[];BF().forEach(f=>{const rows=(f[4]||[]).filter(x=>x&&x[3]&&N[x[3]]).map(x=>x[3]).filter(pid=>(!q||norm(nm(pid)).includes(q))&&(V.zero||N[pid].now!==0||N[pid].pc!==0));if(rows.length)fams.push([f[0],rows]);});
+    const extra=Object.keys(N).filter(pid=>!BF().some(f=>(f[4]||[]).some(x=>x[3]===pid))&&N[pid].now&&(!q||norm(nm(pid)).includes(q)));if(extra.length)fams.push(['වෙනත්',extra]);
+    body=`<input class="v470srch" type="search" placeholder="🔎 සොයන්න (උදා: මිරිස් 100g)" value="${esc(V.q)}" oninput="V470.q=this.value;clearTimeout(window._v470t);window._v470t=setTimeout(()=>{render();const i=document.querySelector('.v470srch');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}},250)">
+     <label class="check small"><input type="checkbox" ${V.zero?'checked':''} onchange="V470.zero=this.checked;render()"> 0 ඒවත් පෙන්නන්න</label>`+
+     (fams.length?fams.map(([fn,rows])=>`<div class="card"><h3 class="v470fam">${esc(fn)}</h3>${rows.sort((a,b)=>po(a)-po(b)).map(pid=>{const r=N[pid],s=sizeOf(pid),ch=r.b||r.s||r.l;return `<div class="v470r" data-p="${esc(pid)}"><div class="sz">${esc(s.size||nm(pid))}</div><div class="q ${r.now<0?'n':!r.now?'z':''}">${Math.round(r.now)}</div>
+       <div class="sub">${v470Bn(pid,r.now)||'<span class="muted">—</span>'}${ch?` <span class="muted">· 🖥️ ${r.pc}${r.b?' · 📱 +'+r.b:''}${r.s?' · 🧾 −'+r.s:''}${r.l?' · 🚚 −'+r.l:''}</span>`:''}</div>${r.bt.length?`<div class="bt">${r.bt.map(chip).join('')}</div>`:''}</div>`;}).join('')}</div>`).join(''):'<div class="card empty">පෙන්නන්න දෙයක් නැහැ</div>')+
+     `<div class="small muted" style="margin:4px 2px 8px">🏭 = 🖥️ PC ගණන + 📱 මේ phone එකෙන් හදපු batch − 🧾 විකුණපු / දුන්න − 🚚 ලොරියට. PC එක on වුණාම හරියටම ගැළපෙනවා. 📦 බණ්ඩල ගණන ආසන්නයි (බණ්ඩල කඩලා තිබුණොත් වෙනස් වෙන්න පුළුවන්).</div>`;}
+  else if(V.tab==='d'){body=(dif.p.length?`<div class="card"><h3 style="margin:0">⏳ මේ phone එකෙන් ගණන් කළා — PC අනුමත කරනකම්</h3><div class="small muted">${esc(fmtAt(dif.P.at,true))}${dif.P.by?' · '+esc(dif.P.by):''} · තියෙන්න ඕනේ = ගණන් කරපු වෙලාවේ phone එකේ ගණන</div>${groups(dif.p)}</div>`:'')+
+    (dif.f.length?`<div class="card"><h3 style="margin:0">🏭 කම්හල — PC ගණන ${esc((S.stk&&S.stk.dxd)||'')}</h3><div class="small muted">ගණන් කරපු වෙලාවට තියෙන්න ඕනේ vs ගණන් කළා. හේතුව / "🔢 ගණන වැරදියි" PC එකේ.</div>${groups(dif.f)}</div>`:'')+
+    (dif.l.length?`<div class="card"><h3 style="margin:0">🚚 ලොරිය — අන්තිම ලොරි ගණන</h3>${groups(dif.l)}</div>`:'')+
+    (!dif.f.length&&!dif.l.length&&!dif.p.length?`<div class="card okbox">✅ අඩු / වැඩි නැහැ</div>`:'');}
+  else{body=lor.length?`<div class="card"><h3 class="v470fam">🚚 ලොරියේ දැන් (PC)</h3>${lor.sort((a,b)=>po(a[0])-po(b[0])).map(([pid,qq,l])=>`<div class="v470r"><div class="sz">${esc(nm(pid))}</div><div class="q">${Math.round(qq)}</div><div class="sub">${v470Bn(pid,qq)}</div></div>`).join('')}</div>`:'<div class="card empty">🚚 ලොරියේ බඩු නැහැ (PC ගණනට)</div>';}
+  $('stockBody').innerHTML=head+body+`<button class="btn primary block big" onclick="go('fcount')">🔢 කම්හල් තොගය ගණන් කරන්න</button>`;};
+/* ---------- 🔢 count ---------- */
+function cParts(pid){const d=D('fcnt');d.cb=d.cb||{};return d.cb[pid]||{};}
+window.v470Set=function(pid,part,v){const d=D('fcnt');d.c=d.c||{};d.cb=d.cb||{};const s=sizeOf(pid),p=d.cb[pid]=d.cb[pid]||{};if(v===''||v===null)delete p[part];else p[part]=Math.max(0,Math.floor(num(v)));
+  if(p.b===undefined&&p.l===undefined){delete d.c[pid];delete d.cb[pid];}else d.c[pid]=(s.t==='b'&&s.n>0?(p.b||0)*s.n:0)+(p.l||0);save();v470Live(pid);v470Bar();};
+function v470Live(pid){const el=$('v470x_'+pid),row=$('v470c_'+pid);if(!el)return;const d=D('fcnt'),v=(d.c||{})[pid];if(v===undefined){el.innerHTML='';row&&row.classList.remove('done');const w=$('v470w_'+pid);if(w)w.innerHTML='';return;}
+  row&&row.classList.add('done');const e=v470Now()[pid],s=e?e.now:0,x=Math.round(v-s);el.innerHTML=`<span class="small muted">= <b>${v}</b></span> `+(x>0?`<span class="v470p ov">➕ ${x} වැඩි</span>`:x<0?`<span class="v470p bd">➖ ${-x} අඩු</span>`:'<span class="v470p ok">✓ හරි</span>');
+  const w=$('v470w_'+pid);if(w){const need=!d.op&&fcBig(v,s);w.innerHTML=need?`<div class="v470why"><input placeholder="📝 ලොකු වෙනසක් — හේතුව (උදා: batch එක දාන්න අමතක වුණා)" value="${esc((d.wy||{})[pid]||'')}" oninput="const d=D('fcnt');d.wy=d.wy||{};d.wy['${esc(pid)}']=this.value;save()"></div>`:'';}}
+function v470Bar(){const b=$('v470bar');if(!b)return;const d=D('fcnt'),N=v470Now(),ks=Object.keys(d.c||{});let bd=0,ov=0,ok=0;ks.forEach(pid=>{const x=Math.round(num(d.c[pid])-(N[pid]?N[pid].now:0));if(x<0)bd++;else if(x>0)ov++;else ok++;});
+  b.innerHTML=`<div class="row" style="justify-content:space-between;gap:8px;flex-wrap:wrap"><b>ගණන් කළා ${ks.length}</b><span><span class="v470p ok">✓ ${ok}</span> <span class="v470p bd">➖ ${bd}</span> <span class="v470p ov">➕ ${ov}</span></span></div><button class="btn primary block" style="margin-top:8px" onclick="v470Review()">📤 බලලා PC එකට යවන්න</button>`;}
+renderFCount=function(){const d=D('fcnt');d.c=d.c||{};d.cb=d.cb||{};const N=v470Now(),q=norm(window.V470.cq||''),at=S.stk&&S.stk.at,old=!at||Date.now()-new Date(at).getTime()>2*3600e3;
+  /* old drafts typed before 4.70: one total → put it in ලිහිල් so nothing is lost */
+  Object.keys(d.c).forEach(pid=>{if(!d.cb[pid])d.cb[pid]={l:num(d.c[pid])};});
+  const fams=BF().map(f=>[f[0],(f[4]||[]).filter(x=>x&&x[3]&&(!q||norm(f[0]+' '+x[0]).includes(q)))]).filter(x=>x[1].length);
+  $('fcountBody').innerHTML=`<div class="card">${dateField('fcnt')}<label class="check"><input type="checkbox" ${d.op?'checked':''} onchange="D('fcnt').op=this.checked?1:0;save();render()"> ආරම්භක තොගය (පළමු පාර)</label>
+    <div class="${old?'warnbox':'infobox'} small" style="margin-top:6px">${old?'⏰ PC ගණන පරණයි — 🔄 ඔබලා අලුත් කරගන්න. ':''}<b>තියෙන්න ඕනේ</b> = 🖥️ PC ගණන + 📱 මේ phone එකෙන් පස්සේ කරපු දේවල්. <button class="btn sm light" onclick="sync(true).then(()=>render())">🔄</button><div style="margin-top:4px">${fresh()}</div></div>
+    <div class="small muted" style="margin-top:6px">ගණන් කරපු ඒවා විතරක් දාන්න — හිස් = ගණන් කළේ නැහැ. 📦 බණ්ඩල + ලිහිල් පැකට් වෙන වෙනම.</div></div>
+    <input class="v470srch" type="search" placeholder="🔎 සොයන්න" value="${esc(window.V470.cq||'')}" oninput="V470.cq=this.value;clearTimeout(window._v470c);window._v470c=setTimeout(()=>{render();const i=document.querySelector('#fcountBody .v470srch');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}},300)">
+    ${fams.map(([fn,xs])=>`<div class="card"><h3 class="v470fam">${esc(fn)}</h3>${xs.map(x=>{const pid=x[3],s=sizeOf(pid),e=N[pid],sv=e?e.now:0,p=cParts(pid),bun=s.t==='b'&&s.n>0;
+      return `<div class="v470c" id="v470c_${esc(pid)}"><div class="t"><b>${esc(x[0])}</b><span class="exp">තියෙන්න ඕනේ <b>${Math.round(sv)}</b> ${v470Bn(pid,sv)}</span></div>
+      <div class="v470in ${bun?'':'one'}">${bun?`<div><label>📦 බණ්ඩල (${s.n} බැගින්)</label><input type="number" inputmode="numeric" min="0" value="${p.b??''}" oninput="v470Set('${esc(pid)}','b',this.value)"></div>`:''}
+      <div><label>${bun?'🔹 ලිහිල් පැකට්':s.t==='c'?'🃏 කාඩ්':'පැකට්'}</label><input type="number" inputmode="numeric" min="0" value="${p.l??''}" oninput="v470Set('${esc(pid)}','l',this.value)"></div></div>
+      <div id="v470x_${esc(pid)}" style="margin-top:6px"></div><div id="v470w_${esc(pid)}"></div></div>`;}).join('')}</div>`).join('')}
+    <div class="card"><div class="field"><label>සටහන</label><input maxlength="200" value="${esc(d.note||'')}" onchange="D('fcnt').note=this.value;save()"></div></div><div class="v470bar" id="v470bar"></div>`;
+  Object.keys(d.c).forEach(v470Live);v470Bar();};
+window.v470Review=function(){const d=D('fcnt'),N=v470Now(),it=Object.entries(d.c||{}).filter(([,v])=>v!==''&&num(v)>=0);if(!it.length){toast('ගණනක් දාලා නැහැ','err');return;}
+  const rows=it.map(([pid,v])=>({pid,c:num(v),e:N[pid]?N[pid].now:0})).map(r=>({...r,d:Math.round(r.c-r.e),t:(d.wy||{})[r.pid]||''}));
+  const miss=d.op?[]:rows.filter(r=>fcBig(r.c,r.e)&&String(r.t).trim().length<2);if(miss.length){toast(`ලොකු වෙනස් ${miss.length}කට හේතුව ලියන්න (${nm(miss[0].pid)})`,'err');const el=$('v470w_'+miss[0].pid);if(el){el.scrollIntoView({block:'center'});const i=el.querySelector('input');i&&i.focus();}return;}
+  const bad=rows.filter(r=>r.d!==0),okN=rows.length-bad.length;
+  sheet(`<h3>📤 PC එකට යවන්නද?</h3><div class="small muted">${esc(d.d||workDay())} · ගණන් කළා ${rows.length} · ✓ ${okN}</div>${d.op?'<div class="infobox small">🆕 ආරම්භක තොගය — අඩු / වැඩි ගණන් වෙන්නේ නැහැ</div>':groups(bad)||'<div class="okbox">✅ ඔක්කොම හරි</div>'}
+    <button class="btn primary block big" onclick="sheet();fcSend()">✅ හරි, යවන්න</button><button class="btn light block" onclick="sheet()">← ආපහු</button>`);};
+/* send: same message as before (the PC side is unchanged) · ps = "තියෙන්න ඕනේ" on the phone · reasons from the boxes (no pop-ups) */
+fcSend=async function(){const d=D('fcnt'),N=v470Now(),it=Object.entries(d.c||{}).filter(([,v])=>v!==''&&num(v)>=0).map(([pid,v])=>[pid,Math.floor(num(v))]);if(!it.length){toast('ගණනක් දාලා නැහැ','err');return;}
+  const ps=it.map(([pid])=>[pid,Math.round(N[pid]?N[pid].now:0)]),wy={};it.forEach(([pid])=>{const w=String((d.wy||{})[pid]||'').trim();if(w.length>=2)wy[pid]=w.slice(0,120);});
+  if(await send('fcnt',{it,ps,...(Object.keys(wy).length?{wy}:{}),nt:d.note||'',op:d.op?1:0},`🔢 තොග ගණන (${it.length})`)){newDraft('fcnt');window.V470.tab='d';toast('✅ යැව්වා');go('stock');}};
+})();
+</script>
+<script>
+/* ================= 4.71 · ⚖️ batch: raw in + powder out (loss / yield) · 🎯 how much raw for X kg · 📉 low stock: packets / raw / ground powder
+   (owner 9 Nov 17:27: "40kg හදන්න lot වලින් 46kg වගේ ඕනේ … අවම තොග level එකට ආවම පේන්න ඕනේ") ================= */
+(function(){
+const r1=x=>Math.round(num(x)*10)/10;
+const kgT=g=>{g=num(g);return Math.abs(g)>=1000?(Math.round(g/100)/10).toLocaleString('en-LK')+' kg':Math.round(g)+' g';};
+const pn=pid=>{const p=prod(pid);return p?p[1]:String(pid);};
+const okOf=b=>{if(!b)return 0;const x=num(b.ok);if(x>0)return x;try{return num((bxOf(b.bid)||{}).okg);}catch(e){return 0;}};
+function v471Q(q,u){q=num(q);if(u==='pcs')return Math.round(q).toLocaleString('en-LK');if(u==='ml')return Math.abs(q)>=1000?(Math.round(q/100)/10)+' L':Math.round(q)+' ml';return kgT(q);}
+/* grams in one packet: the PC's figure, else read from the size ("100g", "1kg") */
+function v471G(pid,size){const pg=S.cfg&&S.cfg.pg;if(pg&&num(pg[pid])>0)return num(pg[pid]);const m=/(\d+(?:\.\d+)?)\s*(kg|g)\b/i.exec(String(size||''));return m?num(m[1])*(m[2].toLowerCase()==='kg'?1000:1):0;}
+function v471Size(pid){for(const f of BF())for(const x of (f[4]||[]))if(x[3]===pid)return {fam:f[0],size:x[0],g:v471G(pid,x[0])};return null;}
+function v471Pk(){if(!bd||!bd.fam)return 0;let g=0;sizeLines(bd.fam).forEach(([size,t,n,pid])=>{g+=Math.floor(num(bd.sz[pid]))*v471G(pid,size);});return g;}
+function curRc(){try{return bd&&bd.fam?faCurRc():null;}catch(e){return null;}}
+/* ---------- yield = powder out ÷ raw in: the PC's (last batches), else this phone's last batches ---------- */
+function v471Yield(fam){try{const r=bd&&bd.fam===fam?curRc():rcFor(fam)[0];if(r&&r.m!=='p'&&num(r.y)>0)return {y:num(r.y),src:'PC'};}catch(e){}
+  const L=myB().filter(b=>b&&b.st!=='void'&&b.fam===fam&&num(b.kg)>0&&okOf(b)>0&&!(bd&&bd.bid&&b.bid===bd.bid)).slice(0,5);
+  if(L.length){const i=L.reduce((s,b)=>s+num(b.kg),0),o=L.reduce((s,b)=>s+okOf(b),0);if(i>0)return {y:Math.round(o/i*1000)/10,src:'phone',n:L.length};}return null;}
+window.v471Yield=v471Yield;
+/* ---------- ⚖️ the weights card on the batch form ---------- */
+window.v471W=function(){if(!bd||!bd.fam)return '';const r=curRc(),pkt=r&&r.m==='p';
+  return `<div class="card" id="v471w"><h3>⚖️ බර <span class="small muted">(kg)</span></h3>
+   ${pkt?'':`<div class="field"><label>🎯 හදන්න ඕනේ කුඩු kg <small class="muted">— ඕනේ නම් · අමු කීයක් ඕනේද බලන්න</small></label><input type="number" inputmode="decimal" min="0" step="any" id="bdTg" value="${esc(bd.tg||'')}" oninput="bd.tg=this.value;v471Paint()"></div><div id="v471tg"></div>`}
+   <div class="field"><label>🌶️ යන්ත්‍රයට දාපු අමු ද්‍රව්‍ය kg <small class="muted">— lot වලින් අඩු වෙන්නේ මේක</small></label><input type="number" inputmode="decimal" min="0" step="any" id="bdKg" value="${esc(bd.kg||'')}" oninput="bd.kg=this.value;v471Paint()" onchange="bd.kg=this.value;save()"></div>
+   <div class="field"><label>⚖️ හැදුණු කුඩු kg <small class="muted">— ඇඹරුවාට පස්සේ කිරලා · පස්සේ දාන්නත් පුළුවන්</small></label><input type="number" inputmode="decimal" min="0" step="any" id="bdOk" value="${esc(bd.okg||'')}" oninput="bd.okg=this.value;v471Paint()" onchange="bd.okg=this.value;save()"></div>
+   <div id="v471loss"></div></div>`;};
+window.v471Paint=function(){if(!bd)return;const Y=v471Yield(bd.fam),tg=num(bd.tg),kg=num(bd.kg),ok=num(bd.okg),a=$('v471tg'),b=$('v471loss');
+  if(a){if(!(tg>0))a.innerHTML='';
+    else if(Y&&Y.y>0){const need=r1(tg/(Y.y/100));a.innerHTML=`<div class="okbox small" style="font-weight:600">🌶️ කුඩු <b>${r1(tg)} kg</b> හදන්න අමු ද්‍රව්‍ය ≈ <b>${need} kg</b> ඕනේ <span class="muted">(අස්වැන්න ${Y.y}% — ${Y.src==='PC'?'PC: අන්තිම batch වල සාමාන්‍යය':'මේ phone එකේ අන්තිම batch '+Y.n})</span> ${Math.abs(need-kg)>0.05?`<button type="button" class="btn sm light" onclick="v471Use(${need})">⬇️ ${need} kg දාන්න</button>`:'✅'}</div>`;}
+    else a.innerHTML=`<div class="warnbox small">ℹ️ මේ භාණ්ඩයේ අස්වැන්න (කුඩු ÷ අමු) තවම දන්නේ නැහැ. “දාපු අමු” සහ “හැදුණු කුඩු” දෙකම දාපු batch එකක් දැම්මාම ඊළඟ පාර ඉබේම ගණන් හදනවා.</div>`;}
+  if(!b)return;let h='';const pk=v471Pk();
+  if(kg>0&&ok>0){if(ok>kg*1.02)h=`<div class="warnbox small">⚠️ හැදුණු බර (${r1(ok)} kg) දාපු අමු බරට (${r1(kg)} kg) වඩා වැඩියි — බර හරිද? (වතුර / තෙල් එකතු කළා නම් හරි)</div>`;
+    else{const pct=Math.round(ok/kg*1000)/10;h=`<div class="okbox small">♻️ නාස්තිය <b>${r1(kg-ok)} kg</b> (${r1(100-pct)}%) · අස්වැන්න <b>${pct}%</b></div>`;if(Y&&Y.y>0&&Math.abs(pct-Y.y)>=8)h+=`<div class="warnbox small">⚠️ සාමාන්‍යයෙන් අස්වැන්න ${Y.y}% — මේ පාර ${pct}%. බර හරිද බලන්න.</div>`;}}
+  else if(kg>0&&pk>0)h=`<div class="small muted">⚖️ හැදුණු කුඩු kg දැම්මාම නාස්තිය ඉබේම ගණන් වෙනවා.</div>`;
+  if(pk>0&&ok>0){const rest=r1(ok-pk/1000);h+=`<div class="small muted">📦 පැක් කළා ≈ ${r1(pk/1000)} kg${rest>0.05?` · ඉතුරු කුඩු ≈ <b>${rest} kg</b> (තවම පැක් කරලා නැහැ)`:rest<-0.2?' · ⚠️ පැක් කළ බර හැදුණු කුඩු බරට වඩා වැඩියි':''}</div>`;}
+  b.innerHTML=h;};
+window.v471Use=function(kg){if(!bd)return;bd.kg=String(kg);const i=$('bdKg');if(i)i.value=String(kg);save();try{if(faAuto())faPaint();}catch(e){}v471Paint();};
+(function(){const _r=renderBNew;renderBNew=function(){const r=_r.apply(this,arguments);try{v471Paint();}catch(e){console.warn('4.71 w',e);}return r;};})();
+/* only the weights changed → no typed reason needed (the PC history gets "⚖️ බර") */
+window.v471OnlyW=function(old,sz,exp){try{const z=a=>(a||[]).filter(x=>num(x[1])>0).map(x=>[x[0],Math.floor(num(x[1])),x[2]||'A']);
+  const A=JSON.stringify([old.d,old.exp,old.pk||'',z(old.sz),(old.raw||[]).slice().sort(),old.rt||'',old.w||'',old.nt||'',old.sm?1:0]),B=JSON.stringify([bd.d,exp,bd.pk||'',z(sz),bd.raw.filter(n=>!lotVoid(n)).slice().sort(),bd.rt||'',bd.w||'',bd.nt||'',bd.sm?1:0]);
+  return A===B&&(num(old.kg)!==num(bd.kg)||okOf(old)!==num(bd.okg));}catch(e){return false;}};
+/* packets typed but no raw kg → ask once (without it the lots / raw stock don't go down) */
+window.v471NoKg=function(sz){if(!bd||bd._noKg||num(bd.kg)>0||!sz.some(x=>num(x[1])>0))return false;const r=curRc();if(!r||r.m==='p')return false;
+  sheet(`<h3>🌶️ දාපු අමු ද්‍රව්‍ය kg නැහැ</h3><p>යන්ත්‍රයට දාපු අමු ද්‍රව්‍ය බර නැත්නම් <b>lot / අමු තොගයෙන් අඩු වෙන්නේ නැහැ</b>, නාස්තියත් ගණන් වෙන්නේ නැහැ.</p>
+   <button class="btn primary block" onclick="sheet();const i=$('bdKg');if(i){i.scrollIntoView({block:'center'});i.focus();}">✏️ දැන් දාන්නම්</button><button class="btn light block" onclick="bd._noKg=1;sheet();bSave()">⏭️ පස්සේ දාන්නම් — යවන්න</button>`);return true;};
+/* the batch list: raw → powder · loss */
+window.v471BW=function(b){try{const kg=num(b.kg),ok=okOf(b),r=rcFor(b.fam)[0];if(r&&r.m==='p')return '';
+  if(kg>0&&ok>0)return `<div class="small">🌶️ ${r1(kg)} kg → ⚖️ ${r1(ok)} kg · ♻️ නාස්තිය ${r1(kg-ok)} kg (${Math.round((kg-ok)/kg*1000)/10}%)</div>`;
+  if(b.st==='making'&&!kg)return '';return `<div class="small warn">⚖️ ${kg>0?'🌶️ '+r1(kg)+' kg · හැදුණු කුඩු kg තවම නැහැ':'දාපු අමු ද්‍රව්‍ය kg තවම නැහැ'} — ✏️ ඔබලා දාන්න</div>`;}catch(e){return '';}};
+/* ---------- 🤖 oldest sack first: also says when the lots are not enough, and counts this phone's own batches the PC hasn't seen yet ---------- */
+faAuto=function(){if(!bd||!bd.fam||bd.bid||bd.rawEd||!(S.cfg&&S.cfg.la))return false;const r=faCurRc();if(!r)return false;const pk=Object.values(bd.sz||{}).reduce((s,v)=>s+Math.floor(num(v)),0),L=rcLines(r,bd.kg,pk);if(!L.length)return false;
+  const id=n=>{const m=mtByName(n);return m?m[0]:norm(n);},lots=faLots().filter(x=>!x.done&&x.qc!=='rej'&&!(x.exp&&x.exp<today())&&x.left>0).sort(faOld),out=[],miss=[],short=[];
+  L.forEach(l=>{if(l.fam||!(l.g>0))return;let need=l.g,got=0;lots.filter(x=>id(x.mat)===id(l.n)).forEach(x=>{if(need<=0.5)return;const t=Math.min(need,x.left);out.push({no:x.no,g:t});x.left-=t;need-=t;got++;});if(!got)miss.push(l.n);else if(need>=500)short.push([l.n,need]);});
+  bd.raw=[...new Set(out.map(o=>o.no))];bd.autoL=out;bd.autoM=miss;bd.autoS=short;bd._v454=1;return true;};
+(function(){const _t=faAutoTxt;faAutoTxt=function(){let h=_t.apply(this,arguments);try{if(bd&&!bd.bid&&!bd.rawEd&&(bd.autoS||[]).length)h+=`<div class="bad">⚠️ lot වල මදි: ${bd.autoS.map(([n,g])=>esc(n)+' '+kgT(g)).join(', ')} — අලුත් මල්ල “🌶️ අමු ද්‍රව්‍ය ලැබුණා” එකෙන් දාන්න</div>`;}catch(e){}return h;};
+  const _l=faLots;faLots=function(){const L=_l.apply(this,arguments);try{const at=(S.cfg&&S.cfg.at)||'',U={};myB().forEach(b=>{if(!b||b.st==='void'||!Array.isArray(b.lu)||(at&&String(b.at)<=at))return;b.lu.forEach(([no,g])=>{U[no]=(U[no]||0)+num(g);});});
+    L.forEach(l=>{if(l.left!==null&&U[l.no])l.left=Math.max(0,l.left-U[l.no]);});}catch(e){}return L;};})();
+/* ---------- 📉 low stock: 📦 packets (minimum from the PC, worked out here with this phone's sales / batches) · 🌶️ raw · ⚖️ ground powder ---------- */
+function ordLeft(){const o={};((S.cfg&&S.cfg.o)||[]).forEach(x=>(x[3]||[]).forEach(i=>{o[i[0]]=(o[i[0]]||0)+num(i[2]);}));return o;}
+function lorNow(){const o={};((S.stk&&S.stk.l)||[]).forEach(([pid,l])=>{o[pid]=(l||[]).reduce((t,x)=>t+num(x[1]),0);});return o;}
+/* powder not packed: the PC figure + this phone's batches since then (powder kg − packets) */
+function powder(){const bk=Object.assign({},(S.cfg&&S.cfg.bkf)||{}),at=(S.cfg&&S.cfg.at)||'';try{myB().forEach(b=>{if(!b||b.st==='void'||!(okOf(b)>0)||(at&&String(b.at)<=at))return;let g=okOf(b)*1000;(b.sz||[]).forEach(([pid,q])=>{const s=v471Size(pid);if(s)g-=Math.floor(num(q))*s.g;});bk[b.fam]=Math.max(0,num(bk[b.fam])+g);});}catch(e){}return bk;}
+window.v471Low=function(){const C=S.cfg||{},out={p:[],m:[],g:[]};
+  if(C.mn&&S.stk&&S.stk.at){let N={};try{N=v470Now();}catch(e){}/* no PC stock figure yet → the PC's own list below */const L=lorNow(),O=ordLeft();Object.entries(C.mn).forEach(([pid,min])=>{min=num(min);if(!(min>0)||!prod(pid))return;const f=N[pid]?num(N[pid].now):0,l=num(L[pid]),o=num(O[pid]),have=Math.round(f+l-o);if(have<min)out.p.push({pid,have,min,f,l,o,zero:have<=0});});}
+  else (C.lo||[]).forEach(([pid,have,min])=>{if(prod(pid))out.p.push({pid,have:num(have),min:num(min),zero:num(have)<=0,old:1});});
+  out.p.sort((a,b)=>(b.zero-a.zero)||(a.have/a.min-b.have/b.min));
+  (C.ml||[]).forEach(([n,have,min,u,k,auto])=>{if(num(have)<num(min))out.m.push({n,have:num(have),min:num(min),u:u||'g',k,auto,zero:num(have)<=0});});
+  const F={},bk=powder();out.p.forEach(x=>{const s=v471Size(x.pid);if(!s||!(s.g>0))return;const need=(x.min-Math.max(0,x.have))*s.g;if(!(need>0))return;if(!F[s.fam])F[s.fam]={need:0};F[s.fam].need+=need;});
+  Object.entries(F).forEach(([fam,v])=>{const have=num(bk[fam]),grind=Math.max(0,v.need-have),Y=v471Yield(fam);out.g.push({fam,need:v.need,have,grind,raw:Y&&Y.y>0?grind/(Y.y/100):0,y:Y});});
+  out.g.sort((a,b)=>b.grind-a.grind);return out;};
+const nLow=X=>X.p.length+X.m.length+X.g.filter(g=>g.grind>0).length;
+function lowHtml(X){const C=S.cfg||{};
+  const P=X.p.length?`<div class="card"><h3 class="v470fam">📦 පැකට් — අවම ගණනට අඩු (${X.p.length})</h3>${X.p.map(x=>`<div class="v470r"><div class="sz">${esc(pn(x.pid))}</div><div class="q ${x.zero?'n':''}">${x.have}</div><div class="sub">${x.zero?'🔴 ඉවරයි':'🟠 අඩුයි'} · අවම <b>${x.min}</b> · හදන්න ≈ <b>${x.min-Math.max(0,x.have)}</b>${x.o?` · <span class="muted">ඇණවුම් ${x.o} අඩු කළා</span>`:''}${x.l?` · <span class="muted">🚚 ලොරියේ ${x.l}</span>`:''}${x.old?' · <span class="muted">PC ගණන</span>':''}</div></div>`).join('')}</div>`
+    :`<div class="card ${C.mn||C.lo?'okbox':'infobox small'}">${C.mn||C.lo?'✅ පැකට් ඔක්කොම අවම ගණනට වඩා වැඩියි':'📦 PC එකේ “📦 අවම තොගය” තවම දාලා නැහැ'}</div>`;
+  const G=X.g.length?`<div class="card"><h3 class="v470fam">⚖️ ඇඹරූ කුඩු (පැක් නොකළ)</h3>${X.g.map(g=>`<div class="v470r"><div class="sz">${esc(g.fam)}</div><div class="q ${g.grind>0?'n':''}">${kgT(g.have)}</div><div class="sub">${g.grind>0?`🟠 <b>අඹරන්න ඕනේ ≈ ${kgT(g.grind)}</b> කුඩු${g.raw>0?` · අමු ≈ <b>${kgT(g.raw)}</b> (අස්වැන්න ${g.y.y}%)`:''}`:`✅ <b>පැක් කරන්න</b> — කුඩු ${kgT(g.have)} තියෙනවා`} · <span class="muted">අවමට පුරවන්න කුඩු ${kgT(g.need)}</span></div></div>`).join('')}</div>`:'';
+  const M=X.m.length?`<div class="card"><h3 class="v470fam">🌶️ අමු ද්‍රව්‍ය / ඇසුරුම් — අවමට අඩු (${X.m.length})</h3>${X.m.map(m=>`<div class="v470r"><div class="sz">${m.k==='p'?'📦 ':'🌶️ '}${esc(m.n)}</div><div class="q ${m.zero?'n':''}">${v471Q(m.have,m.u)}</div><div class="sub">${m.zero?'🔴 ඉවරයි':'🟠 අඩුයි'} · අවම ${v471Q(m.min,m.u)}${m.auto?' <span class="muted">(ඉබේම: දවසේ පාවිච්චිය × දින 7)</span>':''} · 🛒 ගන්න</div></div>`).join('')}</div>`
+    :(C.ml?`<div class="card okbox small">✅ අමු ද්‍රව්‍ය අවමට වඩා වැඩියි${!C.ml.length?' — (PC එකේ අවම තියෙන අමු ද්‍රව්‍ය නැහැ)':''}</div>`:'');
+  return P+G+M+`<div class="small muted" style="margin:4px 2px 8px">📦 = 🏭 කම්හල + 🚚 ලොරිය − දෙන්න තියෙන ඇණවුම් (PC ගණන + මේ phone එකේ වෙනස්). ⚖️ = අවම ගණනට පැකට් පුරවන්න ඕනේ කුඩු vs පැක් නොකළ කුඩු. අවම ගණන් වෙනස් කරන්නේ PC එකේ: 📦 → 🏷️ Batch පිටුවේ “📦 අවම තොගය” · 🌶️ → අමු ද්‍රව්‍ය පිටුවේ ද්‍රව්‍යය ✏️ “අවම”.</div>`;}
+/* the stock page: a 📉 tab + "අවම" marks on the 🏭 list */
+(function(){const _r=renderStock;renderStock=function(){const V=window.V470,lo=V.tab==='lo';if(lo)V.tab='l';const res=_r.apply(this,arguments);if(lo)V.tab='lo';try{post(lo);}catch(e){console.warn('4.71 stock',e);}return res;};})();
+function post(lo){const body=$('stockBody'),tabs=body&&body.querySelector('.v470tabs');if(!tabs)return;const X=v471Low(),n=nLow(X);
+  const btn=document.createElement('button');btn.type='button';btn.className=lo?'on':'';btn.textContent='📉 අවම'+(n?' ('+n+')':'');btn.onclick=()=>{V470.tab='lo';render();};tabs.insertBefore(btn,tabs.children[1]||null);
+  if(lo){tabs.querySelectorAll('button').forEach(b=>{if(b!==btn)b.classList.remove('on');});let el=tabs.nextElementSibling;const last=body.lastElementChild;while(el&&el!==last){const nx=el.nextElementSibling;el.remove();el=nx;}tabs.insertAdjacentHTML('afterend',lowHtml(X));return;}
+  const mn=(S.cfg&&S.cfg.mn)||{},L=new Map(X.p.map(x=>[x.pid,x]));body.querySelectorAll('.v470r[data-p]').forEach(r=>{const pid=r.dataset.p,min=num(mn[pid]);if(!(min>0))return;const x=L.get(pid),sub=r.querySelector('.sub');if(sub)sub.insertAdjacentHTML('beforeend',` <span class="v471m ${x?(x.zero?'z':'lo'):''}">${x?(x.zero?'🔴 ':'🟠 '):''}අවම ${min}</span>`);});}
+/* home: one button for all three */
+(function(){const _h=renderHome0;renderHome0=function(){_h.apply(this,arguments);try{if(!S.cfg)return;const h=$('homeBody');if(!h)return;h.querySelectorAll('.notebtn').forEach(b=>{if(/තොගය අඩුයි/.test(b.textContent))b.remove();});const g=h.querySelector('.grid2');if(!g)return;
+  const X=v471Low(),gN=X.g.filter(x=>x.grind>0).length;if(!nLow(X))return;const top=[...X.p.slice(0,3).map(x=>esc(pn(x.pid))+' '+x.have+'/'+x.min),...X.g.filter(x=>x.grind>0).slice(0,1).map(x=>'⚖️ '+esc(x.fam)+' අඹරන්න'),...X.m.slice(0,2).map(m=>'🌶️ '+esc(m.n))].join(' · ');
+  g.insertAdjacentHTML('beforebegin',`<button class="notebtn has" id="v471home" onclick="V470.tab='lo';go('stock')"><span>📉 තොගය අඩුයි</span>${X.p.length?`<b class="badge">📦 ${X.p.length}</b>`:''}${gN?`<b class="badge">⚖️ ${gN}</b>`:''}${X.m.length?`<b class="badge">🌶️ ${X.m.length}</b>`:''}<small>${top}</small></button>`);}catch(e){console.warn('4.71 home',e);}};})();
+document.head.insertAdjacentHTML('beforeend',`<style>.v471m{display:inline-block;font-size:12px;font-weight:700;color:#64748b;background:#f1f5f9;border-radius:8px;padding:1px 6px}.v471m.lo{color:#9a3412;background:#ffedd5}.v471m.z{color:#fff;background:#b91c1c}#v471w .okbox,#v471w .warnbox{margin:6px 0}</style>`);
+})();
+</script>
+<script>
+/* ================= 4.72 · 👷 සේවකයා ගත්තා: names from the PC's staff list (tap, don't type) · the amount from the pay shown (👷 සේවක මිල)
+   · a name not in the list → asked before sending (the PC would stop it) ================= */
+(function(){
+function staffList(){const C=S.cfg||{};return [...new Set(((C.se&&C.se.length?C.se:C.st)||[]).filter(Boolean))];}
+function inList(n){const k=norm(n);return !!k&&staffList().some(x=>norm(x)===k||norm(x).split(/\s+/)[0]===k);}
+function spOf(pid){const sp=S.cfg&&S.cfg.ssp;if(sp&&num(sp[pid])>0)return {v:num(sp[pid]),s:1};const p=prod(pid);return {v:p?num(p[3]):0,s:0};}
+window.v472Val=function(d){let t=0,any=0,all=1;(d.it||[]).forEach(x=>{if(!(num(x[1])>0))return;const s=spOf(x[0]);t+=s.v*num(x[1]);any=1;if(!s.s)all=0;});return {t:Math.round(t*100)/100,any,all};};
+window.v472Pick=function(n){const d=D('move');d.staff=n;save();render();};
+(function(){const _r=renderMove;renderMove=function(){const r=_r.apply(this,arguments);try{const d=D('move');if(d.kind!=='staff')return r;const box=$('moveBody'),inp=box&&box.querySelector('input[list="staffL"]');if(!inp)return r;const fld=inp.closest('.field'),L=staffList(),V=v472Val(d);
+  fld.innerHTML=`<label>👷 සේවකයා <small class="muted">— නම ඔබන්න</small></label><div class="chips">${L.map(n=>`<button type="button" class="chip ${norm(d.staff)===norm(n)?'ok':''}" onclick="v472Pick(${esc(JSON.stringify(n))})">👷 ${esc(n)}</button>`).join('')||'<span class="small muted">PC එකෙන් සේවක ලැයිස්තුව තවම ආවේ නැහැ</span>'}</div>
+   <details ${d.staff&&!inList(d.staff)?'open':''}><summary class="small muted">ලැයිස්තුවේ නැති නමක්</summary><input value="${esc(d.staff||'')}" maxlength="40" onchange="D('move').staff=this.value;save();render()" placeholder="නම"></details>
+   ${d.staff&&!inList(d.staff)?'<div class="warnbox small">⚠️ මේ නම PC සේවක ලැයිස්තුවේ නැහැ — PC එකේ නම හරි කරනකම් පඩියෙන් අඩු වෙන්නේ නැහැ.</div>':''}
+   ${V.any?`<div class="okbox small">💰 පඩියෙන් අඩු වෙන්නේ ≈ <b>රු. ${money(V.t)}</b> ${V.all?'(👷 සේවක මිලට)':'(සමහර ඒවා කඩ මිලට — PC එකේ ඒ දවසේ මිල / සේවක මිල ගන්නවා)'}</div>`:''}`;}catch(e){console.warn('4.72 move',e);}return r;};})();
+(function(){const _s=sendMove;sendMove=async function(){const d=D('move');if(d&&d.kind==='staff'&&String(d.staff||'').trim().length>=2&&!inList(d.staff)&&!d._okName&&staffList().length){
+    sheet(`<h3>👷 “${esc(d.staff)}” ලැයිස්තුවේ නැහැ</h3><p>PC එකේ මේ නම සේවක ලැයිස්තුවේ නැති නිසා <b>පඩියෙන් අඩු වෙන්නේ නැහැ</b> (PC එකේ හරි කරනකම් නවතිනවා).</p><button class="btn primary block" onclick="sheet()">✏️ ලැයිස්තුවෙන් තෝරන්නම්</button><button class="btn light block" onclick="D('move')._okName=1;sheet();sendMove()">📤 මෙහෙමම යවන්න</button>`);return;}
+  if(d)delete d._okName;return _s.apply(this,arguments);};})();
+})();
 </script>
 </body>
 </html>

@@ -123,6 +123,7 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
   </section>
 
   <section class="screen" id="s-setup">
+    <div class="card"><h3>📴 Internet නැතුවත්</h3><div class="small" id="offInfo"></div></div>
     <div class="card"><h3>☁️ මිල ලැයිස්තුව ඉබේම අලුත් වීම</h3><div class="small" id="cloudInfo"></div>
       <button class="btn primary block" id="pullBtn" onclick="cloudPull(true)">🔄 දැන් අලුත් කරන්න</button></div>
     <div class="card"><h3>📲 භාණ්ඩ ලැයිස්තුව දාන්න (එක පාරක්)</h3>
@@ -139,11 +140,14 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 'use strict';
+/* 📴 v1.8: the offline helper (service worker) is started first — before anything else on the page can stop it */
+const SW_OK='serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost');
+if(SW_OK)try{navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}
 /* Shanthi Food Products — කඩ බිල app (v1.6, 2026-11-06)
-   Offline first. The product list + wholesale prices come from the PC through Firebase (boxes/<box>/out/cfg · out/rep — the same
+   Offline first (v1.8: the offline helper starts first and ⚙️ / the footer say whether this phone can open it without internet). The product list + wholesale prices come from the PC through Firebase (boxes/<box>/out/cfg · out/rep — the same
    messages the lorry app reads; the PC v4.7.3 sends a new one whenever a price changes). Also accepts a pasted WhatsApp message,
    and the lorry app's saved list on the same phone (read only). Nothing is ever sent anywhere. */
-const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.7',QMAX=9999;
+const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.8',QMAX=9999;
 const FS='https://firestore.googleapis.com/v1/projects/';
 const SIZE_RE=/^(\d+(?:\.\d+)?(?:g|kg|ml|l|P)|Card|Packet)$/i;
 const $=id=>document.getElementById(id);
@@ -190,7 +194,8 @@ function syncLorry(){const c=fromLorry();return c?takeCfg(c,'lorry',false):false
 let pulling=false,lastPull=0;
 async function cloudPull(manual){if(!S.cloud){if(manual)toast('මුලින්ම “📲 භාණ්ඩ ලැයිස්තුව” message එක එක පාරක් දාන්න');renderCloud();return;}
   if(pulling)return;if(!manual&&Date.now()-lastPull<45000)return;pulling=true;lastPull=Date.now();renderCloud();let best=null,err='';
-  try{for(const k of ['cfg','rep']){let r;try{r=await fetch(`${FS}${S.cloud.p}/databases/(default)/documents/boxes/${S.cloud.b}/out/${k}`,{cache:'no-store'});}catch(e){err='Internet නැහැ';break;}
+  try{for(const k of ['cfg','rep']){let r;if(navigator.onLine===false){err='Internet නැහැ';break;}const ac=window.AbortController?new AbortController():null,tm=setTimeout(()=>{try{ac&&ac.abort();}catch(e){}},15000);
+      try{r=await fetch(`${FS}${S.cloud.p}/databases/(default)/documents/boxes/${S.cloud.b}/out/${k}`,{cache:'no-store',signal:ac?ac.signal:undefined});}catch(e){err='Internet නැහැ';break;}finally{clearTimeout(tm);}
       if(r.status===404)continue;if(!r.ok){err=r.status===429?'Firebase අද සීමාව ඉවරයි':r.status===403?'Firebase අවසර නැහැ':'Firebase දෝෂය '+r.status;break;}
       let j;try{j=await r.json();}catch(e){continue;}const code=((j.fields||{}).code||{}).stringValue||'';
       sbpDecodeAll(code).forEach(c=>{if(c.error)return;const cfg=c.type==='cfg'?c.data:c.type==='rep'?c.data&&c.data.cfg:null;if(cfg&&cleanP(cfg.p).length&&(!best||String(cfg.at||'')>String(best.at||'')))best=cfg;});}}
@@ -269,7 +274,7 @@ function rowHtml(x){const n=qty(x.id),pr=price(x.id),chg=chgOf(x.id);
    <div class="pr"><label class="${chg?'chg':''}">රු.<input type="text" inputmode="decimal" autocomplete="off" value="${pr>0||hasOwn(x.id)?esc(String(pr)):''}" placeholder="මිල" aria-label="${esc(x.name)} මිල" onfocus="this.select()" onchange="setPrice(this.closest('.row').dataset.r,this.value)"></label><span class="cm">${chg?'වෙනස් කළා':''}</span><span class="need">${!(pr>0)&&!hasOwn(x.id)?'මිල දාන්න':''}</span><span class="frw">${freeHtml(x.id)}</span>${noDisc(x.id)?'<span class="ndt">🚫 වට්ටම් නැහැ</span>':''}</div></div>
    <div class="st"><button class="sb" aria-label="අඩු කරන්න" onclick="step(this.closest('.row').dataset.r,-1)">−</button><input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="${QMAX}" value="${n||''}" placeholder="0" aria-label="${esc(x.name)} ගණන" onfocus="this.select()" oninput="setQty(this.closest('.row').dataset.r,this.value)" onblur="if(this.value!==String(qty(this.closest('.row').dataset.r)||''))this.value=qty(this.closest('.row').dataset.r)||''"><button class="sb" aria-label="වැඩි කරන්න" onclick="step(this.closest('.row').dataset.r,1)">＋</button></div><div class="fedrow">${fedHtml(x.id)}</div></div>`;}
 function renderItems(){const el=$('list');renderCloud();$('qx').style.display=Q?'':'none';
-  $('foot').textContent=`කඩ බිල v${VER} · Internet නැතුවත් වැඩ කරනවා${S.p.length?' · භාණ්ඩ '+S.p.length:''}`;
+  $('foot').textContent=footTxt();
   if(!S.p.length){el.innerHTML=`<div class="card empty"><div style="font-size:40px">📲</div><p>භාණ්ඩ ලැයිස්තුව තවම නැහැ.</p><p class="small">PC එකේ <b>📱 Phone Apps</b> → 🧾 කඩ බිල → “📲 WhatsApp එකෙන් යවන්න” එකෙන් එන link එක open කරන්න.</p><button class="btn primary block" onclick="go('setup')">⚙️ භාණ්ඩ ලැයිස්තුව දාන්න</button></div>`;renderBar();return;}
   const F=families(),q=norm(Q);let h='',i=0;if(OPEN!==null&&!F.has(OPEN))OPEN=null;
   /* every word typed must match the product name (anywhere) or the size (from its start): “50g” finds 50g, not 250g · “මිරිස් 100” works */
@@ -330,7 +335,20 @@ function renderCloudInfo(){const el=$('cloudInfo');if(!el)return;
   el.innerHTML=!S.cloud?'<span style="color:#9a3412">⚠️ තවම සකසලා නැහැ — පහළ “📲 භාණ්ඩ ලැයිස්තුව” message එක එක පාරක් දාන්න.</span>'
    :`✅ සකසලා තියෙනවා. Internet තියෙනකොට app එක open කරන හැම පාරම PC එකේ අලුත්ම මිල ගන්නවා.<br>PC එකෙන් අන්තිම ලැයිස්තුව: <b>${esc(hm(S.at)||'—')}</b>${S.pulledAt?` · අන්තිමට බැලුවේ: ${esc(hm(S.pulledAt))}`:''}${S.cloudErr?`<br><span style="color:#9a3412">⚠️ ${esc(S.cloudErr)}</span>`:''}`;
   $('pullBtn').disabled=!S.cloud||pulling;$('pullBtn').textContent=pulling?'⏳ බලනවා…':'🔄 දැන් අලුත් කරන්න';}
-function renderSetup(){renderCloudInfo();$('srcInfo').innerHTML=S.p.length?`දැනට භාණ්ඩ <b>${S.p.length}</b>ක් (${({cloud:'☁️ Firebase',lorry:'🚛 ලොරි app',paste:'📲 WhatsApp message'})[S.src]||''}).`:'';
+/* 📴 ready = this page is run by the offline helper AND the page is saved on this phone */
+let OFF='',offTries=0;/* '' checking · ok · wait · no */
+const OFFT={ok:'📴 Internet නැතුවත් open වෙනවා ✅',wait:'⏳ Offline සූදානම් වෙනවා…',no:'⚠️ මේ විදිහට open කළාම internet ඕනේ'};
+function footTxt(){return `කඩ බිල v${VER}${OFFT[OFF]?' · '+OFFT[OFF]:''}${S.p.length?' · භාණ්ඩ '+S.p.length:''}`;}
+async function offCheck(){let s='no';
+  try{if(SW_OK&&window.caches){const has=!!(await caches.match('index.html'));s=navigator.serviceWorker.controller&&has?'ok':'wait';}}catch(e){s='no';}
+  const was=OFF;OFF=s;if(s!==was){try{const f=$('foot');if(f)f.textContent=footTxt();renderOff();}catch(e){}if(was==='wait'&&s==='ok')toast('📴 ✅ දැන් internet නැතුවත් open වෙනවා');}
+  if(s==='wait'&&offTries++<30)setTimeout(offCheck,3000);}
+function renderOff(){const el=$('offInfo');if(!el)return;const ip=/iPhone|iPad|iPod/i.test(navigator.userAgent);
+  el.innerHTML=OFF==='ok'?`<div class="cl"><span>✅</span><span class="grow"><b>සූදානම්</b> — internet නැතුවත් මේ app එක open වෙනවා, බිල් හදන්න පුළුවන්. මිල අලුත් වෙන්නේ internet ආවම.</span></div>`
+   :OFF==='wait'?`<div class="cl bad"><span>⏳</span><span class="grow"><b>තවම සූදානම් නැහැ</b> — internet එක්ක මේ app එක open කරලා තත්පර 10ක් ඉන්න, ඊට පස්සේ app එක සම්පූර්ණයෙන් වහලා ආයෙත් open කරන්න. මෙතන ✅ ආවම internet නැතුවත් වැඩ.</span></div>${ip?'<p class="small muted" style="margin:6px 0 0">📱 iPhone: Home Screen එකේ 🧾 icon එකෙන්ම open කරන්න — Safari / WhatsApp link එකෙන් open කරන එක වෙනම app එකක් වගේ (ඒකට offline සූදානම් වෙන්නේ නැහැ).</p>':''}`
+   :OFF==='no'?`<div class="cl bad"><span>⚠️</span><span class="grow"><b>මේ විදිහට open කළාම offline බැහැ</b> — <b>${esc(location.origin+location.pathname)}</b> ${ip?'Safari':'Chrome'} එකෙන් open කරලා <b>Add to Home Screen</b> කරන්න, ඊට පස්සේ ඒ 🧾 icon එකෙන් open කරන්න.</span></div>`
+   :'<div class="small muted">බලනවා…</div>';}
+function renderSetup(){renderCloudInfo();renderOff();$('srcInfo').innerHTML=S.p.length?`දැනට භාණ්ඩ <b>${S.p.length}</b>ක් (${({cloud:'☁️ Firebase',lorry:'🚛 ලොරි app',paste:'📲 WhatsApp message'})[S.src]||''}).`:'';
   const F=families();let h='';F.forEach((list,fam)=>{h+=`<div class="small" style="font-weight:800;background:#fff7d6;padding:6px 10px;border-radius:8px;margin-top:8px">${esc(fam)}</div>`+list.map(x=>`<div class="row" style="padding:6px 4px" data-b="${esc(x.id)}"><div class="l"><span style="font-weight:700">${esc(x.size)}</span></div><div class="pr">${pcPrice(x.id)?`<b>රු. ${money(pcPrice(x.id))}</b><span class="muted">· PC</span>`:`<label>රු.<input type="text" inputmode="decimal" autocomplete="off" value="${basePrice(x.id)||''}" placeholder="මිල" aria-label="${esc(x.name)} සාමාන්‍ය මිල" onchange="setBase(this.closest('.row').dataset.b,this)"></label>`}</div></div>`).join('');});
   $('plist').innerHTML=h||'<div class="muted small">භාණ්ඩ ලැයිස්තුව දැම්මාම මෙතන පේනවා.</div>';renderBar();}
 function setBase(id,el){const t=String(el.value).trim(),p=num(t);if(t!==''&&(!/^[\d,]*\.?\d*$/.test(t)||!/\d/.test(t)||p<0||p>1e7)){toast('මිල හරියට දාන්න');el.value=basePrice(id)||'';return;}
@@ -351,10 +369,10 @@ syncLorry();
 function wake(){const ch=syncLorry();if(ch)softRender();cloudPull(false);}
 window.addEventListener('pageshow',e=>{if(e.persisted)wake();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wake();});
-window.addEventListener('online',()=>cloudPull(false));
+window.addEventListener('online',()=>{cloudPull(false);offCheck();});
+if(SW_OK)try{navigator.serviceWorker.addEventListener('controllerchange',()=>offCheck());}catch(e){}
 window.addEventListener('storage',e=>{if(e.key===LORRY_KEY&&syncLorry())softRender();});
-go(S.p.length?'items':'setup');verBar();cloudPull(false);
-if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+go(S.p.length?'items':'setup');verBar();cloudPull(false);offCheck();
 </script>
 </body>
 </html>

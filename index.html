@@ -222,7 +222,6 @@ try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}c
 const $=id=>document.getElementById(id);
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function today(){try{const p={};new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);return `${p.year}-${p.month}-${p.day}`;}catch(e){return new Date().toISOString().slice(0,10);}}
-function nowTxt(){try{return new Date().toLocaleString('en-GB',{timeZone:TZ,hour12:true,day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return new Date().toLocaleString();}}
 function uid(){return (Date.now().toString(36)+Math.random().toString(36).slice(2,8)).toUpperCase();}
 function split(name){const n=String(name||'').trim().replace(/\s+/g,' '),parts=n.split(' '),last=parts[parts.length-1];return parts.length>1&&SIZE_RE.test(last)?{fam:parts.slice(0,-1).join(' '),size:last}:{fam:n,size:''};}
 function products(){return S.cfg&&Array.isArray(S.cfg.p)?S.cfg.p:[];}
@@ -271,7 +270,7 @@ const IOS_TAB=/iP(hone|ad|od)/.test(navigator.userAgent)&&navigator.standalone==
 function iosHint(){return IOS_TAB?`<div class="warnbox">📱 <strong>iPhone:</strong> මේ open වෙලා තියෙන්නේ <strong>Safari</strong> එකේ. Safari එකේ දාන දේ Home screen icon එකේ app එකට <strong>එන්නේ නැහැ</strong> (iPhone ඒ දෙක වෙනම තියාගන්නවා).<br>➊ Share ⬆️ → <strong>Add to Home Screen</strong> ➋ ඒ icon එකෙන් app එක open කරන්න ➌ ⚙️ සැකසුම් → <strong>🔗 Link එක paste කරන්න</strong>.</div>`:'';}
 function linkBox(note){return `<div class="card"><h3>🔗 Link එක මෙතන paste කරන්න</h3><p class="small muted">${note} WhatsApp එකේ link එක ඔබාගෙන ඉඳලා <strong>Copy</strong> කරලා, මේ app එක ඇතුළේ මෙතන දාන්න. (iPhone එකේ Home screen app එකට link එක දාන්න පුළුවන් එකම ක්‍රමය මේකයි.)</p><div class="field"><input id="linkIn" placeholder="https://…" autocomplete="off" autocapitalize="off" spellcheck="false"></div><button class="btn light block" onclick="pasteLink()">📋 Copy කරපු link එක ගන්න</button><button class="btn primary block" onclick="useLink($('linkIn').value)">✅ සකසන්න</button></div>`;}
 async function pasteLink(){try{const t=await navigator.clipboard.readText();$('linkIn').value=t;useLink(t);}catch(e){toast('Clipboard කියවන්න බැහැ. Box එක ඇතුළේ ඔබාගෙන ඉඳලා “Paste” කරන්න.','warn');$('linkIn').focus();}}
-function useLink(t){const m=/[#&]c=([a-z0-9-]+)~([A-Za-z0-9_-]+)/.exec(String(t||'').trim());if(!m||!cloudSetCfg(m[1],m[2])){toast('මේක ලොරි app link එක නෙවෙයි. PC එකෙන් එවපු “📱 ලොරි app link” එකම copy කරන්න.','err');return false;}toast('☁️ ඉබේම යැවීම සකස් කළා ✅');cloudSync(true);render();return true;}
+function useLink(){}/* 5.1.5 clean-up: the real body is set later */
 function renderHome(){renderHome0();const h=iosHint();if(h&&screen==='home')$('homeBody').insertAdjacentHTML('afterbegin',h);}
 function renderHome0(){
   const r=S.rep,cd=S.drafts.count,ld=S.drafts.load,c=S.cfg;
@@ -336,13 +335,7 @@ let countQ='',countFilter='all';
 function repRows(){const r=S.rep;const m={};if(r)(r.rows||[]).forEach(x=>{m[x[0]]={id:x[0],opening:x[1],loaded:x[2],sold:x[3],free:x[4],unloaded:x[5],expected:x[6]};});return m;}
 /* v5.1.3: leftovers taken OFF the lorry before they were counted (morning: ➖ first, 🔢 after) — the count missed them.
    Unloads of today's trip that happened before today's first load and before this count → offer to add them into the count. */
-function cntPreUnl(){const c=S.drafts.count;if(!c||!c.d||c.d>=today())return null;const T=today(),ev=lrEvents(T),first={};
-  S.sent.forEach(x=>{if(x.uid&&(!first[x.uid]||String(x.at)<first[x.uid]))first[x.uid]=String(x.at);});const t0=e=>first[e.uid]||String(e.at||'');
-  const cs=S.sent.filter(x=>x.t==='count'&&x.uid===c.uid).map(x=>String(x.at)).sort()[0]||new Date().toISOString();
-  const ld=ev.filter(e=>e.k==='l').map(t0).sort()[0]||'9999';
-  const u=ev.filter(e=>e.k==='u'&&t0(e)<cs&&t0(e)<ld&&!(c.ub||[]).includes(e.uid));if(!u.length)return null;
-  const i={};u.forEach(e=>Object.entries(e.i||{}).forEach(([k,v])=>{if(num(v)>0)i[k]=(i[k]||0)+num(v);}));const sum=lrSum(i);if(!sum)return null;
-  return {u,i,sum,txt:u.map(e=>lrHM(e.at)+(e.by?' · '+e.by:'')).join(', ')};}
+function cntPreUnl(){return null;}/* off since 9 Nov (v5.1.4) — use 🚛 "ලොරිය සම්පූර්ණයෙන් හිස් කළා" instead */
 function cntPreUnlAdd(){const c=countDraft(),x=cntPreUnl();if(!x)return;if(isLocked(c)){toast('මුලින් “✏️ නිවැරදි කිරීමක්” ඔබන්න','warn');return;}
   Object.entries(x.i).forEach(([k,v])=>{const e=c.c[k]||(c.c[k]={parts:[],dmg:0});e.parts.push(v);if(!c.extra.includes(k)&&!repRows()[k])c.extra.push(k);});
   c.ub=(c.ub||[]).concat(x.u.map(e=>e.uid));save();vibrate();toast(`➕ අයින් කළ ${x.sum} ගණනට එකතු කළා`);renderCount();}
@@ -1024,7 +1017,7 @@ function hoCompare(){const d=loadDraft(),h=hoOf(d),ids=hoIds(d),todo=ids.filter(
   if(todo.length)sheet('ගණන් නොකළ ඒවා',`<p>${todo.map(pid=>esc(pname(pid))).join(', ')} — ගණන් කළේ නැහැ. ලොරියේ නැත්නම් (0) ලෙස සසඳන්නද?</p>`,[{t:'ආපහු — ගණන් කරන්න',c:'light',f:closeSheet},{t:'ඔව්, 0 ලෙස',c:'primary',f:()=>{closeSheet();go2();}}]);else go2();}
 function hoBack(){const d=loadDraft(),h=hoOf(d);h.step='count';save();renderAccept();}
 function hoRecount(pid){const d=loadDraft(),h=hoOf(d),b=hoBund(pid);const v=prompt(`🔁 ${pname(pid)} — ආයෙ ගණන් කරපු මුළු පැකට් ගණන${b?` (බණ්ඩලයක ${b})`:''}:`,'');if(v===null||v.trim()==='')return;const n=Math.max(0,Math.floor(num(v)));h.c[pid]={b:0,l:n};h.res[pid]=n===hoLoaded(d,pid)?'count':undefined;if(!h.res[pid])delete h.res[pid];save();renderAccept();hoPush(d,hoDiffs(d).length?'diff':'ok');toast(n===hoLoaded(d,pid)?'✅ දැන් ගැළපෙනවා':'⚠️ තවමත් වෙනස්','warn');}
-function hoFixLoad(pid){const d=loadDraft(),h=hoOf(d),C=hoCnt(h,pid)??0;if(h.orig[pid]===undefined)h.orig[pid]=num(d.i[pid]);if(C>0)d.i[pid]=C;else delete d.i[pid];h.res[pid]='load';save();renderAccept();hoPush(d,hoDiffs(d).length?'diff':'ok');toast('✏️ පැටවීම ගණන් කළ ගණනට හැදුවා');}
+function hoFixLoad(){}/* 5.1.5 clean-up: the real body is set later */
 function hoKeep(pid){const d=loadDraft(),h=hoOf(d);h.res[pid]='keep';save();renderAccept();}
 function hoAddExtra(){const q0=prompt('ලොරියේ තියෙන, ලැයිස්තුවේ නැති භාණ්ඩය — නම type කරන්න:');if(!q0)return;const hits=products().filter(p=>norm(p[1]).includes(norm(q0)));if(!hits.length){toast('හම්බ වුණේ නැහැ','warn');return;}let pick=hits[0];
   if(hits.length>1){const n=prompt(hits.slice(0,15).map((p,i)=>`${i+1}. ${p[1]}`).join('\n')+'\n\nඅංකය:','1');const k=Number(n)-1;if(!(k>=0&&k<hits.length))return;pick=hits[k];}
@@ -1080,7 +1073,6 @@ function goLoad(){loadMode='load';go('load');}
   const _hl=hoLoaded;hoLoaded=function(d,pid){return _hl(d,pid)+(d.pre?0:num(preFor(d.d)[pid]));};
   const _hi=hoIds;hoIds=function(d){const a=_hi(d);if(d.pre)return a;const p=Object.keys(preFor(d.d));return [...new Set(a.concat(p))].sort((x,y)=>porder(x)-porder(y));};
   const _hs=hoSnap;hoSnap=function(d){return _hs(d)+(d.pre?'':'|'+JSON.stringify(sortObj(preFor(d.d))));};
-  hoFixLoad=function(pid){const d=loadDraft(),h=hoOf(d),C=hoCnt(h,pid)??0,P=d.pre?0:num(preFor(d.d)[pid]);if(h.orig[pid]===undefined)h.orig[pid]=num(d.i[pid]);const n=Math.max(0,C-P);if(n>0)d.i[pid]=n;else delete d.i[pid];h.res[pid]='load';save();renderAccept();hoPush(d,hoDiffs(d).length?'diff':'ok');toast(P&&C<P?`✏️ හැදුවා — ⚠️ ගණන් කළේ වෙන් කළ ${P}ටත් අඩුයි`:'✏️ පැටවීම ගණන් කළ ගණනට හැදුවා',P&&C<P?'warn':'');};
   const _hst=hoStart;hoStart=function(){const d=loadDraft();if(d.pre){toast('🌙 වෙන් කළ බඩු භාර ගන්නේ ගමන් දවසේ උදේ — අලුත් බඩු එක්කම','warn');return;}
     if(!Object.keys(d.i).some(k=>num(d.i[k])>0)&&preTot(preFor(d.d))>0){const h=hoOf(d);if(!h.by)h.by=S.me;go('accept');hoPush(d,'counting');return;}return _hst.apply(this,arguments);};
   const _sl=sendLoad;sendLoad=function(){const d=loadDraft();if(d.pre){sendLoad.skipHo=true;try{return _sl.apply(this,arguments);}finally{sendLoad.skipHo=false;}}return _sl.apply(this,arguments);};
@@ -1124,7 +1116,6 @@ function preCountNote(){const r=S.rep;if(!r)return;const dd=addDays(r.d,1),q=pre
 
 
 /* ================= v4.4.6 · 🚚 ලොරියේ දැන් = ඉතිරි (උදේ ගණන) + 🌙 + පැටවීම් ➕ − ➖ — හැම lorry phone එකකම එකම ගණන ================= */
-const LR_EDIT_H=3;
 let lr={others:{},pulled:'',timer:0,last:0};
 function lrField(){return 'k_'+ensureDev().replace(/[^A-Za-z0-9_]/g,'_');}
 function lrKey(pid,name){if(products().some(p=>p[0]===pid))return pid;if(name){const hit=products().find(p=>norm(p[1])===norm(name));if(hit)return hit[0];}return pid;}
@@ -1137,7 +1128,7 @@ async function lrPull(T){T=T||today();const url=lsDoc(T);if(!url)return false;tr
   Object.entries(j.fields||{}).forEach(([k,v])=>{if(!k.startsWith('k_')||k===me)return;try{const x=JSON.parse(v.stringValue||'{}');if(Array.isArray(x.ev))o[k]=x;}catch(e){}});
   const sig=JSON.stringify(o),ch=sig!==JSON.stringify(S.lrO&&S.lrO.T===T?S.lrO.o:{});S.lrO={T,o,at:new Date().toISOString()};save();lr.pulled=S.lrO.at;return ch;}catch(e){return false;}}
 async function lrSync(force){if(!S.cloud)return false;const now=Date.now();if(!force&&now-lr.last<8000)return false;lr.last=now;const T=today();await lrPush(T);return await lrPull(T);}
-function lrWatch(){clearInterval(lr.timer);if(!S.cloud)return;lr.timer=setInterval(async()=>{if(!['load','home','unload','accept'].includes(screen))return;const ch=await lrSync(true);if(ch&&!document.activeElement.matches('input,textarea')){if(screen==='load')renderLoad();else if(screen==='home')renderHome();else if(screen==='unload')renderUnload();}},20000);}
+function lrWatch(){}/* 5.1.5 clean-up: the real body is set later */
 /* every event for T: own + other phones (one per uid, newest revision) */
 function lrEvents(T){const m={};const put=(e,mine)=>{const p=m[e.uid];if(!p||num(e.rev)>num(p.rev))m[e.uid]={...e,mine};};lrOwn(T).forEach(e=>put(e,1));
   if(S.lrO&&S.lrO.T===T)Object.values(S.lrO.o||{}).forEach(x=>(x.ev||[]).forEach(e=>{if(e&&e.uid&&e.k)put(e,0);}));
@@ -1149,6 +1140,8 @@ function lrState(T,skipUid){T=T||today();const ev=lrEvents(T),rem={src:'',at:'',
   const cnts=ev.filter(e=>e.k==='c');let c=cnts[cnts.length-1]||null;
   const pc=S.ord&&S.ord.lr&&typeof S.ord.lr==='object'?S.ord.lr:null;
   const pcMap=()=>{const i={},dm={};(pc.i||[]).forEach(r=>{if(!Array.isArray(r))return;const k=lrKey(String(r[0]||''),r[3]);if(num(r[1])>0)i[k]=(i[k]||0)+num(r[1]);if(num(r[2])>0)dm[k]=(dm[k]||0)+num(r[2]);});return {i,dm};};
+  /* v5.1.3: the PC knows a lorry day AFTER this count's trip (e.g. 🏭 all unloaded the next day) → the PC's figure wins */
+  if(c&&pc&&pc.d&&c.d&&pc.d>c.d)c=null;
   if(c){Object.assign(rem,{src:'count',at:c.at,by:c.by,d:c.d,i:{...c.i},dm:{...(c.dm||{})}});if(pc&&(pc.uid===c.uid||pc.d===c.d)&&pc.uid===c.uid){const x=pcMap();rem.i=x.i;rem.dm=x.dm;rem.ok=true;}}
   else if(pc&&pc.d){const x=pcMap();Object.assign(rem,{src:'pc',at:pc.at||'',by:pc.by||'',d:pc.d,i:x.i,dm:x.dm,ok:true,stale:dayOf(pc.at||pc.d)!==T});}
   else if(S.rep&&S.rep.d<T){(S.rep.rows||[]).forEach(x=>{if(num(x[6])>0)rem.i[x[0]]=num(x[6]);});rem.src=Object.keys(rem.i).length?'rep':'';rem.d=S.rep.d;rem.stale=true;}
@@ -1159,11 +1152,13 @@ function lrState(T,skipUid){T=T||today();const ev=lrEvents(T),rem={src:'',at:'',
   const pre=loadMode==='pre'?{}:preFor(T);
   const moves=ev.filter(e=>(e.k==='l'||e.k==='u')&&e.uid!==skipUid&&!(rem.src==='empty'&&String(e.at)<=rem.at));
   const tot={};const add=(i,s)=>Object.entries(i||{}).forEach(([k,v])=>{const n=num(v)*s;if(!n)return;tot[k]=(tot[k]||0)+n;});
-  add(rem.i,1);add(pre,1);moves.forEach(e=>add(e.i,e.k==='l'?1:-1));Object.keys(tot).forEach(k=>{if(tot[k]<=0)delete tot[k];});
+  /* v5.1.3: in time order (first time it was sent — an edit keeps its place) — you can't take off the lorry what isn't on it (each item stops at 0 after a ➖) */
+  {const f0={};S.sent.forEach(x=>{if(x.uid&&(!f0[x.uid]||String(x.at)<f0[x.uid]))f0[x.uid]=String(x.at);});moves.sort((a,b)=>String(f0[a.uid]||a.at).localeCompare(String(f0[b.uid]||b.at)));}
+  add(rem.i,1);add(pre,1);moves.forEach(e=>{add(e.i,e.k==='l'?1:-1);if(e.k==='u')Object.keys(tot).forEach(k=>{if(tot[k]<0)tot[k]=0;});});Object.keys(tot).forEach(k=>{if(tot[k]<=0)delete tot[k];});
   return {T,rem,pre,moves,tot,sum:Object.values(tot).reduce((a,b)=>a+b,0),cnt:cnts.length};}
 function lrSum(i){return Object.values(i||{}).reduce((a,b)=>a+num(b),0);}
 function lrHM(iso){const s=fmtAt(iso);return s?s.slice(11,16):'';}
-function lrLeft(x){if(!x||!x.at)return 0;return Math.max(0,new Date(x.at).getTime()+LR_EDIT_H*3600e3-Date.now());}
+function lrLeft(){}/* 5.1.5 clean-up: the real body is set later */
 function lrLeftTxt(ms){const m=Math.ceil(ms/60000);return m>=60?`පැය ${Math.floor(m/60)}යි${m%60?` මිනිත්තු ${m%60}යි`:''}`:`මිනිත්තු ${m}යි`;}
 const LR_RS={back:'🏭 කම්හලට ආපහු',dmg:'⚠️ Damage',wrong:'❌ වැරදියට පැටෙව්වා',other:'🎁 වෙනත්'};
 function lrHistHtml(st){const r=st.rem,rows=[];
@@ -1226,7 +1221,8 @@ function lrRsSet(k){const d=unloadDraft();d.rs=k;save();renderUnload();}
 function hoOther(d){if(d.pre||loadMode==='pre')return {};try{return lrState(d.d===today()?today():d.d,d.uid).tot;}catch(e){return {};}}
 (function(){
   const _ids=hoIds;hoIds=function(d){const o=hoOther(d),s=new Set(_ids(d));Object.keys(o).forEach(k=>{if(o[k]>0)s.add(k);});return [...s].sort((a,b)=>porder(a)-porder(b));};
-  const _ld=hoLoaded;hoLoaded=function(d,pid){return _ld(d,pid)+(hoOther(d)[pid]||0);};
+  /* 5.1.5: lrState().tot already holds the 🌙 set-aside, and the older wrapper (_ld) adds it too → take one off (it was counted twice: a false ‘difference’) */
+  const _ld=hoLoaded;hoLoaded=function(d,pid){return _ld(d,pid)-(d.pre?0:num(preFor(d.d)[pid]))+(hoOther(d)[pid]||0);};
   hoFixLoad=function(pid){const d=loadDraft(),h=hoOf(d),C=hoCnt(h,pid)??0,o=hoOther(d)[pid]||0;if(h.orig[pid]===undefined)h.orig[pid]=num(d.i[pid]);const n=Math.max(0,C-o);if(n>0)d.i[pid]=n;else delete d.i[pid];h.res[pid]='load';save();renderAccept();hoPush(d,hoDiffs(d).length?'diff':'ok');toast('✏️ පැටවීම ගණන් කළ ගණනට හැදුවා');};
   /* the main system still gets “this load” numbers (counted − what was already on the lorry) */
   const _hp=hoPayload;hoPayload=function(d){const p=_hp(d);if(!p)return p;const o=hoOther(d);if(Object.keys(o).length){p.rows=p.rows.map(r=>[r[0],Math.max(0,num(r[1])-(o[r[0]]||0)),Math.max(0,num(r[2])-(o[r[0]]||0)),r[3]]);p.all=1;}return p;};
@@ -1243,7 +1239,7 @@ function lrChip(k){const el=document.querySelector(`#loadList [data-lrow="${CSS.
 
 
 /* ================= v4.5.2 · 🕓 04:00 වැඩ දවස · 🔐 encrypt (lx) · 📋 කම්හලේ අලුත් ඇණවුම් + 🔴 hold live · 🔄 update තීරුව ================= */
-const LA_VER='5.1.3';
+const LA_VER='5.1.5';
 /* v5.1 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v5.1.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuL',A='l',_f=window.fetch.bind(window);
