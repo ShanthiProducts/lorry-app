@@ -1236,7 +1236,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='4.76';
+const FA_VER='4.77';
 /* v4.64 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v4.64.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuF',A='f',_f=window.fetch.bind(window);
@@ -1638,10 +1638,13 @@ function renderRcalc(){const L=RC(),r=L.find(x=>x.i===rcSel)||null;
 
 /* ---------- batch form: recipe amounts for the kg typed, powder kg, “all packed”, QC ticks ---------- */
 /* 4.76: the recipe chosen by hand on the newest batch of this product (this phone) */
+/* 4.77: the steps of the recipe in use (the PC sends them as rc.s) */
+function v477Steps(){try{const r=bd&&bd.fam?faCurRc():null;return r&&Array.isArray(r.s)?r.s:[];}catch(e){return [];}}
+function v477Tick(i,on){if(!bd)return;bd.stp=Array.isArray(bd.stp)?bd.stp:[];const k=bd.stp.indexOf(i);if(on){if(k<0)bd.stp.push(i);}else if(k>=0)bd.stp.splice(k,1);const h=document.getElementById('v477stN');if(h)h.textContent=bd.stp.length+' / '+v477Steps().length;try{v476Sum();}catch(e){}}
 function v476LastRc(fam){try{for(const b of myB()){if(!b||b.st==='void'||b.fam!==fam||(bd&&bd.bid&&b.bid===bd.bid))continue;const x=bxOf(b.bid);if(x&&x.rc)return x.rc;}}catch(e){}return '';}
 function bxOf(bid){S.bx=S.bx&&typeof S.bx==='object'?S.bx:{};return S.bx[bid]||null;}
 (function(){
-  const _e=bEdit;bEdit=function(bid){const r=_e.apply(this,arguments);try{const x=bxOf(bid);if(bd&&x){bd.rc=x.rc||'';bd.okg=x.okg||'';bd.pd=x.pd?1:0;bd.qc=Array.isArray(x.qc)?x.qc.slice():[];bd.kgA=x.kgA?1:0;}}catch(e){}return r;};
+  const _e=bEdit;bEdit=function(bid){const r=_e.apply(this,arguments);try{const x=bxOf(bid);if(bd&&x){bd.rc=x.rc||'';bd.okg=x.okg||'';bd.pd=x.pd?1:0;bd.qc=Array.isArray(x.qc)?x.qc.slice():[];bd.kgA=x.kgA?1:0;bd.stp=Array.isArray(x.stp)?x.stp.slice():[];}}catch(e){}return r;};
   const _n=renderBNew;renderBNew=function(){const r=_n.apply(this,arguments);try{if(!bd||!bd.fam)return r;const box=$('bnewBody'),btn=box&&box.querySelector('button.btn.primary.block.big');if(!btn)return r;
     const L=rcFor(bd.fam),pk=()=>Object.values(bd.sz||{}).reduce((s,v)=>s+Math.floor(num(v)),0),cur=L.find(x=>x.i===bd.rc)||L.find(x=>(x.z||[]).length&&sizeLines(bd.fam).some(s=>num(bd.sz[s[3]])>0&&x.z.includes(s[0])))||L.find(x=>x.i===v476LastRc(bd.fam))||L[0]||null;bd.qc=Array.isArray(bd.qc)?bd.qc:[];
     window._bxDraw=()=>{const o=$('bxOut');if(o&&cur)o.innerHTML=rcTable(cur,bd.kg,pk());};
@@ -1653,8 +1656,10 @@ function bxOf(bid){S.bx=S.bx&&typeof S.bx==='object'?S.bx:{};return S.bx[bid]||n
     box.querySelectorAll('input[type=number]').forEach(i=>{const oc=String(i.getAttribute('onchange')||'')+String(i.getAttribute('oninput')||'');if(/bd\.kg=|bd\.sz\[/.test(oc))i.addEventListener('input',()=>{if(/bd\.kg=/.test(oc))bd.kg=i.value;setTimeout(window._bxDraw,0);});});
   }catch(e){console.warn('batch recipe box',e);}return r;};
   const _s=send;send=async function(k,body,label,quiet){
-    if(k==='batch'&&bd&&body&&body.bid){try{const x={rc:bd.rc||'',okg:num(bd.okg)||0,pd:bd.pd?1:0,qc:Array.isArray(bd.qc)?bd.qc.slice():[],kgA:bd.kgA?1:0},old=bxOf(body.bid);
-      if(x.rc||x.okg||x.pd||x.qc.length||x.kgA||old){if(x.rc||(old&&old.rc))body.rc=x.rc;if(x.okg||(old&&old.okg))body.okg=x.okg;if(x.pd||(old&&old.pd))body.pd=x.pd;if(QCL().length&&(x.qc.length||(old&&(old.qc||[]).length)))body.qc=x.qc;S.bx[body.bid]=x;const ks=Object.keys(S.bx);if(ks.length>300)ks.slice(0,ks.length-300).forEach(i=>delete S.bx[i]);}}catch(e){console.warn('batch extras',e);}}
+    if(k==='batch'&&bd&&body&&body.bid){try{const x={rc:bd.rc||'',okg:num(bd.okg)||0,pd:bd.pd?1:0,qc:Array.isArray(bd.qc)?bd.qc.slice():[],kgA:bd.kgA?1:0,stp:Array.isArray(bd.stp)?bd.stp.slice():[]},old=bxOf(body.bid);
+      /* 4.77: steps ticked → one short mark at the end of the note the PC already keeps ("📋 පියවර 7/9") */
+      try{const N=v477Steps().length;if(N&&(x.stp.length||/ · 📋 පියවර \d+\/\d+$/.test(String(body.nt||''))))body.nt=(String(body.nt||'').replace(/ · 📋 පියවර \d+\/\d+$/,'')+(x.stp.length?' · 📋 පියවර '+x.stp.length+'/'+N:'')).slice(0,240);}catch(e){}
+      if(x.rc||x.okg||x.pd||x.qc.length||x.kgA||x.stp.length||old){if(x.rc||(old&&old.rc))body.rc=x.rc;if(x.okg||(old&&old.okg))body.okg=x.okg;if(x.pd||(old&&old.pd))body.pd=x.pd;if(QCL().length&&(x.qc.length||(old&&(old.qc||[]).length)))body.qc=x.qc;S.bx[body.bid]=x;const ks=Object.keys(S.bx);if(ks.length>300)ks.slice(0,ks.length-300).forEach(i=>delete S.bx[i]);}}catch(e){console.warn('batch extras',e);}}
     return _s.apply(this,arguments);};
 })();
 
@@ -1957,14 +1962,22 @@ const order=()=>{const o={};let i=0;BF().forEach(f=>(f[4]||[]).forEach(x=>{if(x&
 function fresh(){const at=S.stk&&S.stk.at;if(!at)return `<span class="v470f r">🔴 PC එකෙන් තොගය තවම ආවේ නැහැ</span>`;const m=Math.round((Date.now()-new Date(at).getTime())/60000),t=m<60?`මිනිත්තු ${Math.max(m,0)}කට කලින්`:m<1440?`පැය ${Math.round(m/60)}කට කලින්`:`දින ${Math.round(m/1440)}කට කලින්`;return `<span class="v470f ${m<=120?'g':m<=720?'o':'r'}">${m<=120?'🟢':m<=720?'🟠':'🔴'} PC ${esc(fmtAt(at,true))} · ${t}</span>`;}
 /* the phone's own count that the PC hasn't taken yet */
 function v470Pend(){const at=(S.stk&&S.stk.at)||'';const x=(S.sent||[]).find(s=>s.k==='fcnt'&&s.rec&&!(at&&String(s.at)<=at)&&!s.void);return x||null;}
+function v477Fam(pid){try{for(const f of BF())for(const x of (f[4]||[]))if(x[3]===pid)return f[1]?f[0]:'';}catch(e){}return '';}
+window.v477Fam=v477Fam;
+/* opens a new batch for that product with every size of it that was counted above the expected figure already typed in — the owner only sets the day it was made */
+window.v477Forgot=function(pid,src){const fam=v477Fam(pid);if(!fam)return;const D=diffs(),L=(src==='p'?D.p:D.f).filter(r=>r.d>0&&v477Fam(r.pid)===fam);if(!L.length)return;
+  bNew();bd.fam=fam;L.forEach(r=>{bd.sz[r.pid]=String(Math.round(r.d));});bd.fg=L.reduce((t,r)=>t+Math.round(r.d),0);render();
+  setTimeout(()=>{try{const b=$('bnewBody');if(b&&!$('v477note'))b.insertAdjacentHTML('afterbegin',`<div class="card warnbox small" id="v477note">🔢 ගණන් කිරීමේදී <b>${esc(fam)}</b> පැකට් <b>${bd.fg}</b>ක් වැඩියෙන් තිබ්බා — ඒ ගණන පහළ දාලා තියෙන්නේ. <b>📅 හැදුව දිනය</b> හරියට දාන්න (අද නෙවෙයි නම්), ගණන වෙනස් නම් හදන්න, ඊට පස්සේ ✅. <span class="muted">Batch කිහිපයක් නම් එකින් එක දාන්න.</span></div>`);const d=$('bdDate');if(d)d.scrollIntoView({block:'center'});}catch(e){}},60);};
 function diffs(){const dx=S.stk&&Array.isArray(S.stk.dx)?S.stk.dx:[];const f=[],l=[];dx.forEach(x=>{const r={pid:x[0],d:num(x[1]),t:x[2]||'',e:x[4],c:x[5]};(x[3]==='l'?l:f).push(r);});const P=v470Pend(),p=[];
   if(P){const ps=new Map((P.rec.ps||[]).map(y=>[y[0],num(y[1])]));(P.rec.it||[]).forEach(([pid,q])=>{const e=ps.has(pid)?ps.get(pid):0,d=num(q)-e;if(Math.abs(d)>1e-9)p.push({pid,d,e,c:num(q),t:(P.rec.wy||{})[pid]||''});});}
   return {f,l,p,P};}
 window.v470Diffs=diffs;
 function dRow(r,icon){const cls=r.d<0?'bd':'ov';return `<div class="v470d"><div><b>${icon||''}${esc(nm(r.pid))}</b></div><div class="v ${cls}">${r.d>0?'+':'−'}${Math.abs(Math.round(r.d))}</div>
   <div class="s">${r.e!==undefined&&r.e!==null?`තියෙන්න ඕනේ <b>${Math.round(num(r.e))}</b> · ගණන් කළා <b>${Math.round(num(r.c))}</b> · `:''}${v470Bn(r.pid,r.d)}${r.t?` · 📝 ${esc(r.t)}`:''}</div></div>`;}
-function groups(list,icon){const bd=list.filter(r=>r.d<0).sort((a,b)=>a.d-b.d),ov=list.filter(r=>r.d>0).sort((a,b)=>b.d-a.d),sb=bd.reduce((t,r)=>t-r.d,0),so=ov.reduce((t,r)=>t+r.d,0);
-  return (bd.length?`<div class="v470sec bd">➖ අඩු — ${bd.length}ක් · පැකට් ${Math.round(sb)}</div>${bd.map(r=>dRow(r,icon)).join('')}`:'')+(ov.length?`<div class="v470sec ov">➕ වැඩි — ${ov.length}ක් · පැකට් ${Math.round(so)}</div>${ov.map(r=>dRow(r,icon)).join('')}`:'');}
+function groups(list,icon,fb){const bd=list.filter(r=>r.d<0).sort((a,b)=>a.d-b.d),ov=list.filter(r=>r.d>0).sort((a,b)=>b.d-a.d),sb=bd.reduce((t,r)=>t-r.d,0),so=ov.reduce((t,r)=>t+r.d,0);
+  /* 4.77 (plan 026 B3 · 10 Nov: papadam +622 = batches never entered): more than there should be → most often a batch that was made but not typed in */
+  const fbBtn=r=>fb&&v477Fam(r.pid)?`<div class="v470d" style="border-top:0;padding-top:0"><div></div><div></div><div class="s"><button type="button" class="btn sm light" onclick="v477Forgot('${esc(r.pid)}','${fb}')">🏭 Batch එකක් දාන්න අමතක වුණාද? → දැන් දාන්න</button></div></div>`:'';
+  return (bd.length?`<div class="v470sec bd">➖ අඩු — ${bd.length}ක් · පැකට් ${Math.round(sb)}</div>${bd.map(r=>dRow(r,icon)).join('')}`:'')+(ov.length?`<div class="v470sec ov">➕ වැඩි — ${ov.length}ක් · පැකට් ${Math.round(so)}</div>${ov.map(r=>dRow(r,icon)+fbBtn(r)).join('')}`:'');}
 renderStock=function(){const V=window.V470,N=v470Now(),po=order(),q=norm(V.q),dif=diffs(),T=workDay();
   const fac=Object.entries(N),tot={q:0,b:0,l:0,c:0};fac.forEach(([pid,r])=>{if(r.now>0){tot.q+=r.now;const x=v470Split(pid,r.now);tot.b+=x.b;tot.l+=x.l;tot.c+=x.c;}});
   const lor=((S.stk&&S.stk.l)||[]).map(([pid,l])=>[pid,(l||[]).reduce((t,x)=>t+num(x[1]),0),l||[]]).filter(x=>x[1]>0),lq=lor.reduce((t,x)=>t+x[1],0);
@@ -1984,8 +1997,8 @@ renderStock=function(){const V=window.V470,N=v470Now(),po=order(),q=norm(V.q),di
      (fams.length?fams.map(([fn,rows])=>`<div class="card"><h3 class="v470fam">${esc(fn)}</h3>${rows.sort((a,b)=>po(a)-po(b)).map(pid=>{const r=N[pid],s=sizeOf(pid),ch=r.b||r.s||r.l;return `<div class="v470r" data-p="${esc(pid)}"><div class="sz">${esc(s.size||nm(pid))}</div><div class="q ${r.now<0?'n':!r.now?'z':''}">${Math.round(r.now)}</div>
        <div class="sub">${v470Bn(pid,r.now)||'<span class="muted">—</span>'}${ch?` <span class="muted">· 🖥️ ${r.pc}${r.b?' · 📱 +'+r.b:''}${r.s?' · 🧾 −'+r.s:''}${r.l?' · 🚚 −'+r.l:''}</span>`:''}</div>${r.bt.length?`<div class="bt">${r.bt.map(chip).join('')}</div>`:''}</div>`;}).join('')}</div>`).join(''):'<div class="card empty">පෙන්නන්න දෙයක් නැහැ</div>')+
      `<div class="small muted" style="margin:4px 2px 8px">🏭 = 🖥️ PC ගණන + 📱 මේ phone එකෙන් හදපු batch − 🧾 විකුණපු / දුන්න − 🚚 ලොරියට. PC එක on වුණාම හරියටම ගැළපෙනවා. 📦 බණ්ඩල ගණන ආසන්නයි (බණ්ඩල කඩලා තිබුණොත් වෙනස් වෙන්න පුළුවන්).</div>`;}
-  else if(V.tab==='d'){body=(dif.p.length?`<div class="card"><h3 style="margin:0">⏳ මේ phone එකෙන් ගණන් කළා — PC අනුමත කරනකම්</h3><div class="small muted">${esc(fmtAt(dif.P.at,true))}${dif.P.by?' · '+esc(dif.P.by):''} · තියෙන්න ඕනේ = ගණන් කරපු වෙලාවේ phone එකේ ගණන</div>${groups(dif.p)}</div>`:'')+
-    (dif.f.length?`<div class="card"><h3 style="margin:0">🏭 කම්හල — PC ගණන ${esc((S.stk&&S.stk.dxd)||'')}</h3><div class="small muted">ගණන් කරපු වෙලාවට තියෙන්න ඕනේ vs ගණන් කළා. හේතුව / "🔢 ගණන වැරදියි" PC එකේ.</div>${groups(dif.f)}</div>`:'')+
+  else if(V.tab==='d'){body=(dif.p.length?`<div class="card"><h3 style="margin:0">⏳ මේ phone එකෙන් ගණන් කළා — PC අනුමත කරනකම්</h3><div class="small muted">${esc(fmtAt(dif.P.at,true))}${dif.P.by?' · '+esc(dif.P.by):''} · තියෙන්න ඕනේ = ගණන් කරපු වෙලාවේ phone එකේ ගණන</div>${groups(dif.p,'','p')}</div>`:'')+
+    (dif.f.length?`<div class="card"><h3 style="margin:0">🏭 කම්හල — PC ගණන ${esc((S.stk&&S.stk.dxd)||'')}</h3><div class="small muted">ගණන් කරපු වෙලාවට තියෙන්න ඕනේ vs ගණන් කළා. හේතුව / "🔢 ගණන වැරදියි" PC එකේ.</div>${groups(dif.f,'','f')}</div>`:'')+
     (dif.l.length?`<div class="card"><h3 style="margin:0">🚚 ලොරිය — අන්තිම ලොරි ගණන</h3>${groups(dif.l)}</div>`:'')+
     (!dif.f.length&&!dif.l.length&&!dif.p.length?`<div class="card okbox">✅ අඩු / වැඩි නැහැ</div>`:'');}
   else{body=lor.length?`<div class="card"><h3 class="v470fam">🚚 ලොරියේ දැන් (PC)</h3>${lor.sort((a,b)=>po(a[0])-po(b[0])).map(([pid,qq,l])=>`<div class="v470r"><div class="sz">${esc(nm(pid))}</div><div class="q">${Math.round(qq)}</div><div class="sub">${v470Bn(pid,qq)}</div></div>`).join('')}</div>`:'<div class="card empty">🚚 ලොරියේ බඩු නැහැ (PC ගණනට)</div>';}
@@ -2115,7 +2128,7 @@ const nLow=X=>X.p.length+X.m.length+X.g.filter(g=>g.grind>0).length;
 function lowHtml(X){const C=S.cfg||{};
   const P=X.p.length?`<div class="card"><h3 class="v470fam">📦 පැකට් — අවම ගණනට අඩු (${X.p.length})</h3>${X.p.map(x=>`<div class="v470r"><div class="sz">${esc(pn(x.pid))}</div><div class="q ${x.zero?'n':''}">${x.have}</div><div class="sub">${x.zero?'🔴 ඉවරයි':'🟠 අඩුයි'} · අවම <b>${x.min}</b> · ${pkVerb(x.pid)} ≈ <b>${x.min-Math.max(0,x.have)}</b>${x.o?` · <span class="muted">ඇණවුම් ${x.o} අඩු කළා</span>`:''}${x.l?` · <span class="muted">🚚 ලොරියේ ${x.l}</span>`:''}${x.old?' · <span class="muted">PC ගණන</span>':''}</div></div>`).join('')}</div>`
     :`<div class="card ${C.mn||C.lo?'okbox':'infobox small'}">${C.mn||C.lo?'✅ පැකට් ඔක්කොම අවම ගණනට වඩා වැඩියි':'📦 PC එකේ “📦 අවම තොගය” තවම දාලා නැහැ'}</div>`;
-  const gRow=g=>{const pw=isPow(g.w);return `<div class="v470r"><div class="sz">${esc(g.fam)}</div><div class="q ${g.grind>0?'n':''}">${kgT(g.have)}</div><div class="sub">${g.grind>0?`🟠 <b>${wVerb(g.w)} ඕනේ ≈ ${kgT(g.grind)}</b>${pw?' කුඩු':''}${g.raw>0?` · අමු ≈ <b>${kgT(g.raw)}</b> (අස්වැන්න ${g.y.y}%)`:''}`:`✅ <b>පැක් කරන්න</b> — ${pw?'කුඩු':'හදපු'} ${kgT(g.have)} තියෙනවා`} · <span class="muted">අවමට පුරවන්න ${pw?'කුඩු ':''}${kgT(g.need)}</span></div></div>`;};
+  const gRow=g=>{const pw=isPow(g.w);return `<div class="v470r"><div class="sz">${esc(g.fam)}</div><div class="q ${g.grind>0?'n':''}">${kgT(g.have)}</div><div class="sub">${g.grind>0?`🟠 <b>${wVerb(g.w)} ඕනේ ≈ ${kgT(g.grind)}</b>${pw?' කුඩු':''}${g.raw>0?` · අමු ≈ <b>${kgT(g.raw)}</b> (අස්වැන්න ${g.y.y}%)`:''}`:`✅ <b>පැක් කරන්න</b> — ${pw?'කුඩු':'හදපු'} ${kgT(g.have)} තියෙනවා`} · <span class="muted">අවමට පුරවන්න ${pw?'කුඩු ':''}${kgT(g.need)}</span>${(()=>{try{const n=myB().filter(b=>b&&b.st==='making'&&b.fam===g.fam).length;return n?` · 🍳 <b>හදමින් batch ${n}</b>`:'';}catch(e){return '';}})()}</div></div>`;};
   const GP=X.g.filter(g=>isPow(g.w)),GK=X.g.filter(g=>!isPow(g.w));/* 4.75: ⚖️ ground / crushed powder · 🍳 made (papadam, sambol, chilli paste …) */
   const G=(GP.length?`<div class="card"><h3 class="v470fam">⚖️ ඇඹරූ කුඩු (පැක් නොකළ)</h3>${GP.map(gRow).join('')}</div>`:'')+(GK.length?`<div class="card"><h3 class="v470fam">🍳 හදන ඒවා (පැක් නොකළ)</h3>${GK.map(gRow).join('')}</div>`:'');
   const M=X.m.length?`<div class="card"><h3 class="v470fam">🌶️ අමු ද්‍රව්‍ය / ඇසුරුම් — අවමට අඩු (${X.m.length})</h3>${X.m.map(m=>`<div class="v470r"><div class="sz">${m.k==='p'?'📦 ':'🌶️ '}${esc(m.n)}</div><div class="q ${m.zero?'n':''}">${v471Q(m.have,m.u)}</div><div class="sub">${m.zero?'🔴 ඉවරයි':'🟠 අඩුයි'} · අවම ${v471Q(m.min,m.u)}${m.auto?' <span class="muted">(ඉබේම: දවසේ පාවිච්චිය × දින 7)</span>':''} · 🛒 ගන්න</div></div>`).join('')}</div>`
@@ -2149,6 +2162,7 @@ window.v476Sum=function(){const el=$('v476sum');if(!el||!bd)return;const pk=v471
   const L=[],r=curRc(),kg=num(bd.kg),w=wayOf(bd.fam);L.push(`📅 EXP <b>${dmy(bExp())}</b>`);
   if(r&&r.m==='p')L.push('📦 පැකට් ගණනින් ද්‍රව්‍ය අඩු වෙනවා');else if(kg>0)L.push(`🌶️ අමු ${bd.kgA?'≈ ':''}<b>${r1(kg)} kg</b>${bd.kgA?' <span class="muted">(ඉබේම)</span>':''}`);else L.push(`<span class="warn">⚖️ අමු kg දාන්න — මේකේ අස්වැන්න තවම දන්නේ නැහැ (එක batch එකකට “දාපු” + “හැදුණු” kg දෙකම දැම්මාම ඊළඟ පාර ඉබේම)</span>`);
   if(!(r&&r.m==='p'&&!(r.p||[]).length)){const lots=(bd.raw||[]).filter(n=>!lotVoid(n));if(lots.length)L.push(`🏷️ lot <b>${lots.map(esc).join(', ')}</b>${bd.rawEd?'':' <span class="muted">(පරණම මුලින්)</span>'}`);else if(!bd.rt)L.push('🏷️ lot නැහැ <span class="muted">(🗂️ පරණ තොගයෙන් කියලා යනවා)</span>');}
+  {const ST=v477Steps();if(ST.length&&(bd.stp||[]).length)L.push(`📋 පියවර ${bd.stp.length}/${ST.length}`);}
   if((bd.autoS||[]).length&&!bd.rawEd)L.push(`<span class="warn">⚠️ lot වල මදි: ${bd.autoS.map(([n,g])=>esc(n)+' '+kgT(g)).join(', ')} (➕ තව → 🌶️ lot)</span>`);
   v476Chain().forEach(c=>L.push(c.short>0.5?`<span class="warn">🥣 ${esc(c.name)} ${kgT(c.need)} ඕනේ — තියෙන්නේ ${kgT(c.have)}. <b>මුලින් ${esc(c.name)} ${kgT(c.short)} හදන්න</b> (නැත්නම් ඒ වෙලාවෙම හැදුවා කියලා ගන්නවා)</span>`:`🥣 ${esc(c.name)} ${kgT(c.need)} — තියෙනවා ${kgT(c.have)} ✅`));
   el.className='card okbox small';el.innerHTML='🤖 <b>ඉබේම:</b> '+L.join(' · ');};
@@ -2161,10 +2175,25 @@ function v476Lay(){if(!bd||!bd.fam)return;const box=$('bnewBody'),btn=box&&box.q
   const d=document.createElement('details');d.id='v476more';d.className='card';d.open=!!(window._v476open||bd.bid);d.innerHTML='<summary style="cursor:pointer;font-weight:700;min-height:32px">➕ තව <span class="small muted">— 📅 EXP · ⚖️ බර · 🌶️ lot · 📖 recipe · සටහන් · QC (ඔක්කොම ඉබේම — වෙනස් කරන්න ඕනේ නම් විතරයි)</span></summary>';
   d.addEventListener('toggle',()=>{window._v476open=d.open;});
   ['bdExp','bdPk'].forEach(id=>{const f=$(id)&&$(id).closest('.field');if(f)d.appendChild(f);});mv.forEach(c=>{c.style.boxShadow='none';d.appendChild(c);});
+  {const ST=v477Steps();bd.stp=(Array.isArray(bd.stp)?bd.stp:[]).filter(i=>i<ST.length);if(ST.length){const c=document.createElement('div');c.className='card';c.style.boxShadow='none';c.innerHTML=`<h3>📋 කරන පියවර <span class="small muted">(recipe පොතෙන් · ඕනේ නම් ✓) <b id="v477stN">${bd.stp.length} / ${ST.length}</b></span></h3>${ST.map((t,i)=>`<label class="check"><input type="checkbox" ${bd.stp.includes(i)?'checked':''} onchange="v477Tick(${i},this.checked)"> ${i+1}. ${esc(t)}</label>`).join('')}`;d.appendChild(c);}}
   const sum=document.createElement('div');sum.id='v476sum';sum.className='card infobox small';btn.parentNode.insertBefore(sum,btn);btn.parentNode.insertBefore(d,sum);
   box.querySelectorAll('input[type=number]').forEach(i=>{const oc=String(i.getAttribute('oninput')||'');if(/bd\.sz\[/.test(oc))i.addEventListener('input',()=>{try{v471Paint();if(faAuto())faPaint();}catch(e){}v476Sum();});else if(/bd\.kg=|bd\.okg=/.test(oc))i.addEventListener('input',()=>{try{if(faAuto())faPaint();}catch(e){}v476Sum();});});
   v476Sum();}
 (function(){const _r=renderBNew;renderBNew=function(){const res=_r.apply(this,arguments);try{v476Lay();}catch(e){console.warn('4.76 batch',e);}return res;};})();
+/* ================= 4.77 · 📋 අද කරන්න (plan 026 ④ / G1 · B3) + 🍳 හදමින් (A5) =================
+   One card on the home screen, built only from what this phone already has (no new reading from Firebase, nothing worked out differently):
+   🔢 counted MORE than there should be (a batch not typed in?) · ⚖️ batches with no raw kg · 🍳 batches still being made · 🥣 powder not packed for 3+ days. Nothing to do → no card. */
+window.v477Todo=function(){const out=[],T=today(),age=d=>{const n=daysTo(d);return n===null?0:-n;};
+  try{const D=v470Diffs(),ov=[...D.p,...D.f].filter(r=>r.d>0),fam=new Set(ov.map(r=>v477Fam(r.pid)).filter(Boolean));
+    if(fam.size)out.push({ic:'🔢',t:`ගණන් කිරීමේදී වැඩියෙන් තිබ්බා — ${[...fam].slice(0,4).map(esc).join(', ')}${fam.size>4?' …':''}`,s:'Batch එකක් දාන්න අමතක වුණාද? → ⚖️ අඩු / වැඩි',go:"V470.tab='d';go('stock')"});}catch(e){}
+  try{const L=myB().filter(b=>b&&b.st!=='void'&&b.st!=='making'&&!(num(b.kg)>0)&&age(b.d)<=14&&(()=>{const r=rcFor(b.fam)[0],w=wayOf(b.fam);return r&&r.m!=='p'&&w!=='?';})());
+    if(L.length)out.push({ic:'⚖️',t:`අමු kg නැති batch ${L.length}`,s:L.slice(0,4).map(b=>esc(b.no)).join(', ')+' — ✏️ ඔබලා දාන්න (lot / අමු තොගයෙන් අඩු වෙන්නේ එතකොටයි)',go:"go('batches')"});}catch(e){}
+  try{const L=myB().filter(b=>b&&b.st==='making');if(L.length)out.push({ic:'🍳',t:`හදමින් තියෙන batch ${L.length}`,s:L.slice(0,4).map(b=>`${esc(b.fam)}${num(b.kg)>0?' '+r1(b.kg)+' kg':''} (දින ${age(b.d)})`).join(' · ')+' — ඉවර වුණාම පැකට් ගණන දාන්න',go:"go('batches')"});}catch(e){}
+  try{const L=((S.cfg&&S.cfg.bk)||[]).filter(x=>num(x[3])>=500&&age(x[2])>=3).sort((a,b)=>String(a[2]).localeCompare(String(b[2])));
+    if(L.length)out.push({ic:'🥣',t:`දවස් 3කට වඩා පැක් නොකළ — ${L.length}`,s:L.slice(0,4).map(x=>`${esc(x[1])} ${kgT(x[3])} (දින ${age(x[2])})`).join(' · '),go:"go('batches')"});}catch(e){}
+  return out;};
+(function(){const _h=renderHome0;renderHome0=function(){_h.apply(this,arguments);try{if(!S.cfg)return;const h=$('homeBody');if(!h||$('v477todo'))return;const L=v477Todo();if(!L.length)return;const at=$('v471home')||h.querySelector('.grid2');if(!at)return;
+  at.insertAdjacentHTML('beforebegin',`<div class="card" id="v477todo" style="padding:10px 12px"><h3 style="margin:0 0 6px">📋 අද කරන්න <span class="small muted">(${L.length})</span></h3>${L.map(x=>`<button type="button" class="btn light block" style="text-align:left;margin:4px 0;white-space:normal" onclick="${x.go}"><b>${x.ic} ${x.t}</b><br><span class="small muted">${x.s}</span></button>`).join('')}</div>`);}catch(e){console.warn('4.77 todo',e);}};})();
 document.head.insertAdjacentHTML('beforeend',`<style>.v471m{display:inline-block;font-size:12px;font-weight:700;color:#64748b;background:#f1f5f9;border-radius:8px;padding:1px 6px}.v471m.lo{color:#9a3412;background:#ffedd5}.v471m.z{color:#fff;background:#b91c1c}#v471w .okbox,#v471w .warnbox{margin:6px 0}</style>`);
 })();
 </script>

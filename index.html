@@ -1239,7 +1239,7 @@ function lrChip(k){const el=document.querySelector(`#loadList [data-lrow="${CSS.
 
 
 /* ================= v4.5.2 · 🕓 04:00 වැඩ දවස · 🔐 encrypt (lx) · 📋 කම්හලේ අලුත් ඇණවුම් + 🔴 hold live · 🔄 update තීරුව ================= */
-const LA_VER='5.1.5';
+const LA_VER='5.1.6';
 /* v5.1 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v5.1.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuL',A='l',_f=window.fetch.bind(window);
@@ -1428,7 +1428,10 @@ function v5Fin(){const D=v5Day();if(D.fin){toast(`${D.fin.by||''} ${lrHM(D.fin.f
   if(!D.ex.length&&!confirm('💸 වියදම් දාලා නැහැ (ඩීසල් / කෑම). වියදම් නැද්ද?'))return;
   v5Put({k:'fin',uid:'fin-'+today()},'🏁 ගමන ඉවරයි');renderHome();}
 function v5NoTrip(){if(!confirm('🚫 අද ලොරි ගමනක් නැද්ද? (ලොරියේ බඩු කම්හලට බානවා)'))return;v5Put({k:'nt',uid:'nt-'+today()},'🚫 අද ගමනක් නැහැ');go('unload');}
-function v5EndKeep(opt){v5Put({k:'ek',uid:uid(),opt},opt==='keep'?'🚚 ඉතුරු බඩු ලොරියේම':opt==='all'?'🏭 ඉතුරු බඩු ඔක්කොම බෑවා':'🏭 ඉතුරු බඩු ටිකක් බෑවා');
+function v5EndKeep(opt){
+  /* 5.1.6 (plan 026 E2 · owner 9 Nov: the lorry is unloaded / counted / loaded the NEXT MORNING): after 3 pm "unloaded" is asked once — pressing it at night and unloading again in the morning puts the goods into the factory stock twice */
+  if((opt==='all'||opt==='some')&&new Date().getHours()>=15&&!confirm('🏭 ලොරියේ බඩු දැන්ම (අද) බෑවද?\n\nබාන්නේ හෙට උදේ නම් Cancel ඔබලා “🚚 ලොරියේම තියනවා” තෝරන්න.\n(අද “බෑවා” ඔබලා හෙට ආයේ බෑවොත් කම්හල් තොගයට දෙපාරක් එකතු වෙනවා.)'))return;
+  v5Put({k:'ek',uid:uid(),opt},opt==='keep'?'🚚 ඉතුරු බඩු ලොරියේම':opt==='all'?'🏭 ඉතුරු බඩු ඔක්කොම බෑවා':'🏭 ඉතුරු බඩු ටිකක් බෑවා');
   if(opt==='all'){S.drafts.unload=null;go('unload');setTimeout(()=>{try{unloadAll();}catch(e){}},80);}else if(opt==='some')go('unload');else renderHome();}
 function v5EkUndo(){const e=v5Day().ek;if(!e)return;const x={...e,void:1};delete x.mine;v5Put(x,'↩️ ඉතුරු බඩු තේරීම වෙනස් කළා');}
 function v5Undo(k){const D=v5Day(),e=D[k];if(!e){toast('ඒක ඔබලා නැහැ','warn');return;}if(!confirm('↩️ අවලංගු කරන්නද?'))return;const x={...e,void:1};delete x.mine;v5Put(x,'↩️ අවලංගු කළා');toast('↩️ අවලංගු කළා');go('home');}
@@ -1489,7 +1492,10 @@ const FBG=(function(){const K='sbpFbG',LIM=8000;const day=()=>new Intl.DateTimeF
 (function(){let act=Date.now(),lastC=0,lastL=0;['pointerdown','keydown'].forEach(e=>document.addEventListener(e,()=>{act=Date.now();},{passive:true}));document.addEventListener('visibilitychange',()=>{if(!document.hidden){act=Date.now();lastC=0;lastL=0;}});const gap=()=>{const i=Date.now()-act;return i<12e4?0:i<6e5?12e4:3e5;};
   const _c=cloudSync;cloudSync=function(manual){if(!manual){if(gap()&&Date.now()-lastC<gap()&&!S.outbox.length)return Promise.resolve();if(!FBG.auto()){const m=FBG.msg();if(m){S.cloudErr=m;save();}/* unsent bills / money still go: sending is writes, the guard counts reads */return !FBG.held()&&S.outbox.length?cloudFlush():Promise.resolve();}lastC=Date.now();}return _c.apply(this,arguments);};
   /* timers and the 🔄 buttons both call lrSync(true): a touch just now = the person pressed it */const _l=lrSync;lrSync=function(){if(Date.now()-act>1500){if(FBG.held())return Promise.resolve(false);const g=Math.max(gap(),FBG.level()===1?6e5:0);if(FBG.level()===2||(g&&Date.now()-lastL<g)){/* own events still reach the other phone (one write, only if changed) */return Promise.resolve(lrPush(today())).then(()=>false,()=>false);}}lastL=Date.now();return _l.apply(this,arguments);};})();
-
+/* 5.1.6 (plan 026 E1 · owner 9 Nov: the lorry is counted in the morning before anything else): a PART of the goods taken off today before today's 🔢 count → ask once (the count would not match what the lorry should hold) */
+(function(){const _s=sendUnload;sendUnload=function(){try{const d=unloadDraft(),day=($('unloadDate')||{}).value||d.d||today();
+    if(!d.all&&!d.sentRev&&!d._cntOk&&day===today()&&Object.keys(d.i||{}).length){const D=v5Day(day);if(D&&!D.counted&&!D.nt&&!D.fin){if(!confirm('⚠️ අද ලොරිය තාම 🔢 ගණන් කරලා නැහැ.\n\nමුලින් ලොරියේ ඉතුරු බඩු ගණන් කරලා, ඊට පස්සේ බාන එක හරි — නැත්නම් ගණන ගැළපෙන්නේ නැහැ.\n\nඑහෙමම යවන්නද? (Cancel = මුලින් ගණන් කරන්නම්)'))return;d._cntOk=1;}}}catch(e){}
+  return _s.apply(this,arguments);};})();
 </script>
 </body>
 </html>

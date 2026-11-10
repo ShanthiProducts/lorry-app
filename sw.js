@@ -1,7 +1,7 @@
 /* offline cache for the lorry app (only its own old caches are removed — the factory app lives on the same site)
    514v2: a GitHub error page is never saved (the saved page opens instead) · the කඩ බිල app (bill-app/ folder) gets a
    spare copy here — used only when its own offline helper isn't on this phone yet · …/bill-app (no "/") → …/bill-app/ */
-const CACHE='lorry-app-515v1';
+const CACHE='lorry-app-516v1';
 const FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 const BILL='bill-app/index.html';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES).then(()=>fetch(new Request('bill-app/',{cache:'reload'})).then(r=>{if(r&&r.ok&&!r.redirected)return c.put(BILL,r);}).catch(()=>{}))).then(()=>self.skipWaiting()));});
