@@ -1236,7 +1236,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='4.74';
+const FA_VER='4.76';
 /* v4.64 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v4.64.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuF',A='f',_f=window.fetch.bind(window);
@@ -1637,11 +1637,13 @@ function renderRcalc(){const L=RC(),r=L.find(x=>x.i===rcSel)||null;
     <button class="btn light block" onclick="bNew();bd.fam=${esc(JSON.stringify(r.f))};${r.m==='p'?'':'bd.kg=rcKg;'}bd.rc='${esc(r.i)}';render()">🏷️ මේකට batch එකක් හදන්න</button>`;}
 
 /* ---------- batch form: recipe amounts for the kg typed, powder kg, “all packed”, QC ticks ---------- */
+/* 4.76: the recipe chosen by hand on the newest batch of this product (this phone) */
+function v476LastRc(fam){try{for(const b of myB()){if(!b||b.st==='void'||b.fam!==fam||(bd&&bd.bid&&b.bid===bd.bid))continue;const x=bxOf(b.bid);if(x&&x.rc)return x.rc;}}catch(e){}return '';}
 function bxOf(bid){S.bx=S.bx&&typeof S.bx==='object'?S.bx:{};return S.bx[bid]||null;}
 (function(){
-  const _e=bEdit;bEdit=function(bid){const r=_e.apply(this,arguments);try{const x=bxOf(bid);if(bd&&x){bd.rc=x.rc||'';bd.okg=x.okg||'';bd.pd=x.pd?1:0;bd.qc=Array.isArray(x.qc)?x.qc.slice():[];}}catch(e){}return r;};
+  const _e=bEdit;bEdit=function(bid){const r=_e.apply(this,arguments);try{const x=bxOf(bid);if(bd&&x){bd.rc=x.rc||'';bd.okg=x.okg||'';bd.pd=x.pd?1:0;bd.qc=Array.isArray(x.qc)?x.qc.slice():[];bd.kgA=x.kgA?1:0;}}catch(e){}return r;};
   const _n=renderBNew;renderBNew=function(){const r=_n.apply(this,arguments);try{if(!bd||!bd.fam)return r;const box=$('bnewBody'),btn=box&&box.querySelector('button.btn.primary.block.big');if(!btn)return r;
-    const L=rcFor(bd.fam),pk=()=>Object.values(bd.sz||{}).reduce((s,v)=>s+Math.floor(num(v)),0),cur=L.find(x=>x.i===bd.rc)||L.find(x=>(x.z||[]).length&&sizeLines(bd.fam).some(s=>num(bd.sz[s[3]])>0&&x.z.includes(s[0])))||L[0]||null;bd.qc=Array.isArray(bd.qc)?bd.qc:[];
+    const L=rcFor(bd.fam),pk=()=>Object.values(bd.sz||{}).reduce((s,v)=>s+Math.floor(num(v)),0),cur=L.find(x=>x.i===bd.rc)||L.find(x=>(x.z||[]).length&&sizeLines(bd.fam).some(s=>num(bd.sz[s[3]])>0&&x.z.includes(s[0])))||L.find(x=>x.i===v476LastRc(bd.fam))||L[0]||null;bd.qc=Array.isArray(bd.qc)?bd.qc:[];
     window._bxDraw=()=>{const o=$('bxOut');if(o&&cur)o.innerHTML=rcTable(cur,bd.kg,pk());};
     btn.insertAdjacentHTML('beforebegin',`${cur?`<div class="card"><h3>📖 Recipe අනුව ද්‍රව්‍ය</h3>${L.length>1?`<div class="chips">${L.map(x=>`<button class="chip ${x.i===cur.i?'ok':''}" onclick="bd.rc='${esc(x.i)}';render()">${esc(x.n)}</button>`).join('')}</div>`:`<div class="small muted">${esc(cur.n)} v${cur.v} · ${cur.m==='p'?'පැකට් ගණනින්':'kg = '+esc(cur.bt)}</div>`}<div id="bxOut" style="margin-top:6px">${rcTable(cur,bd.kg,pk())}</div></div>`:''}
      <div class="card">${window.v471W?'':`<div class="field"><label>හැදුණු කුඩු kg (කිරලා දන්නවා නම්)</label><input type="number" inputmode="decimal" min="0" value="${esc(bd.okg||'')}" onchange="bd.okg=this.value"></div>`}
@@ -1651,8 +1653,8 @@ function bxOf(bid){S.bx=S.bx&&typeof S.bx==='object'?S.bx:{};return S.bx[bid]||n
     box.querySelectorAll('input[type=number]').forEach(i=>{const oc=String(i.getAttribute('onchange')||'')+String(i.getAttribute('oninput')||'');if(/bd\.kg=|bd\.sz\[/.test(oc))i.addEventListener('input',()=>{if(/bd\.kg=/.test(oc))bd.kg=i.value;setTimeout(window._bxDraw,0);});});
   }catch(e){console.warn('batch recipe box',e);}return r;};
   const _s=send;send=async function(k,body,label,quiet){
-    if(k==='batch'&&bd&&body&&body.bid){try{const x={rc:bd.rc||'',okg:num(bd.okg)||0,pd:bd.pd?1:0,qc:Array.isArray(bd.qc)?bd.qc.slice():[]},old=bxOf(body.bid);
-      if(x.rc||x.okg||x.pd||x.qc.length||old){if(x.rc||(old&&old.rc))body.rc=x.rc;if(x.okg||(old&&old.okg))body.okg=x.okg;if(x.pd||(old&&old.pd))body.pd=x.pd;if(QCL().length&&(x.qc.length||(old&&(old.qc||[]).length)))body.qc=x.qc;S.bx[body.bid]=x;const ks=Object.keys(S.bx);if(ks.length>300)ks.slice(0,ks.length-300).forEach(i=>delete S.bx[i]);}}catch(e){console.warn('batch extras',e);}}
+    if(k==='batch'&&bd&&body&&body.bid){try{const x={rc:bd.rc||'',okg:num(bd.okg)||0,pd:bd.pd?1:0,qc:Array.isArray(bd.qc)?bd.qc.slice():[],kgA:bd.kgA?1:0},old=bxOf(body.bid);
+      if(x.rc||x.okg||x.pd||x.qc.length||x.kgA||old){if(x.rc||(old&&old.rc))body.rc=x.rc;if(x.okg||(old&&old.okg))body.okg=x.okg;if(x.pd||(old&&old.pd))body.pd=x.pd;if(QCL().length&&(x.qc.length||(old&&(old.qc||[]).length)))body.qc=x.qc;S.bx[body.bid]=x;const ks=Object.keys(S.bx);if(ks.length>300)ks.slice(0,ks.length-300).forEach(i=>delete S.bx[i]);}}catch(e){console.warn('batch extras',e);}}
     return _s.apply(this,arguments);};
 })();
 
@@ -1809,7 +1811,7 @@ const faOld=(a,b)=>String(a.d).localeCompare(String(b.d))||String(a.no).localeCo
 function faMarks(l){const x=[],dd=l.exp?daysTo(l.exp):null;if(l.qc==='rej')x.push('⛔');else if(l.qc==='cond')x.push('⚠️');if(dd!==null&&dd<0)x.push('⚠️ EXP');else if(dd!==null&&dd<=30)x.push('🟠');if(l.done)x.push('✅');return x.join(' ');}
 function faLeftTxt(l){if(l.left===null)return '';if(l.u==='kg'||l.u==='g')return (l.left>=1000?Math.round(l.left/100)/10+'kg':Math.round(l.left)+'g')+' · ';return Math.round(l.left)+' · ';}
 function faPick(){const ch=new Set(bd?bd.raw:[]);return faLots().filter(l=>ch.has(l.no)||S.lotAll||(!l.done&&(l.left===null||l.left>0.5))).sort(faOld).slice(0,60);}
-function faCurRc(){const L=rcFor(bd.fam);return L.find(x=>x.i===bd.rc)||L.find(x=>(x.z||[]).length&&sizeLines(bd.fam).some(s=>num(bd.sz[s[3]])>0&&x.z.includes(s[0])))||L[0]||null;}
+function faCurRc(){const L=rcFor(bd.fam);return L.find(x=>x.i===bd.rc)||L.find(x=>(x.z||[]).length&&sizeLines(bd.fam).some(s=>num(bd.sz[s[3]])>0&&x.z.includes(s[0])))||L.find(x=>x.i===v476LastRc(bd.fam))||L[0]||null;}
 /* 🤖 new batches only, until a lot is changed by hand: oldest sack first, several sacks when one is not enough */
 function faAuto(){}/* 4.74 clean-up: the real body is set later */
 function faAutoTxt(){if(!bd||bd.bid||bd.rawEd||!bd.autoL)return '';const a=bd.autoL,g=x=>x>=1000?Math.round(x/100)/10+'kg':Math.round(x)+'g';return (a.length?'🤖 '+a.map(o=>`<strong>${esc(o.no)}</strong> ${g(o.g)}`).join(' + ')+' (පරණම) · ✏️ ඔබලා වෙනස් කරන්න':'')+((bd.autoM||[]).length?`<div>⚪ lot නැහැ: ${esc(bd.autoM.join(', '))}</div>`:'');}
@@ -2032,6 +2034,14 @@ const r1=x=>Math.round(num(x)*10)/10;
 const kgT=g=>{g=num(g);return Math.abs(g)>=1000?(Math.round(g/100)/10).toLocaleString('en-LK')+' kg':Math.round(g)+' g';};
 const pn=pid=>{const p=prod(pid);return p?p[1]:String(pid);};
 const okOf=b=>{if(!b)return 0;const x=num(b.ok);if(x>0)return x;try{return num((bxOf(b.bid)||{}).okg);}catch(e){return 0;}};
+/* 4.75 · 📖 කරන විදිහ — the PC sends cfg.rw {family: g ⚙️ අඹරනවා · c 🪓 කඩනවා · r 🔥⚙️ බැදලා අඹරනවා · k 🍳 හදනවා · p 🧹 පිරිසිදු කරලා පැක් · a 📦 එකලස්}
+   (owner 9 Nov: "papadam abaranna 😂"). An older PC sends no rw → everything exactly as before ('g'). A family that is not in rw has no recipe → '?' (never told to grind). */
+const wayOf=fam=>{const W=S.cfg&&S.cfg.rw;if(!W||typeof W!=='object')return 'g';return W[fam]||'?';};
+const isPow=w=>w==='g'||w==='c'||w==='r';
+const wVerb=w=>w==='c'?'කඩන්න':w==='k'?'හදන්න':'අඹරන්න';
+const wIc=w=>w==='k'?'🍳':w==='c'?'🪓':'⚖️';
+const pkVerb=pid=>{const s=v471Size(pid),w=s?wayOf(s.fam):'g';return w==='p'||w==='a'?'පැක් කරන්න':'හදන්න';};
+window.v475Way=wayOf;
 function v471Q(q,u){q=num(q);if(u==='pcs')return Math.round(q).toLocaleString('en-LK');if(u==='ml')return Math.abs(q)>=1000?(Math.round(q/100)/10)+' L':Math.round(q)+' ml';return kgT(q);}
 /* grams in one packet: the PC's figure, else read from the size ("100g", "1kg") */
 function v471G(pid,size){const pg=S.cfg&&S.cfg.pg;if(pg&&num(pg[pid])>0)return num(pg[pid]);const m=/(\d+(?:\.\d+)?)\s*(kg|g)\b/i.exec(String(size||''));return m?num(m[1])*(m[2].toLowerCase()==='kg'?1000:1):0;}
@@ -2044,23 +2054,27 @@ function v471Yield(fam){try{const r=bd&&bd.fam===fam?curRc():rcFor(fam)[0];if(r&
   if(L.length){const i=L.reduce((s,b)=>s+num(b.kg),0),o=L.reduce((s,b)=>s+okOf(b),0);if(i>0)return {y:Math.round(o/i*1000)/10,src:'phone',n:L.length};}return null;}
 window.v471Yield=v471Yield;
 /* ---------- ⚖️ the weights card on the batch form ---------- */
-window.v471W=function(){if(!bd||!bd.fam)return '';const r=curRc(),pkt=r&&r.m==='p';
+window.v471W=function(){if(!bd||!bd.fam)return '';const r=curRc(),pkt=r&&r.m==='p',w=wayOf(bd.fam);
+  /* 4.75: the boxes follow "කරන විදිහ" — powder words only for what is ground / crushed · 🍳 made · 🧹 / 📦 = raw kg only (packets say the rest) */
+  const L=isPow(w)?{tg:'🎯 හදන්න ඕනේ කුඩු kg',inn:'🌶️ යන්ත්‍රයට දාපු අමු ද්‍රව්‍ය kg',out:'⚖️ හැදුණු කුඩු kg',os:'ඇඹරුවාට පස්සේ කිරලා · පස්සේ දාන්නත් පුළුවන්'}
+    :w==='k'?{tg:'🎯 හදන්න ඕනේ kg',inn:'🥣 දාපු ද්‍රව්‍ය kg',out:'🍳 හැදුණු kg',os:'හදලා ඉවර වුණාම කිරලා · පස්සේ දාන්නත් පුළුවන්'}
+    :{tg:'',inn:'🌶️ ගත්ත අමු ද්‍රව්‍ය kg',out:w==='?'||num(bd.okg)>0?'⚖️ හැදුණු kg':'',os:'කිරලා දන්නවා නම්'};
   return `<div class="card" id="v471w"><h3>⚖️ බර <span class="small muted">(kg)</span></h3>
-   ${pkt?'':`<div class="field"><label>🎯 හදන්න ඕනේ කුඩු kg <small class="muted">— ඕනේ නම් · අමු කීයක් ඕනේද බලන්න</small></label><input type="number" inputmode="decimal" min="0" step="any" id="bdTg" value="${esc(bd.tg||'')}" oninput="bd.tg=this.value;v471Paint()"></div><div id="v471tg"></div>`}
-   <div class="field"><label>🌶️ යන්ත්‍රයට දාපු අමු ද්‍රව්‍ය kg <small class="muted">— lot වලින් අඩු වෙන්නේ මේක</small></label><input type="number" inputmode="decimal" min="0" step="any" id="bdKg" value="${esc(bd.kg||'')}" oninput="bd.kg=this.value;v471Paint()" onchange="bd.kg=this.value;save()"></div>
-   <div class="field"><label>⚖️ හැදුණු කුඩු kg <small class="muted">— ඇඹරුවාට පස්සේ කිරලා · පස්සේ දාන්නත් පුළුවන්</small></label><input type="number" inputmode="decimal" min="0" step="any" id="bdOk" value="${esc(bd.okg||'')}" oninput="bd.okg=this.value;v471Paint()" onchange="bd.okg=this.value;save()"></div>
+   ${pkt||!L.tg?'':`<div class="field"><label>${L.tg} <small class="muted">— ඕනේ නම් · අමු කීයක් ඕනේද බලන්න</small></label><input type="number" inputmode="decimal" min="0" step="any" id="bdTg" value="${esc(bd.tg||'')}" oninput="bd.tg=this.value;v471Paint()"></div><div id="v471tg"></div>`}
+   <div class="field"><label>${L.inn} <small class="muted">— lot වලින් අඩු වෙන්නේ මේක</small></label><input type="number" inputmode="decimal" min="0" step="any" id="bdKg" value="${esc(bd.kg||'')}" oninput="bd.kg=this.value;bd.kgA=0;bd.kgM=1;v471Paint()" onchange="bd.kg=this.value;save()"><div id="v476kg"></div></div>
+   ${L.out?`<div class="field"><label>${L.out} <small class="muted">— ${L.os}</small></label><input type="number" inputmode="decimal" min="0" step="any" id="bdOk" value="${esc(bd.okg||'')}" oninput="bd.okg=this.value;v471Paint()" onchange="bd.okg=this.value;save()"></div>`:''}
    <div id="v471loss"></div></div>`;};
-window.v471Paint=function(){if(!bd)return;const Y=v471Yield(bd.fam),tg=num(bd.tg),kg=num(bd.kg),ok=num(bd.okg),a=$('v471tg'),b=$('v471loss');
+window.v471Paint=function(){if(!bd)return;try{v476Kg();}catch(e){console.warn('4.76 kg',e);}const pw=isPow(wayOf(bd.fam)),PW=pw?'කුඩු ':'',Y=v471Yield(bd.fam),tg=num(bd.tg),kg=num(bd.kg),ok=num(bd.okg),a=$('v471tg'),b=$('v471loss');
   if(a){if(!(tg>0))a.innerHTML='';
-    else if(Y&&Y.y>0){const need=r1(tg/(Y.y/100));a.innerHTML=`<div class="okbox small" style="font-weight:600">🌶️ කුඩු <b>${r1(tg)} kg</b> හදන්න අමු ද්‍රව්‍ය ≈ <b>${need} kg</b> ඕනේ <span class="muted">(අස්වැන්න ${Y.y}% — ${Y.src==='PC'?'PC: අන්තිම batch වල සාමාන්‍යය':'මේ phone එකේ අන්තිම batch '+Y.n})</span> ${Math.abs(need-kg)>0.05?`<button type="button" class="btn sm light" onclick="v471Use(${need})">⬇️ ${need} kg දාන්න</button>`:'✅'}</div>`;}
-    else a.innerHTML=`<div class="warnbox small">ℹ️ මේ භාණ්ඩයේ අස්වැන්න (කුඩු ÷ අමු) තවම දන්නේ නැහැ. “දාපු අමු” සහ “හැදුණු කුඩු” දෙකම දාපු batch එකක් දැම්මාම ඊළඟ පාර ඉබේම ගණන් හදනවා.</div>`;}
+    else if(Y&&Y.y>0){const need=r1(tg/(Y.y/100));a.innerHTML=`<div class="okbox small" style="font-weight:600">🌶️ ${PW}<b>${r1(tg)} kg</b> හදන්න අමු ද්‍රව්‍ය ≈ <b>${need} kg</b> ඕනේ <span class="muted">(අස්වැන්න ${Y.y}% — ${Y.src==='PC'?'PC: අන්තිම batch වල සාමාන්‍යය':'මේ phone එකේ අන්තිම batch '+Y.n})</span> ${Math.abs(need-kg)>0.05?`<button type="button" class="btn sm light" onclick="v471Use(${need})">⬇️ ${need} kg දාන්න</button>`:'✅'}</div>`;}
+    else a.innerHTML=`<div class="warnbox small">ℹ️ මේ භාණ්ඩයේ අස්වැන්න (${pw?'කුඩු':'හැදුණු'} ÷ අමු) තවම දන්නේ නැහැ. “දාපු අමු” සහ “හැදුණු ${pw?'කුඩු':'kg'}” දෙකම දාපු batch එකක් දැම්මාම ඊළඟ පාර ඉබේම ගණන් හදනවා.</div>`;}
   if(!b)return;let h='';const pk=v471Pk();
   if(kg>0&&ok>0){if(ok>kg*1.02)h=`<div class="warnbox small">⚠️ හැදුණු බර (${r1(ok)} kg) දාපු අමු බරට (${r1(kg)} kg) වඩා වැඩියි — බර හරිද? (වතුර / තෙල් එකතු කළා නම් හරි)</div>`;
     else{const pct=Math.round(ok/kg*1000)/10;h=`<div class="okbox small">♻️ නාස්තිය <b>${r1(kg-ok)} kg</b> (${r1(100-pct)}%) · අස්වැන්න <b>${pct}%</b></div>`;if(Y&&Y.y>0&&Math.abs(pct-Y.y)>=8)h+=`<div class="warnbox small">⚠️ සාමාන්‍යයෙන් අස්වැන්න ${Y.y}% — මේ පාර ${pct}%. බර හරිද බලන්න.</div>`;}}
-  else if(kg>0&&pk>0)h=`<div class="small muted">⚖️ හැදුණු කුඩු kg දැම්මාම නාස්තිය ඉබේම ගණන් වෙනවා.</div>`;
-  if(pk>0&&ok>0){const rest=r1(ok-pk/1000);h+=`<div class="small muted">📦 පැක් කළා ≈ ${r1(pk/1000)} kg${rest>0.05?` · ඉතුරු කුඩු ≈ <b>${rest} kg</b> (තවම පැක් කරලා නැහැ)`:rest<-0.2?' · ⚠️ පැක් කළ බර හැදුණු කුඩු බරට වඩා වැඩියි':''}</div>`;}
+  else if(kg>0&&pk>0&&$('bdOk'))h=`<div class="small muted">⚖️ හැදුණු ${PW}kg දැම්මාම නාස්තිය ඉබේම ගණන් වෙනවා.</div>`;
+  if(pk>0&&ok>0){const rest=r1(ok-pk/1000);h+=`<div class="small muted">📦 පැක් කළා ≈ ${r1(pk/1000)} kg${rest>0.05?` · ඉතුරු ${PW}≈ <b>${rest} kg</b> (තවම පැක් කරලා නැහැ)`:rest<-0.2?' · ⚠️ පැක් කළ බර හැදුණු '+PW+'බරට වඩා වැඩියි':''}</div>`;}
   b.innerHTML=h;};
-window.v471Use=function(kg){if(!bd)return;bd.kg=String(kg);const i=$('bdKg');if(i)i.value=String(kg);save();try{if(faAuto())faPaint();}catch(e){}v471Paint();};
+window.v471Use=function(kg){if(!bd)return;bd.kgA=0;bd.kgM=1;bd.kg=String(kg);const i=$('bdKg');if(i)i.value=String(kg);save();try{if(faAuto())faPaint();}catch(e){}v471Paint();};
 (function(){const _r=renderBNew;renderBNew=function(){const r=_r.apply(this,arguments);try{v471Paint();}catch(e){console.warn('4.71 w',e);}return r;};})();
 /* only the weights changed → no typed reason needed (the PC history gets "⚖️ බර") */
 window.v471OnlyW=function(old,sz,exp){try{const z=a=>(a||[]).filter(x=>num(x[1])>0).map(x=>[x[0],Math.floor(num(x[1])),x[2]||'A']);
@@ -2068,12 +2082,13 @@ window.v471OnlyW=function(old,sz,exp){try{const z=a=>(a||[]).filter(x=>num(x[1])
   return A===B&&(num(old.kg)!==num(bd.kg)||okOf(old)!==num(bd.okg));}catch(e){return false;}};
 /* packets typed but no raw kg → ask once (without it the lots / raw stock don't go down) */
 window.v471NoKg=function(sz){if(!bd||bd._noKg||num(bd.kg)>0||!sz.some(x=>num(x[1])>0))return false;const r=curRc();if(!r||r.m==='p')return false;
-  sheet(`<h3>🌶️ දාපු අමු ද්‍රව්‍ය kg නැහැ</h3><p>යන්ත්‍රයට දාපු අමු ද්‍රව්‍ය බර නැත්නම් <b>lot / අමු තොගයෙන් අඩු වෙන්නේ නැහැ</b>, නාස්තියත් ගණන් වෙන්නේ නැහැ.</p>
+  sheet(`<h3>🌶️ දාපු අමු ද්‍රව්‍ය kg නැහැ</h3><p>${isPow(wayOf(bd.fam))?'යන්ත්‍රයට දාපු':'දාපු / ගත්ත'} අමු ද්‍රව්‍ය බර නැත්නම් <b>lot / අමු තොගයෙන් අඩු වෙන්නේ නැහැ</b>, නාස්තියත් ගණන් වෙන්නේ නැහැ.</p>
    <button class="btn primary block" onclick="sheet();const i=$('bdKg');if(i){i.scrollIntoView({block:'center'});i.focus();}">✏️ දැන් දාන්නම්</button><button class="btn light block" onclick="bd._noKg=1;sheet();bSave()">⏭️ පස්සේ දාන්නම් — යවන්න</button>`);return true;};
 /* the batch list: raw → powder · loss */
 window.v471BW=function(b){try{const kg=num(b.kg),ok=okOf(b),r=rcFor(b.fam)[0];if(r&&r.m==='p')return '';
   if(kg>0&&ok>0)return `<div class="small">🌶️ ${r1(kg)} kg → ⚖️ ${r1(ok)} kg · ♻️ නාස්තිය ${r1(kg-ok)} kg (${Math.round((kg-ok)/kg*1000)/10}%)</div>`;
-  if(b.st==='making'&&!kg)return '';return `<div class="small warn">⚖️ ${kg>0?'🌶️ '+r1(kg)+' kg · හැදුණු කුඩු kg තවම නැහැ':'දාපු අමු ද්‍රව්‍ය kg තවම නැහැ'} — ✏️ ඔබලා දාන්න</div>`;}catch(e){return '';}};
+  if(b.st==='making'&&!kg)return '';const w=wayOf(b.fam);if(kg>0&&(w==='p'||w==='a'))return `<div class="small">🌶️ ${r1(kg)} kg</div>`;/* 4.75: clean + pack / assemble → no "made kg" to ask for */
+  return `<div class="small warn">⚖️ ${kg>0?'🌶️ '+r1(kg)+' kg · හැදුණු '+(isPow(w)?'කුඩු ':'')+'kg තවම නැහැ':'දාපු අමු ද්‍රව්‍ය kg තවම නැහැ'} — ✏️ ඔබලා දාන්න</div>`;}catch(e){return '';}};
 /* ---------- 🤖 oldest sack first: also says when the lots are not enough, and counts this phone's own batches the PC hasn't seen yet ---------- */
 faAuto=function(){if(!bd||!bd.fam||bd.bid||bd.rawEd||!(S.cfg&&S.cfg.la))return false;const r=faCurRc();if(!r)return false;const pk=Object.values(bd.sz||{}).reduce((s,v)=>s+Math.floor(num(v)),0),L=rcLines(r,bd.kg,pk);if(!L.length)return false;
   const id=n=>{const m=mtByName(n);return m?m[0]:norm(n);},lots=faLots().filter(x=>!x.done&&x.qc!=='rej'&&!(x.exp&&x.exp<today())&&x.left>0).sort(faOld),out=[],miss=[],short=[];
@@ -2093,16 +2108,19 @@ window.v471Low=function(){const C=S.cfg||{},out={p:[],m:[],g:[]};
   out.p.sort((a,b)=>(b.zero-a.zero)||(a.have/a.min-b.have/b.min));
   (C.ml||[]).forEach(([n,have,min,u,k,auto])=>{if(num(have)<num(min))out.m.push({n,have:num(have),min:num(min),u:u||'g',k,auto,zero:num(have)<=0});});
   const F={},bk=powder();out.p.forEach(x=>{const s=v471Size(x.pid);if(!s||!(s.g>0))return;const need=(x.min-Math.max(0,x.have))*s.g;if(!(need>0))return;if(!F[s.fam])F[s.fam]={need:0};F[s.fam].need+=need;});
-  Object.entries(F).forEach(([fam,v])=>{const have=num(bk[fam]),grind=Math.max(0,v.need-have),Y=v471Yield(fam);out.g.push({fam,need:v.need,have,grind,raw:Y&&Y.y>0?grind/(Y.y/100):0,y:Y});});
+  Object.entries(F).forEach(([fam,v])=>{const w=wayOf(fam);if(w==='p'||w==='a'||w==='?')return;/* 4.75: clean + pack / assemble / no recipe → nothing to grind or make — the 📦 list above already says how many packets */
+    const have=num(bk[fam]),grind=Math.max(0,v.need-have),Y=v471Yield(fam);out.g.push({fam,w,need:v.need,have,grind,raw:Y&&Y.y>0?grind/(Y.y/100):0,y:Y});});
   out.g.sort((a,b)=>b.grind-a.grind);return out;};
 const nLow=X=>X.p.length+X.m.length+X.g.filter(g=>g.grind>0).length;
 function lowHtml(X){const C=S.cfg||{};
-  const P=X.p.length?`<div class="card"><h3 class="v470fam">📦 පැකට් — අවම ගණනට අඩු (${X.p.length})</h3>${X.p.map(x=>`<div class="v470r"><div class="sz">${esc(pn(x.pid))}</div><div class="q ${x.zero?'n':''}">${x.have}</div><div class="sub">${x.zero?'🔴 ඉවරයි':'🟠 අඩුයි'} · අවම <b>${x.min}</b> · හදන්න ≈ <b>${x.min-Math.max(0,x.have)}</b>${x.o?` · <span class="muted">ඇණවුම් ${x.o} අඩු කළා</span>`:''}${x.l?` · <span class="muted">🚚 ලොරියේ ${x.l}</span>`:''}${x.old?' · <span class="muted">PC ගණන</span>':''}</div></div>`).join('')}</div>`
+  const P=X.p.length?`<div class="card"><h3 class="v470fam">📦 පැකට් — අවම ගණනට අඩු (${X.p.length})</h3>${X.p.map(x=>`<div class="v470r"><div class="sz">${esc(pn(x.pid))}</div><div class="q ${x.zero?'n':''}">${x.have}</div><div class="sub">${x.zero?'🔴 ඉවරයි':'🟠 අඩුයි'} · අවම <b>${x.min}</b> · ${pkVerb(x.pid)} ≈ <b>${x.min-Math.max(0,x.have)}</b>${x.o?` · <span class="muted">ඇණවුම් ${x.o} අඩු කළා</span>`:''}${x.l?` · <span class="muted">🚚 ලොරියේ ${x.l}</span>`:''}${x.old?' · <span class="muted">PC ගණන</span>':''}</div></div>`).join('')}</div>`
     :`<div class="card ${C.mn||C.lo?'okbox':'infobox small'}">${C.mn||C.lo?'✅ පැකට් ඔක්කොම අවම ගණනට වඩා වැඩියි':'📦 PC එකේ “📦 අවම තොගය” තවම දාලා නැහැ'}</div>`;
-  const G=X.g.length?`<div class="card"><h3 class="v470fam">⚖️ ඇඹරූ කුඩු (පැක් නොකළ)</h3>${X.g.map(g=>`<div class="v470r"><div class="sz">${esc(g.fam)}</div><div class="q ${g.grind>0?'n':''}">${kgT(g.have)}</div><div class="sub">${g.grind>0?`🟠 <b>අඹරන්න ඕනේ ≈ ${kgT(g.grind)}</b> කුඩු${g.raw>0?` · අමු ≈ <b>${kgT(g.raw)}</b> (අස්වැන්න ${g.y.y}%)`:''}`:`✅ <b>පැක් කරන්න</b> — කුඩු ${kgT(g.have)} තියෙනවා`} · <span class="muted">අවමට පුරවන්න කුඩු ${kgT(g.need)}</span></div></div>`).join('')}</div>`:'';
+  const gRow=g=>{const pw=isPow(g.w);return `<div class="v470r"><div class="sz">${esc(g.fam)}</div><div class="q ${g.grind>0?'n':''}">${kgT(g.have)}</div><div class="sub">${g.grind>0?`🟠 <b>${wVerb(g.w)} ඕනේ ≈ ${kgT(g.grind)}</b>${pw?' කුඩු':''}${g.raw>0?` · අමු ≈ <b>${kgT(g.raw)}</b> (අස්වැන්න ${g.y.y}%)`:''}`:`✅ <b>පැක් කරන්න</b> — ${pw?'කුඩු':'හදපු'} ${kgT(g.have)} තියෙනවා`} · <span class="muted">අවමට පුරවන්න ${pw?'කුඩු ':''}${kgT(g.need)}</span></div></div>`;};
+  const GP=X.g.filter(g=>isPow(g.w)),GK=X.g.filter(g=>!isPow(g.w));/* 4.75: ⚖️ ground / crushed powder · 🍳 made (papadam, sambol, chilli paste …) */
+  const G=(GP.length?`<div class="card"><h3 class="v470fam">⚖️ ඇඹරූ කුඩු (පැක් නොකළ)</h3>${GP.map(gRow).join('')}</div>`:'')+(GK.length?`<div class="card"><h3 class="v470fam">🍳 හදන ඒවා (පැක් නොකළ)</h3>${GK.map(gRow).join('')}</div>`:'');
   const M=X.m.length?`<div class="card"><h3 class="v470fam">🌶️ අමු ද්‍රව්‍ය / ඇසුරුම් — අවමට අඩු (${X.m.length})</h3>${X.m.map(m=>`<div class="v470r"><div class="sz">${m.k==='p'?'📦 ':'🌶️ '}${esc(m.n)}</div><div class="q ${m.zero?'n':''}">${v471Q(m.have,m.u)}</div><div class="sub">${m.zero?'🔴 ඉවරයි':'🟠 අඩුයි'} · අවම ${v471Q(m.min,m.u)}${m.auto?' <span class="muted">(ඉබේම: දවසේ පාවිච්චිය × දින 7)</span>':''} · 🛒 ගන්න</div></div>`).join('')}</div>`
     :(C.ml?`<div class="card okbox small">✅ අමු ද්‍රව්‍ය අවමට වඩා වැඩියි${!C.ml.length?' — (PC එකේ අවම තියෙන අමු ද්‍රව්‍ය නැහැ)':''}</div>`:'');
-  return P+G+M+`<div class="small muted" style="margin:4px 2px 8px">📦 = 🏭 කම්හල + 🚚 ලොරිය − දෙන්න තියෙන ඇණවුම් (PC ගණන + මේ phone එකේ වෙනස්). ⚖️ = අවම ගණනට පැකට් පුරවන්න ඕනේ කුඩු vs පැක් නොකළ කුඩු. අවම ගණන් වෙනස් කරන්නේ PC එකේ: 📦 → 🏷️ Batch පිටුවේ “📦 අවම තොගය” · 🌶️ → අමු ද්‍රව්‍ය පිටුවේ ද්‍රව්‍යය ✏️ “අවම”.</div>`;}
+  return P+G+M+`<div class="small muted" style="margin:4px 2px 8px">📦 = 🏭 කම්හල + 🚚 ලොරිය − දෙන්න තියෙන ඇණවුම් (PC ගණන + මේ phone එකේ වෙනස්). ⚖️ = අවම ගණනට පැකට් පුරවන්න ඕනේ කුඩු vs පැක් නොකළ කුඩු. 🍳 = අඹරන්නේ නැති, හදන ඒවා (PC එකේ 📖 Recipe → “කරන විදිහ”). අවම ගණන් වෙනස් කරන්නේ PC එකේ: 📦 → 🏷️ Batch පිටුවේ “📦 අවම තොගය” · 🌶️ → අමු ද්‍රව්‍ය පිටුවේ ද්‍රව්‍යය ✏️ “අවම”.</div>`;}
 /* the stock page: a 📉 tab + "අවම" marks on the 🏭 list */
 (function(){const _r=renderStock;renderStock=function(){const V=window.V470,lo=V.tab==='lo';if(lo)V.tab='l';const res=_r.apply(this,arguments);if(lo)V.tab='lo';try{post(lo);}catch(e){console.warn('4.71 stock',e);}return res;};})();
 function post(lo){const body=$('stockBody'),tabs=body&&body.querySelector('.v470tabs');if(!tabs)return;const X=v471Low(),n=nLow(X);
@@ -2111,8 +2129,42 @@ function post(lo){const body=$('stockBody'),tabs=body&&body.querySelector('.v470
   const mn=(S.cfg&&S.cfg.mn)||{},L=new Map(X.p.map(x=>[x.pid,x]));body.querySelectorAll('.v470r[data-p]').forEach(r=>{const pid=r.dataset.p,min=num(mn[pid]);if(!(min>0))return;const x=L.get(pid),sub=r.querySelector('.sub');if(sub)sub.insertAdjacentHTML('beforeend',` <span class="v471m ${x?(x.zero?'z':'lo'):''}">${x?(x.zero?'🔴 ':'🟠 '):''}අවම ${min}</span>`);});}
 /* home: one button for all three */
 (function(){const _h=renderHome0;renderHome0=function(){_h.apply(this,arguments);try{if(!S.cfg)return;const h=$('homeBody');if(!h)return;h.querySelectorAll('.notebtn').forEach(b=>{if(/තොගය අඩුයි/.test(b.textContent))b.remove();});const g=h.querySelector('.grid2');if(!g)return;
-  const X=v471Low(),gN=X.g.filter(x=>x.grind>0).length;if(!nLow(X))return;const top=[...X.p.slice(0,3).map(x=>esc(pn(x.pid))+' '+x.have+'/'+x.min),...X.g.filter(x=>x.grind>0).slice(0,1).map(x=>'⚖️ '+esc(x.fam)+' අඹරන්න'),...X.m.slice(0,2).map(m=>'🌶️ '+esc(m.n))].join(' · ');
-  g.insertAdjacentHTML('beforebegin',`<button class="notebtn has" id="v471home" onclick="V470.tab='lo';go('stock')"><span>📉 තොගය අඩුයි</span>${X.p.length?`<b class="badge">📦 ${X.p.length}</b>`:''}${gN?`<b class="badge">⚖️ ${gN}</b>`:''}${X.m.length?`<b class="badge">🌶️ ${X.m.length}</b>`:''}<small>${top}</small></button>`);}catch(e){console.warn('4.71 home',e);}};})();
+  const X=v471Low(),gN=X.g.filter(x=>x.grind>0&&isPow(x.w)).length,kN=X.g.filter(x=>x.grind>0&&!isPow(x.w)).length;if(!nLow(X))return;const top=[...X.p.slice(0,3).map(x=>esc(pn(x.pid))+' '+x.have+'/'+x.min),...X.g.filter(x=>x.grind>0).slice(0,1).map(x=>wIc(x.w)+' '+esc(x.fam)+' '+wVerb(x.w)),...X.m.slice(0,2).map(m=>'🌶️ '+esc(m.n))].join(' · ');
+  g.insertAdjacentHTML('beforebegin',`<button class="notebtn has" id="v471home" onclick="V470.tab='lo';go('stock')"><span>📉 තොගය අඩුයි</span>${X.p.length?`<b class="badge">📦 ${X.p.length}</b>`:''}${gN?`<b class="badge">⚖️ ${gN}</b>`:''}${kN?`<b class="badge">🍳 ${kN}</b>`:''}${X.m.length?`<b class="badge">🌶️ ${X.m.length}</b>`:''}<small>${top}</small></button>`);}catch(e){console.warn('4.71 home',e);}};})();
+/* ================= 4.76 · 🏭 batch in 2–3 steps: product → packets → ✅ (plan 026 ② · owner 9 Nov: "batch kg worked out from packet counts", "as few steps as possible") =================
+   🤖 raw kg = packets × grams ÷ yield (the PC's / this phone's last batches) · 🧹 clean + pack / 📦 assemble with no yield yet → the packed weight itself.
+      Only while the kg box is empty or was filled by this; a typed figure is never touched. No yield for something that is ground → nothing is made up, the box stays (as before).
+   ➕ the boxes that fill themselves (EXP · weights · lots · notes · recipe · QC) sit under "➕ තව" — all still there, same ids. Lots that are missing / not enough stay in view.
+   🥣 our own powder in the recipe (CP ← MK …): how much is needed and whether the unpacked powder is enough. */
+function v476Can(){if(!bd||!bd.fam)return false;const r=curRc();if(r&&r.m==='p')return true;const w=wayOf(bd.fam);if(w==='p'||w==='a')return true;const Y=v471Yield(bd.fam);return !!(Y&&Y.y>0);}
+function v476Need(){if(!bd||!bd.fam)return null;const r=curRc();if(r&&r.m==='p')return null;const pk=v471Pk();if(!(pk>0))return null;const w=wayOf(bd.fam),Y=v471Yield(bd.fam);
+  if(Y&&Y.y>0)return {kg:r1(pk/1000/(Y.y/100)),y:Y.y,src:Y.src};if(w==='p'||w==='a')return {kg:r1(pk/1000),y:0,src:'pk'};return null;}
+function v476Kg(){if(!bd)return;const N=v476Need(),i=$('bdKg'),typed=String(bd.kg||'').trim()!=='';
+  if(!bd.kgM&&(!typed||bd.kgA)){if(!N){if(bd.kgA){bd.kg='';bd.kgA=0;if(i)i.value='';}}else{if(String(bd.kg)!==String(N.kg)){bd.kg=String(N.kg);if(i)i.value=bd.kg;}bd.kgA=1;}}
+  const n=$('v476kg');if(n)n.innerHTML=bd.kgA&&N?`<div class="small muted">🤖 පැකට් ගණනින් ඉබේම${N.y?` (අස්වැන්න ${N.y}%)`:' (පැක් කළ බරම — අස්වැන්න තවම දන්නේ නැහැ)'} · වෙනස් නම් type කරන්න</div>`:(bd.kgM&&N?`<div class="small"><a href="#" onclick="bd.kgM=0;bd.kgA=0;bd.kg='';v471Paint();v476Sum();return false">🤖 ආයේ ඉබේම ගණන් කරන්න (≈ ${N.kg} kg)</a></div>`:'');}
+window.v476Chain=function(){try{const r=curRc();if(!r)return [];const pk=Object.values(bd.sz||{}).reduce((s,v)=>s+Math.floor(num(v)),0),bk=powder();
+  return rcLines(r,bd.kg,pk).filter(l=>l.fam&&l.g>0).map(l=>{const f=BF().find(x=>x[1]===l.fam),name=f?f[0]:l.n,have=num(bk[name]);return {name,need:l.g,have,short:Math.max(0,l.g-have)};});}catch(e){return [];}};
+window.v476Sum=function(){const el=$('v476sum');if(!el||!bd)return;const pk=v471Pk(),nP=Object.values(bd.sz||{}).reduce((s,v)=>s+Math.floor(num(v)),0);
+  if(!(nP>0)){el.className='card infobox small';el.innerHTML='📦 <b>පැකට් ගණන දාන්න</b> — අමු kg, lot, EXP ඉබේම. ඊට පස්සේ පහළ ✅ බොත්තම.';return;}
+  const L=[],r=curRc(),kg=num(bd.kg),w=wayOf(bd.fam);L.push(`📅 EXP <b>${dmy(bExp())}</b>`);
+  if(r&&r.m==='p')L.push('📦 පැකට් ගණනින් ද්‍රව්‍ය අඩු වෙනවා');else if(kg>0)L.push(`🌶️ අමු ${bd.kgA?'≈ ':''}<b>${r1(kg)} kg</b>${bd.kgA?' <span class="muted">(ඉබේම)</span>':''}`);else L.push(`<span class="warn">⚖️ අමු kg දාන්න — මේකේ අස්වැන්න තවම දන්නේ නැහැ (එක batch එකකට “දාපු” + “හැදුණු” kg දෙකම දැම්මාම ඊළඟ පාර ඉබේම)</span>`);
+  if(!(r&&r.m==='p'&&!(r.p||[]).length)){const lots=(bd.raw||[]).filter(n=>!lotVoid(n));if(lots.length)L.push(`🏷️ lot <b>${lots.map(esc).join(', ')}</b>${bd.rawEd?'':' <span class="muted">(පරණම මුලින්)</span>'}`);else if(!bd.rt)L.push('🏷️ lot නැහැ <span class="muted">(🗂️ පරණ තොගයෙන් කියලා යනවා)</span>');}
+  if((bd.autoS||[]).length&&!bd.rawEd)L.push(`<span class="warn">⚠️ lot වල මදි: ${bd.autoS.map(([n,g])=>esc(n)+' '+kgT(g)).join(', ')} (➕ තව → 🌶️ lot)</span>`);
+  v476Chain().forEach(c=>L.push(c.short>0.5?`<span class="warn">🥣 ${esc(c.name)} ${kgT(c.need)} ඕනේ — තියෙන්නේ ${kgT(c.have)}. <b>මුලින් ${esc(c.name)} ${kgT(c.short)} හදන්න</b> (නැත්නම් ඒ වෙලාවෙම හැදුවා කියලා ගන්නවා)</span>`:`🥣 ${esc(c.name)} ${kgT(c.need)} — තියෙනවා ${kgT(c.have)} ✅`));
+  el.className='card okbox small';el.innerHTML='🤖 <b>ඉබේම:</b> '+L.join(' · ');};
+function v476Lay(){if(!bd||!bd.fam)return;const box=$('bnewBody'),btn=box&&box.querySelector('button.btn.primary.block.big');if(!btn||$('v476more'))return;
+  const w=wayOf(bd.fam);if(!bd.bid&&bd.pd===undefined&&(w==='p'||w==='a')){bd.pd=1;const c=box.querySelector('input[type=checkbox][onchange*="bd.pd="]');if(c)c.checked=true;}/* clean + pack / assemble: nothing is left as loose powder */
+  try{v471Paint();}catch(e){}try{if(faAuto())faPaint();}catch(e){}
+  const cards=[...box.children].filter(e=>e.classList&&e.classList.contains('card')),has=(c,sel)=>!!c.querySelector(sel),mv=[];
+  const lotNeed=!(S.cfg&&S.cfg.la)||bd.rawEd||(bd.autoM||[]).length||(bd.autoS||[]).length;
+  cards.forEach(c=>{if(c.id==='v471w'){if(v476Can())mv.push(c);}else if(has(c,'#faAutoBox')){if(!lotNeed)mv.push(c);}else if(has(c,'input[onchange*="bd.w="]')||has(c,'#bxOut')||/^✅ QC/.test((c.querySelector('h3')||{}).textContent||''))mv.push(c);});
+  const d=document.createElement('details');d.id='v476more';d.className='card';d.open=!!(window._v476open||bd.bid);d.innerHTML='<summary style="cursor:pointer;font-weight:700;min-height:32px">➕ තව <span class="small muted">— 📅 EXP · ⚖️ බර · 🌶️ lot · 📖 recipe · සටහන් · QC (ඔක්කොම ඉබේම — වෙනස් කරන්න ඕනේ නම් විතරයි)</span></summary>';
+  d.addEventListener('toggle',()=>{window._v476open=d.open;});
+  ['bdExp','bdPk'].forEach(id=>{const f=$(id)&&$(id).closest('.field');if(f)d.appendChild(f);});mv.forEach(c=>{c.style.boxShadow='none';d.appendChild(c);});
+  const sum=document.createElement('div');sum.id='v476sum';sum.className='card infobox small';btn.parentNode.insertBefore(sum,btn);btn.parentNode.insertBefore(d,sum);
+  box.querySelectorAll('input[type=number]').forEach(i=>{const oc=String(i.getAttribute('oninput')||'');if(/bd\.sz\[/.test(oc))i.addEventListener('input',()=>{try{v471Paint();if(faAuto())faPaint();}catch(e){}v476Sum();});else if(/bd\.kg=|bd\.okg=/.test(oc))i.addEventListener('input',()=>{try{if(faAuto())faPaint();}catch(e){}v476Sum();});});
+  v476Sum();}
+(function(){const _r=renderBNew;renderBNew=function(){const res=_r.apply(this,arguments);try{v476Lay();}catch(e){console.warn('4.76 batch',e);}return res;};})();
 document.head.insertAdjacentHTML('beforeend',`<style>.v471m{display:inline-block;font-size:12px;font-weight:700;color:#64748b;background:#f1f5f9;border-radius:8px;padding:1px 6px}.v471m.lo{color:#9a3412;background:#ffedd5}.v471m.z{color:#fff;background:#b91c1c}#v471w .okbox,#v471w .warnbox{margin:6px 0}</style>`);
 })();
 </script>
