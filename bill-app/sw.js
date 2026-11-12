@@ -2,7 +2,7 @@
    v1.8 (bill-app-12): each file is saved on its own (one slow icon can't stop the page being saved; a file that can't be
    fetched is copied from the old cache) · the page opens from this app's own cache first · a page that only half-arrives
    in 3 s (weak signal) → the saved page opens and the new one is saved for next time · a GitHub error page is never saved */
-const CACHE='bill-app-12';
+const CACHE='bill-app-13';
 const PAGE='index.html';
 const FILES=['./','index.html','manifest.webmanifest','icon-192.png','icon-512.png','icon-maskable-512.png','apple-touch-icon.png'];
 async function keep(c,f){

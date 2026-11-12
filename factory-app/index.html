@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="si">
 <head>
-<script>/* 5.01b · app එක load නොවුණොත් තිරයේ වැරැද්ද පෙන්නනවා (screenshot එකට) */(function(){var E=[];window.addEventListener('error',function(e){E.push((e.message||'error')+(e.filename?' @'+String(e.filename).split('/').pop()+':'+e.lineno+':'+e.colno:''));},true);setTimeout(function(){try{var h=document.getElementById('homeBody');if(h&&h.children.length)return;var d=document.createElement('div');d.style.cssText='margin:12px;padding:12px;border:2px solid #b91c1c;border-radius:10px;background:#fff;color:#b91c1c;font:14px/1.5 system-ui;word-break:break-word';d.innerHTML='<b>⚠️ App එක load වුණේ නැහැ</b> — මේ screenshot එක Claude ට එවන්න. (App එක delete කරන්න / data clear කරන්න එපා.)<br><small>'+(E.length?E.slice(0,5).join('<br>'):'වැරැද්දක් අහුවුණේ නැහැ')+'<br>'+navigator.userAgent+'</small>';(document.body||document.documentElement).appendChild(d);}catch(x){}},8000);})();</script>
+<script>/* 5.01b · app එක load නොවුණොත් තිරයේ වැරැද්ද පෙන්නනවා (screenshot එකට) */(function(){var E=[];window.addEventListener('error',function(e){E.push((e.message||'error')+(e.filename?' @'+String(e.filename).split('/').pop()+':'+e.lineno+':'+e.colno:''));},true);setTimeout(function(){try{var h=document.getElementById('homeBody');if(h&&h.children.length)return;var on=document.querySelector('.screen.on');if(on&&on.id!=='s-home')return;/* 5.03: another screen is open (e.g. ⚙️ on a new phone) = the app did load */var d=document.createElement('div');d.style.cssText='margin:12px;padding:12px;border:2px solid #b91c1c;border-radius:10px;background:#fff;color:#b91c1c;font:14px/1.5 system-ui;word-break:break-word';d.innerHTML='<b>⚠️ App එක load වුණේ නැහැ</b> — මේ screenshot එක Claude ට එවන්න. (App එක delete කරන්න / data clear කරන්න එපා.)<br><small>'+(E.length?E.slice(0,5).join('<br>'):'වැරැද්දක් අහුවුණේ නැහැ')+'<br>'+navigator.userAgent+'</small>';(document.body||document.documentElement).appendChild(d);}catch(x){}},8000);})();</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0f766e">
@@ -1216,7 +1216,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='5.02';
+const FA_VER='5.07';
 /* v4.64 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v4.64.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuF',A='f',_f=window.fetch.bind(window);
@@ -2747,6 +2747,491 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
       f.innerHTML=`<label>🏪 මේ බිලේ තාත්තාගේ කඩේ බඩු (රු.) <small class="muted">(ඕනේ නම් — බිලේ මුළු ගාණට එකතුයි, කම්හල් තොගයට නැහැ)</small></label><input type="number" inputmode="decimal" min="0" step="any" value="${esc(d.sh||'')}" onchange="BD().sh=this.value;save();render()">`;
       more.appendChild(f);if(num(d.sh)>0)more.open=true;const sm=more.querySelector('summary span');if(sm&&!/කඩේ/.test(sm.textContent))sm.textContent+=' · 🏪 කඩේ බඩු';}}catch(e){console.warn('5.01 buy',e);}return res;};}
 })();
+/* ================= app 5.03 (PC v5.5.7) · 032 C-5b phone — 🔄 Party චෙක් (සැපයුම්කරුට) + 🏦 චෙක් තිරය (owner 12 Nov) =================
+   🏪 සැපයුම් ගෙවීම → ක්‍රමය “🔄 Party චෙක්”: අතේ තියෙන චෙක් ✓ (+ Cash) → 'fspay' {m:'party', q:[ids], cash} → PC ⏳ අනුමැතිය.
+   යැව්ව ගමන් ඒ චෙක් phone එකේ “අතේ” ලැයිස්තුවෙන් අයින් වෙනවා (⏳ PC එකට යනකම්) — දෙපාරක් දෙන්න බැහැ; PC එක ප්‍රතික්ෂේප කළොත් ආපහු එනවා.
+   🏦 චෙක් තිරය (බලන්න විතරයි): 🏠 අතේ · 🔄 සැපයුම්කරුවන් ළඟ · ↩️ ආපසු ආපු · ✍️ ලියපු චෙක් (දින 14). Home “📋 අද කරන්න” පේළි 3.
+   ඔක්කොම පේන්නේ PC එක v5.5.7 (S.cfg.pq) නම් විතරයි — පරණ PC එකකට party ගෙවීමක් යන්නේ නැහැ. */
+(function(){
+  const pq=()=>(S&&S.cfg&&S.cfg.pq)||null;
+  const pend=()=>{const ok=okSet(),rj=rjMap();return (S.sent||[]).filter(s=>s&&s.k==='fspay'&&s.rec&&s.rec.m==='party'&&!s.gone&&!s.void&&!ok.has(s.uid)&&!rj.has(s.uid)&&Date.now()-new Date(s.at)<14*864e5);};
+  const hand=()=>{const P=pq();if(!P)return [];const w=new Set(pend().flatMap(s=>s.rec.q||[]));return (P.h||[]).filter(x=>!w.has(x[0]));};
+  const sum=(L,i)=>r2(L.reduce((t,x)=>t+num(x[i]),0));
+  const chip=d=>`<button class="chip ${d.m==='party'?'ok':''}" onclick="fxD().m='party';fxD().amt='';save();render()">🔄 Party චෙක්</button>`;
+  const flags=(x,d)=>`${String(x[3])>d?' <span class="small muted">📅 post-dated</span>':''}${num(x[7])?` <span class="small warn">🔴 කලින් ආපසු ආවා (${num(x[7])})</span>`:''}`;
+  window.pqPick=function(id,on){const d=fxD();d.pq=(d.pq||[]).filter(x=>x!==id);if(on)d.pq.push(id);save();render();};
+  window.pqGive=function(id){fxTab='spay';fxClr();const d=fxD();d.m='party';d.pq=id?[id]:[];save();go('fx2');};
+  window.pqSend=function(){const d=fxD(),H=hand(),P=H.filter(x=>(d.pq||[]).includes(x[0])),cash=r2(Math.max(0,num(d.amt)));
+    if(!d.sup){toast('සැපයුම්කරු තෝරන්න','err');return;}if(!P.length){toast('දෙන චෙක් එකක්වත් ✓ කරන්න','err');return;}
+    const early=P.find(x=>String(x[6]||'')>d.d);if(early){toast(`චෙක් #${early[1]} ලැබුණේ ${dmy(early[6])} — ඊට කලින් දිනයක් දාන්න බැහැ`,'err');return;}
+    const tot=r2(sum(P,4)+cash);let left=tot;const B=fxBills().filter(b=>d.al!=='pick'||d.pick.includes(b[0])).sort((x,y)=>String(x[1]).localeCompare(String(y[1]))),al=[];B.forEach(b=>{const t=r2(Math.min(left,num(b[3])));if(t>0){al.push([b[0],t]);left=r2(left-t);}});
+    const sp=((S.cfg&&S.cfg.sp)||[]).find(s=>s[0]===d.sup);fxSend('fspay',{d:d.d,sup:d.sup,amt:tot,m:'party',q:P.map(x=>x[0]),ql:P.map(x=>[x[1],x[4],x[5]]),cash,al,nt:String(d.nt||'').trim()},`🏪 ${sp?sp[1]:''} 🔄 චෙක් ${P.length} · ${tot}`);};
+  {const _f=fxSpay;fxSpay=function(d){try{if(!pq()){if(d.m==='party'){d.m='home';save();}return _f.apply(this,arguments);}
+      if(d.m!=='party'){let h=_f.apply(this,arguments);const i=h.indexOf('<label>ක්‍රමය</label>'),j=i<0?-1:h.indexOf('</div>',i);if(j>0)h=h.slice(0,j)+chip(d)+h.slice(j);return h;}
+      const H=hand(),ids=new Set(H.map(x=>x[0]));d.pq=(d.pq||[]).filter(id=>ids.has(id));const P=H.filter(x=>d.pq.includes(x[0])),B=fxBills(),due=sum(B,3),cash=r2(Math.max(0,num(d.amt))),chq=sum(P,4),tot=r2(chq+cash),W=pend().length;
+      return `<div class="card">${fxDate()}${fxSupSel()}${d.sup?(B.length?`<div class="small">ගෙවන්න තියෙන බිල් ${B.length} · <strong>${money(due)}</strong></div>`:'<div class="small muted">PC එකෙන් ආපු ණය බිල් නැහැ.</div>'):''}
+        <div class="field"><label>ක්‍රමය</label><div class="chips">${fxPmL().filter(x=>x[0]!=='credit').map(([v,t])=>`<button class="chip" onclick="fxD().m='${v}';fxD().amt='';save();render()">${t}</button>`).join('')}${chip(d)}</div></div>
+        <div class="field"><label>🔄 දෙන චෙක් (අතේ තියෙන ඒවා)</label>${H.length?H.map(x=>`<label class="check" style="font-weight:400;align-items:flex-start"><input type="checkbox" data-pq="${esc(x[0])}" ${d.pq.includes(x[0])?'checked':''} onchange="pqPick('${esc(x[0])}',this.checked)"><span>${esc(dmy(x[3]))} · #${esc(x[1])} ${esc(x[2])}<br><strong>${money(x[4])}</strong> · ${esc(x[5])}${flags(x,d.d)}</span></label>`).join(''):'<div class="small muted">අතේ තියෙන චෙක් නැහැ.</div>'}${W?`<div class="small muted">⏳ PC එකට යනකම් තියෙන Party ගෙවීම් ${W} — ඒ චෙක් මෙතන පේන්නේ නැහැ.</div>`:''}</div>
+        ${fxIn('amt','➕ එක්කම දෙන Cash (රු. — ඕනේ නම්)',FX_NUM)}${fxIn('nt','සටහන','maxlength="120"')}
+        <div class="small" id="pqTot">චෙක් ${P.length}: ${money(chq)}${cash>0?` + Cash ${money(cash)}`:''} → එකතුව <strong>${money(tot)}</strong>${d.sup&&tot>0?(tot>due+0.004?` · 👀 ${money(r2(tot-due))} වැඩියි`:` · ඉතුරු ණය ${money(r2(due-tot))}`):''}</div>
+        <div class="small muted">බැංකු / cash ගණන් වෙනස් වෙන්නේ නැහැ. PC එකේ අනුමත කළාම සැපයුම්කරු ණය අඩු වෙනවා.</div></div><button class="btn primary block big" onclick="pqSend()">📤 PC එකට යවන්න</button>`;
+    }catch(e){console.warn('5.03 spay',e);return _f.apply(this,arguments);}};}
+  /* ---------- 🏦 the cheque screen (view only) ---------- */
+  TITLES.chq='🏦 චෙක්';
+  if(!$('s-chq')){const s=document.createElement('section');s.className='screen';s.id='s-chq';s.innerHTML='<div id="chqBody"></div>';const a=$('s-np')||$('s-fx2')||document.querySelector('.screen:last-of-type');a.parentNode.insertBefore(s,a.nextSibling);}
+  function renderChq(){const box=$('chqBody');if(!box)return;const P=pq();if(!P){box.innerHTML='<div class="card empty">PC එකෙන් චෙක් ලැයිස්තුව තවම ආවේ නැහැ. PC එක (v5.5.7) Owner login එකෙන් on කරලා විනාඩි 2කින් 🔄.</div>';return;}
+    const t=today(),t1=addDays(t,1),H=hand(),now=H.filter(x=>String(x[3])<=t1),later=H.filter(x=>String(x[3])>t1),W=pend(),O=P.o||[],R=P.r||[],M=P.m||[],m7=M.filter(x=>{const n=daysTo(x[0]);return n===null||n<=7;});
+    const row=(x,btn)=>`<div class="cqr"><div class="grow"><strong>${money(x[4])}</strong> · ${esc(x[5])}<div class="small muted">${esc(dmy(x[3]))} · #${esc(x[1])} ${esc(x[2])}${num(x[7])?` · <span class="warn">🔴 කලින් ආපසු ආවා (${num(x[7])})</span>`:''}</div></div>${btn?`<button class="btn sm light" onclick="pqGive('${esc(x[0])}')">🔄 සැපයුම්කරුට</button>`:''}</div>`;
+    box.innerHTML=`<div class="card"><h3>🏠 අතේ තියෙන චෙක් <span class="small muted">(${H.length}) · ${money(sum(H,4))}</span></h3>
+        ${now.length?`<div class="cqh hot">🏦 අද / හෙට බැංකුවට දාන්න (${now.length}) · ${money(sum(now,4))}</div>${now.map(x=>row(x,1)).join('')}`:''}
+        ${later.length?`<div class="cqh">📅 ඉදිරියට (${later.length}) · ${money(sum(later,4))}</div>${later.map(x=>row(x,1)).join('')}`:''}
+        ${H.length?'':'<div class="small muted">අතේ චෙක් නැහැ.</div>'}
+        ${W.length?`<div class="cqh">⏳ සැපයුම්කරුට දුන්නා — PC එකට යනකම් (${W.length})</div>${W.map(s=>`<div class="cqr"><div class="grow small">${esc(s.label||'')}<div class="muted">${(s.rec.ql||[]).map(q=>'#'+esc(q[0])+' '+money(q[1])).join(' · ')}</div></div></div>`).join('')}`:''}</div>
+      <div class="card"><h3>🔄 සැපයුම්කරුවන් ළඟ <span class="small muted">(තාම ✅ නැති ${O.length}) · ${money(sum(O,3))}</span></h3>${O.length?O.map(x=>`<div class="cqr"><div class="grow"><strong>${money(x[3])}</strong> → ${esc(x[5])}<div class="small muted">${esc(x[4])} · #${esc(x[0])} ${esc(x[1])} · චෙක් දිනය ${esc(dmy(x[2]))}${x[7]?' · ඉබේම ✅ '+esc(dmy(x[7])):''}</div></div></div>`).join(''):'<div class="small muted">නැහැ.</div>'}<div class="small muted" style="margin-top:6px">ආපසු ආවොත්: PC → 🏦 චෙක්පත් ලේඛනය → ⛔ ආපසු ආවා.</div></div>
+      <div class="card"><h3>↩️ ආපසු ආපු චෙක් — එකතු කරන්න <span class="small muted">(${R.length}) · ${money(sum(R,3))}</span></h3>${R.length?R.map(x=>{const n=String(x[7]||'').replace(/\D/g,'');return `<div class="cqr"><div class="grow"><strong>${money(x[3])}</strong> · ${esc(x[4])}<div class="small muted">#${esc(x[0])} ${esc(x[1])} · ආපසු ආවේ ${esc(dmy(x[5]))}${x[6]?' · 🔄 '+esc(x[6])+' ට දීලා තිබ්බේ':''}</div></div>${n.length>=9?`<a class="btn sm light" href="tel:${esc(n)}">📞</a>`:''}</div>`;}).join(''):'<div class="small muted">✅ නැහැ.</div>'}</div>
+      <div class="card"><h3>✍️ මම ලියපු චෙක් <span class="small muted">(ඉදිරි දින 14 · ${M.length})</span></h3>${M.length?`<div class="cqh${m7.length?' hot':''}">🏦 දින 7ක් ඇතුළත බැංකුවේ තියෙන්න ඕනේ: ${money(sum(m7,2))} <span class="small muted">· දින 14: ${money(sum(M,2))}</span></div>${M.map(x=>{const n=daysTo(x[0]);return `<div class="cqr"><div class="grow"><strong>${money(x[2])}</strong> → ${esc(x[1])}<div class="small muted">${esc(dmy(x[0]))}${x[3]?' · #'+esc(x[3]):''} · ${n===null?'':n<0?'<span class="warn">⏰ දින '+(-n)+'ක් පරක්කුයි</span>':n===0?'🔴 අද':n===1?'🔴 හෙට':'දින '+n+'කින්'}</div></div></div>`;}).join('')}`:'<div class="small muted">ඉදිරි දින 14ට චෙක් නැහැ.</div>'}</div>
+      <div class="small muted" style="margin:4px 2px 12px">🔄 PC එකෙන් අන්තිමට ආවේ: ${esc(S.pulledAt?fmtAt(S.pulledAt,true):'—')} · ගණන් PC එකේ තත්ත්වය අනුව.</div>`;}
+  {const _r=render;render=function(){if(screen==='chq'){try{$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'';renderChq();a3Head();}catch(e){console.warn('5.03 chq',e);}return;}return _r.apply(this,arguments);};}
+  /* ---------- Home: 📋 අද කරන්න + a tile (🛒 tab · search) ---------- */
+  {const _a=a3Rows;a3Rows=function(){const R=_a.apply(this,arguments);try{const P=pq();if(P){const hid=a3Hide().k,t1=addDays(today(),1),b=hand().filter(x=>String(x[3])<=t1),r=P.r||[],m=(P.m||[]).filter(x=>{const n=daysTo(x[0]);return n===null||n<=7;});
+        if(b.length&&!hid.includes('cqb'))R.push({k:'cqb',t:`🏦 බැංකුවට දාන්න චෙක් ${b.length} · ${money(sum(b,4))}`,go:"go('chq')",hot:1});
+        if(r.length&&!hid.includes('cqr'))R.push({k:'cqr',t:`↩️ ආපසු ආපු චෙක් ${r.length} — එකතු කරන්න`,go:"go('chq')",hot:1});
+        if(m.length&&!hid.includes('cqm'))R.push({k:'cqm',t:`✍️ ලියපු චෙක් දින 7කින් ${money(sum(m,2))}`,go:"go('chq')"});}}catch(e){}return R;};}
+  try{FT_RULE.push([/'chq'/,'buy']);FT_WORDS.push([/'chq'/,'cheque chek check bank benku party']);}catch(e){}
+  {const _h=renderHome0;renderHome0=function(){const r=_h.apply(this,arguments);try{const g=document.querySelector('#homeBody .ftGrid');if(g&&S.cfg&&pq()&&!g.querySelector('[data-chq]')){const b=ftMk("go('chq')",'🏦','චෙක්','අතේ · ආපසු ආපු · ලියපු');b.dataset.chq='1';b.dataset.ft='buy';b.dataset.q='0';b.style.display=(S.fTab||'today')==='buy'?'':'none';g.appendChild(b);}}catch(e){console.warn('5.03 home',e);}return r;};}
+  document.head.insertAdjacentHTML('beforeend','<style>.cqr{display:flex;gap:8px;align-items:center;border-top:1px solid #e5e7eb;padding:7px 0}.cqr .grow{flex:1;min-width:0;overflow-wrap:anywhere}.cqh{font-weight:800;font-size:13px;margin:8px 0 2px;padding:4px 8px;border-radius:8px;background:#f1f5f9}.cqh.hot{background:#fffbeb;color:#92400e}</style>');
+})();
+
+/* ================= app 5.04 (PC v5.5.9) · 032 B5 📦 Batch අමුද්‍රව්‍ය + ඇසුරුම් අඩු වීම + ⚡ Live (owner 12 Nov 15:05–15:16 · 16:40) =================
+   🏭 Batch තිරය: 📖 recipe ද්‍රව්‍ය = ඉබේම ගණන + අතින් වෙනස් කරන්න පුළුවන් කොටුව → “වෙනස +x (අපතේ)” (→ PC b.use / useT).
+     📦 ඇසුරුම් = PC ලැයිස්තුවෙන් (cfg.pl: [mid, t, n]) පැකට් ගණනට අනුව · ගණන අතින් · 🔁 මාරු කළා (මේ batch එකට විතරයි) · ➕ මේ batch එකට විතරක් · ⚠️ ඉතුරු අඩුයි.
+     යවද්දී: body.u (අතින් දාපු ඒවා විතරයි) + body.pa = {r:{pid:{mid:rate}}, f, o} — PC එක අඩු කරන්නේ phone එකේ පෙන්නපු ඒවාමයි (L6).
+   ✏️ 📦 ඇසුරුම් ලැයිස්තුව (භාණ්ඩ ප්‍රමාණයකට): ➕ / ✏️ / 🗑️ · අඩු වෙන විදිහ 5 → 'pkl' → PC එකේ ඉබේම (🔔 + ↩️) · මේ phone එකේ එවෙලේම (⏳).
+   ⚡ Live: phone එකෙන් යවපු batch එකේ අමුද්‍රව්‍ය + ඇසුරුම් ඒ phone එකේම එවෙලේම අඩු (⏳) — PC ✅ කළාම PC ගණනම; ❌ කළොත් ආපහු. (නිමි බඩු + : කලින්ම තිබ්බා.)
+   පෙන්නන්නේ PC v5.5.9 (S.cfg.pl) නම් විතරයි. ලොරි app · බිල් · ගෙවීම් වෙනස් නැහැ. */
+(function(){
+  const PL=()=>(S&&S.cfg&&S.cfg.pl)||null;
+  const T5={p:'පැකට් 1කට',n:'පැකට් N කට 1',b:'බණ්ඩලේකට 1',x:'batch එකට',h:'අතින්'};
+  const mtId=id=>MT().find(m=>m[0]===id)||null,packs=()=>MT().filter(m=>m[2]==='p');
+  const plx=()=>{S.plx=S.plx&&typeof S.plx==='object'?S.plx:{};return S.plx;};
+  const plPend=x=>!!(x&&x.uid&&!okSet().has(x.uid)&&!rjMap().has(x.uid));
+  function plOf(pid){const x=plx()[pid];if(plPend(x))return x.L;return ((PL()||{})[pid])||[];}
+  function bunOf(pid){let n=0;BF().forEach(f=>(f[4]||[]).forEach(z=>{if(z[3]===pid&&z[1]==='b')n=Math.floor(num(z[2]));}));return n;}
+  function rateOf(t,n,pid){n=num(n);if(t==='p')return n>0?n:0;if(t==='n')return n>0?1/n:0;if(t==='b'){const k=n>0?n:bunOf(pid);return k>0?1/k:0;}return 0;}
+  const qTxt=q=>{q=Math.round(num(q)*100)/100;return q.toLocaleString('en-LK');};
+  const pkAll=()=>Object.values((bd&&bd.sz)||{}).reduce((s,v)=>s+Math.floor(num(v)),0);
+  /* ---------- 📦 the batch's packaging (rows on the screen + what is sent) ---------- */
+  function b5Pack(){const P=(bd&&bd.pa)||{},sw=P.sw||{},r={},f={},auto=new Map(),info=new Map(),add=(mid,q)=>auto.set(mid,(auto.get(mid)||0)+q);
+    if(!bd||!bd.fam||!PL())return {rows:[],pak:null};
+    sizeLines(bd.fam).forEach(([size,t,n,pid])=>{const k=Math.floor(num(bd.sz[pid]));if(!(k>0))return;const R={};
+      plOf(pid).forEach(([mid,tt,nn])=>{if(!mid)return;const fm=sw[mid]||mid;if(!info.has(fm))info.set(fm,{mid:fm,from:sw[mid]?mid:'',t:tt,sz:[]});const I=info.get(fm);if(!I.sz.includes(size))I.sz.push(size);
+        if(tt==='x'){const q=num(nn)||1;f[fm]=Math.max(num(f[fm]),q);return;}if(tt==='h'){I.h=1;return;}
+        const rate=rateOf(tt,nn,pid);if(rate>0){R[fm]=(R[fm]||0)+rate;add(fm,rate*k);}});r[pid]=R;});
+    Object.entries(f).forEach(([mid,q])=>add(mid,q));
+    Object.entries(P.h||{}).forEach(([mid,q])=>{q=num(q);if(info.has(mid)&&q>0){f[mid]=(f[mid]||0)+q;add(mid,q);}});
+    Object.entries(P.ad||{}).forEach(([mid,q])=>{q=num(q);if(!(q>0))return;f[mid]=(f[mid]||0)+q;add(mid,q);if(!info.has(mid))info.set(mid,{mid,from:'',t:'ad',sz:[]});});
+    const o={};Object.entries(P.o||{}).forEach(([mid,q])=>{if(q!==''&&q!==null&&q!==undefined&&num(q)>=0&&info.has(mid))o[mid]=num(q);});
+    const rows=[...info.values()].map(I=>({...I,a:auto.get(I.mid)||0,q:I.mid in o?o[I.mid]:(auto.get(I.mid)||0),ov:I.mid in o}));
+    return {rows,pak:{r,f,o}};}
+  window.b5Set=function(k,mid,v){bd.pa=bd.pa||{};const P=bd.pa;P[k]=P[k]||{};if(v===''||v===null||v===undefined)delete P[k][mid];else P[k][mid]=k==='sw'?v:Math.max(0,num(v));save();b5Draw();};
+  window.b5Swap=function(mid){const L=packs().filter(m=>m[0]!==mid),cur=mtId(mid);sheet(`<h3>🔁 ${esc(cur?cur[1]:'')} වෙනුවට (මේ batch එකට විතරයි)</h3><div class="field"><input type="search" placeholder="🔎 සොයන්න" oninput="document.querySelectorAll('#b5sw .pick').forEach(b=>b.style.display=b.textContent.toLowerCase().includes(this.value.toLowerCase())?'':'none')"></div><div id="b5sw">${L.map(m=>`<button class="pick" onclick="b5Set('sw','${esc(mid)}','${esc(m[0])}');sheet()"><span>${esc(m[1])}</span><small>${m[4]===null||m[4]===undefined?'':'ඉතුරු '+esc(String(m[4]))}</small></button>`).join('')}</div><button class="btn light block" onclick="sheet()">අවලංගු කරන්න</button>`);};
+  window.b5Add=function(){const L=packs();sheet(`<h3>➕ මේ batch එකට විතරක් — ඇසුරුමක්</h3><div class="field"><label>ඇසුරුම</label><select id="b5adM">${L.map(m=>`<option value="${esc(m[0])}">${esc(m[1])}</option>`).join('')}</select></div><div class="field"><label>ගණන</label><input id="b5adQ" type="number" inputmode="decimal" min="0" value="1"></div><button class="btn primary block" onclick="const q=num($('b5adQ').value);if(!(q>0)){toast('ගණනක් දාන්න','err');return;}const m=$('b5adM').value;bd.pa=bd.pa||{};bd.pa.ad=bd.pa.ad||{};bd.pa.ad[m]=num(bd.pa.ad[m])+q;save();sheet();b5Draw()">➕ එකතු කරන්න</button><button class="btn light block" onclick="sheet()">අවලංගු කරන්න</button>`);};
+  function b5PackHtml(){const X=b5Pack();if(!PL())return '';const sz=sizeLines(bd.fam).filter(s=>Math.floor(num(bd.sz[s[3]]))>0);
+    if(!sz.length)return `<h3>📦 ඇසුරුම්</h3><div class="small muted">පැකට් ගණන දැම්මම ඇසුරුම් ගණන් මෙතන පේනවා.</div>`;
+    const rows=X.rows.map(R=>{const m=mtId(R.mid),have=m&&m[4]!==null&&m[4]!==undefined?num(m[4]):null,low=have!==null&&R.q>have+1e-9,fm=R.from?mtId(R.from):null,id=esc(R.mid);
+      return `<div class="irow b5r"><label><strong>${esc(m?m[1]:'?')}</strong><small class="muted">${R.t==='ad'?'➕ මේ batch එකට විතරක්':R.t==='h'?'✍️ අතින් — ගණන ගහන්න':esc(T5[R.t]||'')+(R.sz.length?' · '+esc(R.sz.join(', ')):'')}${fm?` · 🔁 ${esc(fm[1])} වෙනුවට <a href="#" onclick="b5Set('sw','${esc(R.from)}','');return false">↩️</a>`:''}${R.ov&&Math.abs(R.q-R.a)>1e-9?` · ඉබේම ${qTxt(R.a)}`:''}</small>
+        ${have!==null?`<small class="${low?'bad':'muted'}">ඉතුරු ${qTxt(have)}${low?' — ⚠️ ඉතුරු අඩුයි':''}</small>`:''}</label>
+        <div style="display:flex;gap:4px;align-items:center"><input type="number" inputmode="decimal" min="0" style="width:72px" value="${R.t==='h'?esc(String(((bd.pa||{}).h||{})[R.mid]||'')):R.ov?esc(String(R.q)):''}" placeholder="${qTxt(R.a)}" onchange="b5Set('${R.t==='h'?'h':'o'}','${id}',this.value)">${R.t==='ad'?`<button class="btn sm light" onclick="b5Set('ad','${id}','')">🗑️</button>`:`<button class="btn sm light" title="මාරු කළා" onclick="b5Swap('${esc(R.from||R.mid)}')">🔁</button>`}</div></div>`;}).join('');
+    const none=sz.filter(s=>!plOf(s[3]).length);
+    return `<h3>📦 ඇසුරුම් <span class="small muted">(පැකට් ගණනට අනුව)</span></h3>${rows||''}${none.length?`<div class="small warn">❓ ${esc(none.map(s=>s[0]).join(', '))} — ඇසුරුම් ලැයිස්තුවක් නැහැ</div>`:''}
+      <div class="small muted" style="margin-top:4px">කොටුවේ ගණන වෙනස් කළොත් ඒක තමයි අඩු වෙන්නේ · 🔁 = මේ batch එකට විතරක් වෙන ඇසුරුමක්.</div>
+      <div class="chips" style="margin-top:6px"><button class="chip" onclick="b5Add()">➕ මේ batch එකට විතරක්</button>${sz.map(s=>`<button class="chip" onclick="pklOpen('${esc(s[3])}','bnew')">✏️ ${esc(s[0])} ලැයිස්තුව</button>`).join('')}</div>`;}
+  function b5Draw(){try{if(screen!=='bnew'||!bd||!bd.fam)return;const box=$('bnewBody');if(!box)return;let el=$('b5pk');
+      if(!PL()){if(el)el.remove();return;}
+      if(!el){el=document.createElement('div');el.id='b5pk';el.className='card';}
+      /* the owner wants to SEE what the batch takes: 📖 recipe + 📦 packaging right under the packets (out of “➕ තව”) */
+      const o=$('bxOut'),rc=o&&o.closest('.card'),pk=[...box.querySelectorAll('.card')].find(c=>{const h=c.querySelector('h3');return h&&/හදපු පැකට් ගණන/.test(h.textContent);}),after=pk||null;
+      if(after&&after.parentNode===box){if(rc&&rc.parentNode!==box){after.insertAdjacentElement('afterend',rc);}const a2=rc&&rc.parentNode===box?rc:after;if(el.previousElementSibling!==a2)a2.insertAdjacentElement('afterend',el);}
+      else if(!el.parentNode){const a=rc||$('b2sp')||$('v476sum');if(a)a.insertAdjacentElement(rc?'afterend':'beforebegin',el);else box.appendChild(el);}
+      el.innerHTML=b5PackHtml();}catch(e){console.warn('5.04 pack',e);}}
+  window.b5Draw=b5Draw;
+  /* ---------- 🌶️ recipe amounts — editable on the batch screen only ---------- */
+  window._b5M={};window._b5L=[];
+  const keyOf=l=>l.fam?'F:'+l.fam:'N:'+norm(l.n);
+  window.b5U=function(k,v){const M=window._b5M[k];if(!M||!bd)return;bd.u=bd.u||{};if(v===''||v===null)delete bd.u[k];else bd.u[k]={n:M.n,g:Math.max(0,num(v))*M.f,fam:M.fam};save();
+    const d=$('b5d_'+M.i);if(d)d.innerHTML=b5Diff(k);};
+  function b5Diff(k){const M=window._b5M[k],t=bd&&bd.u&&bd.u[k];if(!M||!t)return '';const d=t.g-M.a;if(Math.abs(d)<0.0005)return '';const f=M.f,u=M.u,x=v=>(Math.round(v/f*1000)/1000).toLocaleString('en-LK')+' '+u;
+    return `<span class="${d>0?'warn':'muted'}">වෙනස ${d>0?'+':'−'}${x(Math.abs(d))}${d>0?' (අපතේ)':''}</span>`;}
+  const _rt=rcTable;rcTable=function(r,kg,pk){if(screen!=='bnew'||!bd||!PL())return _rt.apply(this,arguments);
+    try{const L=rcLines(r,kg,pk),inG=L.reduce((s,l)=>s+l.g,0);if(!L.length)return _rt.apply(this,arguments);
+      return `${L.map(l=>{const k=keyOf(l),m=l.fam?null:mtByName(l.n),f=m&&m[3]==='ගණන'?1:1000,u=m?m[3]:'kg',i=Object.keys(window._b5M).length;window._b5M[k]={n:l.n,fam:l.fam||'',a:l.g,f,u,i};window._b5L.push({n:l.n,fam:l.fam||'',g:l.g,k});
+        const have=m&&m[4]!==null&&m[4]!==undefined?num(m[4])*f:null,t=bd.u&&bd.u[k],use=t?t.g:l.g;
+        return `<div class="irow"><label><strong>${l.fam?'🏭 අපේ ':''}${esc(l.n)}</strong><small class="muted">ඉබේම ${gTxt(l.g)}</small>${have!==null?`<small class="${have<use?'bad':'muted'}">තියෙන ${esc(String(m[4]))} ${esc(m[3])}${have<use?' — ⚠️ මදි':''}</small>`:''}<small id="b5d_${i}">${b5Diff(k)}</small></label>
+          <div style="display:flex;gap:4px;align-items:center"><input type="number" inputmode="decimal" min="0" step="any" style="width:84px" value="${t?esc(String(Math.round(t.g/f*1000)/1000)):''}" placeholder="${Math.round(l.g/f*1000)/1000}" onchange="b5U('${esc(k)}',this.value)"><span class="small muted">${esc(u)}</span></div></div>`;}).join('')}
+        ${(r.x||[]).map(([n,t])=>`<div class="irow"><label>${esc(n)}</label><div class="small muted">${esc(t)}</div></div>`).join('')}
+        <div class="small muted" style="margin-top:6px">ඇත්තටම දාපු ගණන වෙනස් නම් කොටුවේ ගහන්න (හිස් = recipe ගණන). මුළු අමු ද්‍රව්‍ය ${gTxt(inG)}${r.y&&r.m!=='p'?` → හැදෙන ප්‍රමාණය ≈ ${gTxt(inG*r.y/100)} (${r.y}%)`:''}</div>`;}catch(e){console.warn('5.04 rc',e);return _rt.apply(this,arguments);}};
+  /* redraws: packets / kg typed → recipe + packaging */
+  {const _r=renderBNew;renderBNew=function(){const res=_r.apply(this,arguments);try{if(bd&&bd.fam&&PL()){const old=window._bxDraw;
+        if(old&&!old._b5){const w=function(){window._b5M={};window._b5L=[];const x=old.apply(this,arguments);b5Draw();return x;};w._b5=1;window._bxDraw=w;window._b5M={};window._b5L=[];try{old();}catch(e){}}
+        b5Draw();}}catch(e){console.warn('5.04 batch',e);}return res;};}
+  {const _e=bEdit;bEdit=function(bid){const r=_e.apply(this,arguments);try{const x=S.b5x&&S.b5x[bid];if(bd&&x){bd.u=x.u?JSON.parse(JSON.stringify(x.u)):{};bd.pa=x.pa?JSON.parse(JSON.stringify(x.pa)):{};}}catch(e){}return r;};}
+  /* ---------- ⚡ what this batch takes from stock (for the phone's own numbers) ---------- */
+  function b5Use(){const U={};try{const add=(mid,q)=>{if(mid&&num(q))U[mid]=Math.round(((U[mid]||0)+num(q))*1e6)/1e6;};
+      (window._b5L||[]).forEach(l=>{if(l.fam)return;const m=mtByName(l.n);if(!m)return;const t=bd.u&&bd.u[l.k],g=t?t.g:l.g,f=m[3]==='ගණන'?1:1000;add(m[0],g/f);});
+      b5Pack().rows.forEach(R=>add(R.mid,R.q));}catch(e){console.warn('5.04 use',e);}return U;}
+  {const _s=send;send=async function(k,body,label,quiet){
+    if(k==='batch'&&bd&&body&&body.bid&&PL()){try{const X=b5Pack(),typed=Object.values(bd.u||{}).filter(t=>t&&t.n).map(t=>[t.n,Math.round(t.g*1000)/1000,t.fam||'']),old=S.b5x&&S.b5x[body.bid];
+        if(X.pak)body.pa=X.pak;if(typed.length||(old&&old.u&&Object.keys(old.u).length))body.u=typed;
+        const U=b5Use();S.b5x=S.b5x&&typeof S.b5x==='object'?S.b5x:{};S.b5x[body.bid]={u:bd.u||{},pa:bd.pa||{},mu:U};const ks=Object.keys(S.b5x);if(ks.length>300)ks.slice(0,ks.length-300).forEach(i=>delete S.b5x[i]);
+        window._b5U={bid:body.bid,U};}catch(e){console.warn('5.04 send',e);}}
+    const ok=await _s.apply(this,arguments);
+    try{if(ok&&k==='batch'&&window._b5U&&window._b5U.bid===body.bid&&S.sent[0]&&S.sent[0].k==='batch'){S.mu=S.mu&&typeof S.mu==='object'?S.mu:{};S.mu[S.sent[0].uid]=window._b5U.U;const ks=Object.keys(S.mu);if(ks.length>400)ks.slice(0,ks.length-400).forEach(i=>delete S.mu[i]);window._b5U=null;save();}}catch(e){}
+    return ok;};}
+  /* pending batches → stock taken here now (⏳ until the PC has it); a rejected one comes back by itself */
+  function b5Delta(){const D={},ok=okSet(),rj=rjMap(),MU=S.mu||{};let n=0;
+    myB().forEach(b=>{if(!b||b.st==='void'||!b.uidLast||!MU[b.uidLast])return;if(ok.has(b.uidLast)||rj.has(b.uidLast))return;
+      const revs=(S.sent||[]).filter(x=>x.k==='batch'&&x.rec&&x.rec.bid===b.bid&&ok.has(x.uid)&&MU[x.uid]).sort((a,c)=>String(c.at).localeCompare(String(a.at)));
+      const known=revs.length?MU[revs[0].uid]:{},cur=MU[b.uidLast];if(revs.length===0&&(S.sent||[]).some(x=>x.k==='batch'&&x.rec&&x.rec.bid===b.bid&&ok.has(x.uid)))return;/* approved before 5.04 — no numbers to compare */
+      let any=false;new Set(Object.keys(cur).concat(Object.keys(known))).forEach(mid=>{const d=num(cur[mid])-num(known[mid]);if(Math.abs(d)>1e-9){D[mid]=(D[mid]||0)+d;any=true;}});if(any)n++;});
+    return {D,n};}
+  window.b5Delta=b5Delta;
+  let _mtC={k:'',v:null};
+  const _mt=MT;MT=function(){const L=_mt.apply(this,arguments);try{if(!L.length||!S.mu)return L;const k=String((S.cfg&&S.cfg.at)||'')+'|'+L.length+'|'+(S.sent||[]).length+'|'+((S.cfg&&S.cfg.ok)||[]).length+'|'+((S.cfg&&S.cfg.rj)||[]).length+'|'+Object.keys(S.mu).length+'|'+myB().length+'|'+(myB()[0]&&myB()[0].uidLast||'');
+      if(_mtC.k===k&&_mtC.src===L)return _mtC.v;const {D}=b5Delta();if(!Object.keys(D).length){_mtC={k,src:L,v:L};return L;}
+      const out=L.map(m=>{const d=D[m[0]];if(!d||m[4]===null||m[4]===undefined)return m;const c=m.slice();c[4]=Math.max(0,Math.round((num(m[4])-d)*1000)/1000);if(c[4]<=0)c[5]=1;c[10]='⏳';/* 5.06 🐞: [9] is the PC's “පැකට් 1 = N” map — the mark must not replace it */return c;});_mtC={k,src:L,v:out};return out;}catch(e){console.warn('5.04 mt',e);return L;}};
+  {const _m=renderMats;renderMats=function(){const r=_m.apply(this,arguments);try{const {D,n}=b5Delta();if(n&&$('matsBody'))$('matsBody').insertAdjacentHTML('afterbegin',`<div class="card small" id="b5lv">⏳ මේ phone එකෙන් යැව්ව batch ${n}ක අමුද්‍රව්‍ය / ඇසුරුම් (${Object.keys(D).length}ක්) මෙතන දැනටමත් අඩු කරලා — PC එකේ ✅ කළාම PC ගණනම පේනවා.</div>`);}catch(e){}return r;};}
+  /* ---------- ✏️ 📦 packaging list of one size ---------- */
+  let PK='',PKB='',PKE=null;
+  TITLES.pkl='📦 ඇසුරුම් ලැයිස්තුව';
+  if(!$('s-pkl')){const s=document.createElement('section');s.className='screen';s.id='s-pkl';s.innerHTML='<div id="pklBody"></div>';const a=$('s-chq')||$('s-prod')||document.querySelector('.screen:last-of-type');a.parentNode.insertBefore(s,a.nextSibling);}
+  function szOf(pid){let o=null;BF().forEach(f=>(f[4]||[]).forEach(z=>{if(z[3]===pid)o={fam:f[0],size:z[0],t:z[1],n:z[2]};}));return o;}
+  window.pklOpen=function(pid,back){if(!PL()){toast('PC එක v5.5.9 වලට update කරලා නැහැ','warn');return;}PK=pid;PKB=back||'';PKE=plOf(pid).map(x=>({mid:x[0],t:x[1],n:x[2],name:x[3]||''}));window._pke=PKE;go('pkl');};
+  window.pklSet=function(i,k,v){if(!PKE||!PKE[i])return;PKE[i][k]=v;if(k==='mid'&&v)PKE[i].name='';render();};
+  window.pklDel=function(i){if(PKE){PKE.splice(i,1);render();}};
+  window.pklAdd=function(){if(PKE){PKE.push({mid:'',t:'p',n:1,name:''});render();}};
+  window.pklSave=v47Busy(async function(){const z=szOf(PK);if(!z||!PKE)return;const L=PKE.filter(x=>x.mid||String(x.name||'').trim()).map(x=>[x.mid||'',T5[x.t]?x.t:'p',Math.max(0,num(x.n)),x.mid?'':String(x.name).trim().slice(0,80)]);
+    if(L.some(x=>(x[1]==='p'||x[1]==='n')&&!(x[2]>0))){toast('N ගණනක් දාන්න (0ට වැඩි)','err');return;}
+    if(JSON.stringify(L.map(x=>x.slice(0,3)))===JSON.stringify(plOf(PK).map(x=>[x[0],x[1],num(x[2])]))&&!L.some(x=>!x[0])){toast('වෙනසක් නැහැ','warn');return;}
+    if(!(await send('pkl',{pid:PK,L,bt:(S.cfg&&S.cfg.at)||''},`📦 ${z.fam} ${z.size} — ඇසුරුම් ලැයිස්තුව`)))return;
+    plx()[PK]={L,uid:S.sent[0]&&S.sent[0].uid,at:new Date().toISOString()};save();toast('✅ යැව්වා — PC එකේ ඉබේම');const b=PKB;PKE=null;go(b==='bnew'&&bd?'bnew':(b==='prod'?'prod':'home'));});
+  function renderPkl(){const box=$('pklBody'),z=szOf(PK);if(!box)return;if(!z||!PKE){box.innerHTML='<div class="card empty">භාණ්ඩයක් තෝරලා නැහැ.</div>';return;}
+    const P=packs(),x=plx()[PK],pend=plPend(x),warn=x&&x.uid&&okSet().has(x.uid)&&((S.cfg&&S.cfg.plu)||[]).some(w=>w[0]===x.uid&&w[1]),bun=z.t==='b'?num(z.n):0;
+    box.innerHTML=`<div class="card"><h3>📦 ${esc(z.fam)} ${esc(z.size)}</h3><div class="small muted">මේ ප්‍රමාණයේ පැකට් හදද්දී අඩු වෙන ඇසුරුම්. වෙනස <b>ඊළඟ batch එකේ ඉඳන්</b>${bun?' · බණ්ඩලේක පැකට් '+bun:''}.</div>${pend?'<div class="small warn" style="margin-top:4px">⏳ PC එකට යනකම් — මේ phone එකේ දැනටමත් අලුත් ලැයිස්තුව</div>':''}${warn?'<div class="small warn" style="margin-top:4px">⚠️ PC එකේත් එකම වෙලාවේ වෙනස් කරලා තිබ්බා — අන්තිමට කරපු එක (phone) තියෙනවා. PC එකෙන් ↩️ කරන්න පුළුවන්.</div>':''}</div>
+      ${PKE.map((r,i)=>{const m=r.mid?P.find(p=>p[0]===r.mid):null;return `<div class="card" style="padding:10px"><div class="field"><label>ඇසුරුම</label><select onchange="pklSet(${i},'mid',this.value)"><option value="">➕ අලුත් නමක්…</option>${P.map(p=>`<option value="${esc(p[0])}" ${p[0]===r.mid?'selected':''}>${esc(p[1])}</option>`).join('')}</select>${r.mid?'':`<input style="margin-top:6px" maxlength="80" placeholder="අලුත් ඇසුරුමේ නම" value="${esc(r.name||'')}" onchange="PKE_SET(${i},this.value)">`}</div>
+        <div class="row2"><div class="field"><label>අඩු වෙන විදිහ</label><select onchange="pklSet(${i},'t',this.value)">${Object.entries(T5).map(([k,t])=>`<option value="${k}" ${r.t===k?'selected':''}>${t}</option>`).join('')}</select></div>${r.t==='h'?'<div class="small muted" style="align-self:end">batch එකේ ගණන ගහනවා</div>':`<div class="field"><label>${r.t==='p'?'පැකට් එකකට කීයද':r.t==='n'?'පැකට් කීයකට එකක්ද':r.t==='b'?'බණ්ඩලේක පැකට් (හිස් = '+(bun||'?')+')':'batch එකකට කීයද'}</label><input type="number" inputmode="decimal" min="0" value="${esc(String(r.n===undefined?'':r.n))}" onchange="pklSet(${i},'n',this.value)"></div>`}</div>
+        ${m&&m[4]!==null&&m[4]!==undefined?`<div class="small muted">ඉතුරු ${esc(String(m[4]))}</div>`:''}<button class="btn sm light" onclick="pklDel(${i})">🗑️ අයින් කරන්න</button></div>`;}).join('')||'<div class="card small muted">ඇසුරුම් නැහැ — ➕ එකෙන් එකතු කරන්න.</div>'}
+      <button class="btn light block" onclick="pklAdd()">➕ ඇසුරුමක් එකතු කරන්න</button><button class="btn primary block big" onclick="pklSave()">📤 සුරකින්න (PC එකට)</button>`;}
+  window.PKE_SET=function(i,v){if(PKE&&PKE[i])PKE[i].name=v;};
+  {const _r=render;render=function(){if(screen==='pkl'){try{$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'';renderPkl();}catch(e){console.warn('5.04 pkl',e);}return;}return _r.apply(this,arguments);};}
+  /* 🧺 Product තිරය ③ — ✏️ per size (also sizes with no list yet) */
+  try{let PF5='';const _o=window.prodOpen,_k=window.prodPick;if(typeof _o==='function'){window.prodOpen=function(fam){PF5=fam||'';return _o.apply(this,arguments);};}
+    if(typeof _k==='function'){window.prodPick=function(i){const f=BF()[i];PF5=f?f[0]:'';return _k.apply(this,arguments);};}
+    const _rr=render;render=function(){const x=_rr.apply(this,arguments);try{if(screen==='prod'&&PL()&&PF5){const b=$('prodBody'),F=BF().find(f=>f[0]===PF5);if(b&&F&&!b.querySelector('[data-b5]')){const h=[...b.querySelectorAll('h3.v470fam')].find(h=>/③/.test(h.textContent)),card=h&&h.closest('.card');
+        if(card){const d=document.createElement('div');d.className='chips';d.dataset.b5='1';d.style.marginTop='6px';d.innerHTML=(F[4]||[]).map(z=>`<button class="chip" onclick="pklOpen('${esc(z[3])}','prod')">✏️ ${esc(z[0])}${plOf(z[3]).length?'':' ❓'}</button>`).join('');card.appendChild(d);}}}}catch(e){console.warn('5.04 prod',e);}return x;};}catch(e){}
+})();
+/* ================= 5.05 · 032 F-1 · 🧾 කඩ බිල app ← මේ phone එකේ මිල, PC නැතුවම (owner 12 Nov 12:19) =================
+   A price saved here still goes to the PC as before ('price' message). NEW: the same change is also written, as a plain price list,
+   to the lorry mailbox doc out/fp (field p_<this phone>) — the කඩ බිල app (v1.9) reads it next to the PC's list.
+   Rows [id,new,from,old,at,uid]: changes the PC has not taken yet + PC-approved prices that start on a later day (at = '', for an older PC).
+   Nothing about bills / money / stock is touched; the lorry app does not read this doc. */
+(function(){
+  const fpUrl=()=>S.cloud&&S.cfg&&S.cfg.lb?`${FS}${S.cfg.lp||S.cloud.p}/databases/(default)/documents/boxes/${S.cfg.lb}/out/fp`:'';
+  function fpList(){const out=[];
+    pendPrices().filter(x=>!x.undo).forEach(x=>(x.it||[]).forEach(i=>{if(i[1]===null||i[1]===undefined||i[1]==='')return;const ov=x.o?x.o[i[0]]:undefined;out.push([i[0],r2(num(i[1])),x.from,ov===undefined||ov===null?null:r2(num(ov)),x.at,x.uid]);}));
+    Object.entries((S.cfg&&S.cfg.pf)||{}).forEach(([pid,f])=>{const p=prod(pid);if(p&&Array.isArray(f)&&num(f[0])>0&&/^\d{4}-\d{2}-\d{2}$/.test(String(f[1]||'')))out.push([pid,r2(num(f[0])),String(f[1]),r2(num(p[3])),'']);});
+    return out;}
+  let busy=false;
+  async function fpSync(){const url=fpUrl();if(!url||busy)return false;const it=fpList(),key=S.cfg.lb+'|'+JSON.stringify(it);
+    if(S.fpSent===key)return true;if(!it.length&&!S.fpSent)return true;if(navigator.onLine===false)return false;
+    busy=true;try{const f='p_'+String(ensureDev()).replace(/[^A-Za-z0-9_]/g,'_');
+      const r=await fetch(`${url}?updateMask.fieldPaths=code&updateMask.fieldPaths=${f}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({fields:{code:{stringValue:'SBP1:fp:0:00000000'},[f]:{stringValue:JSON.stringify({v:1,at:new Date().toISOString(),it})}}})});
+      if(r.ok){S.fpSent=key;S.fpAt=new Date().toISOString();S.fpErr=0;save();return true;}S.fpErr=r.status;save();}catch(e){S.fpErr=0;}finally{busy=false;}return false;}
+  window.fpList=fpList;window.fpSync=fpSync;
+  const fpLate=()=>{const u=fpUrl();if(!u)return false;const it=fpList();return S.fpSent!==S.cfg.lb+'|'+JSON.stringify(it)&&!(!it.length&&!S.fpSent);};
+  const redraw=()=>{try{if(screen==='price'&&!document.querySelector('#priceBody input:focus'))renderPrice();}catch(e){}};
+  /* the price it replaces is kept with the change (the කඩ බිල app uses a row only while the PC's list still shows that old price) */
+  {const _c=prConfirm;prConfirm=async function(){const it=prSend.it,from=prSend.from,ov={},n=(S.pPend||[]).length;
+    try{(it||[]).forEach(x=>{const p=prod(x[0]);if(p&&x[1]!==null&&x[1]!==undefined)ov[x[0]]=r2(priceNow(p,from));});}catch(e){}
+    const r=await _c.apply(this,arguments);
+    try{const L=S.pPend||[];if(L.length>n){L[L.length-1].o=ov;save();}fpSync().then(redraw);}catch(e){console.warn('5.05 fp',e);}return r;};}
+  /* after every exchange with the PC: taken changes drop out of the list, later-day prices come in */
+  {const _p=pull;pull=async function(){const r=await _p.apply(this,arguments);try{await fpSync();}catch(e){}return r;};}
+  /* 🏷️ මිල තිරය: one line — did it reach the කඩ බිල app */
+  {const _r=renderPrice;renderPrice=function(){const x=_r.apply(this,arguments);try{const b=$('priceBody'),c=b&&b.querySelector('.card');if(c&&fpUrl()&&!b.querySelector('[data-fp]')){const late=fpLate();
+      c.insertAdjacentHTML('beforeend',`<div class="small ${late?'warn':'muted'}" data-fp="1" style="margin-top:6px">🧾 කඩ බිල app එකට: ${late?(S.fpErr?'⚠️ Firebase එකෙන් ගියේ නැහැ ('+esc(String(S.fpErr))+') — PC එක on කළාම PC එකෙන් යනවා':'⏳ internet ආවම යනවා'):S.fpAt?'✅ එවෙලේම යනවා (PC නැතුවම) · අන්තිමට '+esc(fmtAt(S.fpAt)):'✅ එවෙලේම යනවා (PC නැතුවම)'}</div>`);}}catch(e){console.warn('5.05 price',e);}return x;};}
+})();
+/* ================= 5.06 (PC v5.5.11) · 032 F-2 · 🏪 සැපයුම්කරු live (owner 12 Nov 12:28: “කම්හල් app එකේ තමයි ගොඩක්ම ඕනේ”) =================
+   “Live” = මේ phone එකේ එවෙලේම පෙන්නන එක විතරයි (⏳ PC එකට යනකම්). ගිණුම් වලට යන්නේ කලින් වගේම PC එකේ ✅ කළාම විතරයි.
+   S1 🛒 ගැනුමක් යැව්වම: සැපයුම්කරුගේ “ගෙවන්න තියෙන” + ඒ බිල (⏳) · ද්‍රව්‍ය තොගය + · “අන්තිමට ගත්තේ” · (lot එක කලින් ඉඳන්ම එවෙලේම).
+   S2 💸 ගෙවීමක් යැව්වම: ණය එවෙලේම අඩු (බිල් වලට පරණම මුලින් — යවපු විදිහටම) · එකම ගෙවීම දෙපාරක් නම් අහනවා.
+   S3 🆕 අලුත් සැපයුම්කරු: 🛒 + 💸 ලැයිස්තු වල එවෙලේම (⏳) — ගෙවීම යන්නේ නම එක්ක (PC එක ගැනුම ✅ කළාම අල්ලගන්නවා).
+   S4 💰 මිල යැව්වම ණය + · S5 🚚 ලොරි සල්ලි ගැනුම: තොගය + විතරයි · S6 🏪 කඩේ බඩු ගාණ: ණයට මුළු ගාණ, තොගයට බඩු විතරයි.
+   S8 🏪 සැපයුම්කරු ණය ලැයිස්තුව (🛒 tab) — PC එකේ 🏪 පිටුවේ ඉලක්කම් (cfg.sb) + ⏳.
+   PC එක ප්‍රතික්ෂේප කළොත් ⏳ එක ඉබේම අයින් වෙලා PC ගණන පේනවා. ඔක්කොම පේන්නේ PC එක v5.5.11 (S.cfg.f2) නම් විතරයි. */
+(function(){
+  const f2=()=>!!(S&&S.cfg&&S.cfg.f2);
+  const SP=()=>(S.cfg&&S.cfg.sp)||[];
+  const r3=x=>Math.round(x*1000)/1000;
+  /* not taken by the PC yet. Its ✓ list holds the newest 300: once full, whatever this phone sent before the oldest of its own items still on that list was dealt with long ago → never ⏳ again */
+  function pend(k){if(!f2())return [];const okL=(S.cfg&&S.cfg.ok)||[],ok=new Set(okL),rj=rjMap(),since=Date.now()-14*864e5;let floor='';
+    if(okL.length>=300)(S.sent||[]).forEach(x=>{if(x&&ok.has(x.uid)&&(!floor||String(x.at)<floor))floor=String(x.at);});
+    return (S.sent||[]).filter(x=>x&&x.k===k&&x.rec&&!x.gone&&!x.void&&!ok.has(x.uid)&&!rj.has(x.uid)&&new Date(x.at).getTime()>since&&!(floor&&String(x.at)<floor));}
+  /* by name — or by another spelling the PC has linked to a supplier (✍️ “මේකද?” on the PC → cfg.spa) */
+  const spByName=n=>{const k=norm(n);if(!k)return null;const s=SP().find(x=>norm(x[1])===k);if(s)return s;const A=(S.cfg&&S.cfg.spa)||{},id=Object.keys(A).find(i=>(A[i]||[]).some(a=>norm(a)===k));return id?SP().find(x=>x[0]===id)||null:null;};
+  /* one key per supplier: the PC's id, or '~name' while the PC does not know the supplier yet */
+  function keyOf(sup,sn){sup=String(sup||'');if(sup&&sup[0]!=='~')return sup;const n=sup?sup.slice(1):sn,s=spByName(n);return s?s[0]:(norm(n)?'~'+norm(n):'');}
+  function newSups(){const m=new Map(),put=n=>{const k=keyOf('',n);if(k&&k[0]==='~'&&!m.has(k))m.set(k,String(n).replace(/\s+/g,' ').trim());};
+    pend('buy').forEach(x=>{if(!x.rec.sup)put(x.rec.sn);});pend('fsup').forEach(x=>put(x.rec.n));return [...m.entries()];}
+  function nameOf(k){const s=SP().find(x=>x[0]===k);if(s)return s[1];const b=((S.cfg&&S.cfg.sb)||[]).find(x=>x[0]===k);if(b&&b[3])return b[3];const n=newSups().find(x=>x[0]===k);return n?n[1]:(k[0]==='~'?k.slice(1):'?');}
+  const paidOf=r=>{const p=r.pay||{m:'credit'};return p.m==='credit'?0:r2(num(p.amt)+(r.px||[]).reduce((t,x)=>t+num(x.amt),0));};
+  /* per supplier: open bills as the PC sent them + ⏳ bills from this phone, after the ⏳ payments from this phone */
+  function live(){const M=new Map(),G=k=>{let e=M.get(k);if(!e){e={bills:[],adv:0,plus:0,minus:0,nb:0,np:0};M.set(k,e);}return e;},seen=new Set();
+    ((S.cfg&&S.cfg.su)||[]).forEach(s=>{const e=G(s[0]);(s[1]||[]).forEach(b=>{if(b[4])seen.add(b[4]);e.bills.push({id:b[0],d:b[1],inv:b[2]||'',due:r2(num(b[3])),fx:b[4]||'',p:0});});});
+    pend('buy').forEach(x=>{const r=x.rec,k=keyOf(r.sup,r.sn);if(!k||seen.has(x.uid))return;const e=G(k),tot=r2(num(r.tot));e.nb++;if(!(tot>0))return;const due=r2(Math.max(0,tot-paidOf(r)));
+      if(due>0.004){e.bills.push({id:'fx:'+x.uid,d:r.d,inv:r.inv||'',due,fx:x.uid,p:1});e.plus=r2(e.plus+due);}});
+    const NP=new Map(((S.cfg&&S.cfg.np)||[]).map(p=>[p[0],p]));
+    pend('bpx').forEach(x=>{const r=x.rec,p=NP.get(r.p),s=p&&spByName(p[2]);if(!s)return;const t=r2((r.it||[]).reduce((a,i)=>a+num(i[1]),0));if(!(t>0))return;const e=G(s[0]),b=e.bills.find(y=>y.id===r.p);
+      if(b){b.due=r2(b.due+t);b.p=1;}else e.bills.push({id:r.p,d:p[1],inv:'💰 මිල',due:t,fx:'',p:1});e.plus=r2(e.plus+t);});
+    pend('fexp').forEach(x=>{const r=x.rec;if(r.m!=='credit'||!r.sup||String(r.sup)[0]==='~')return;const e=G(r.sup),a=r2(num(r.amt));if(a>0){e.plus=r2(e.plus+a);e.xp=r2((e.xp||0)+a);}});
+    pend('fspay').slice().sort((a,b)=>String(a.at).localeCompare(String(b.at))).forEach(x=>{const r=x.rec,k=keyOf(r.sup,r.sn);if(!k)return;const e=G(k);let left=r2(num(r.amt));if(!(left>0))return;e.minus=r2(e.minus+left);e.np++;
+      (r.al||[]).forEach(a=>{const id=String(a[0]||''),b=e.bills.find(y=>y.id===id||(id.slice(0,3)==='fx:'&&y.fx===id.slice(3)));if(!b)return;const t=r2(Math.min(left,num(a[1]),b.due));if(t>0){b.due=r2(b.due-t);left=r2(left-t);}});
+      e.adv=r2(e.adv+left);});
+    return M;}
+  const byDate=(a,b)=>String(a.d).localeCompare(String(b.d))||String(a.id).localeCompare(String(b.id));
+  function pcNet(k){const sb=S.cfg&&S.cfg.sb;if(Array.isArray(sb)){const r=sb.find(x=>x[0]===k);return r?r2(num(r[1])-num(r[2])):0;}const s=((S.cfg&&S.cfg.su)||[]).find(x=>x[0]===k);return s?r2((s[1]||[]).reduce((t,b)=>t+num(b[3]),0)):0;}
+  function rows(){const L=live(),keys=new Set(L.keys());((S.cfg&&S.cfg.sb)||[]).forEach(x=>keys.add(x[0]));newSups().forEach(x=>keys.add(x[0]));
+    return [...keys].map(k=>{const e=L.get(k)||{bills:[],adv:0,plus:0,minus:0,nb:0,np:0},pc=pcNet(k);return {k,name:nameOf(k),pc,plus:e.plus,minus:e.minus,adv:e.adv,xp:e.xp||0,nb:e.nb,np:e.np,net:r2(pc+e.plus-e.minus),bills:e.bills.filter(b=>b.due>0.004).sort(byDate),isNew:k[0]==='~'};})
+      .filter(r=>Math.abs(r.net)>0.004||r.plus>0||r.minus>0||r.isNew).sort((a,b)=>b.net-a.net||String(a.name).localeCompare(String(b.name),'si'));}
+  window.f2Rows=rows;window.f2Live=live;window.f2Pend=pend;window.f2New=newSups;
+
+  /* ---------- 💸 සැපයුම් ගෙවීම: bills = what is really left · ⏳ line · new suppliers in the list · a twin payment asks first ---------- */
+  {const _b=fxBills;fxBills=function(){if(!f2())return _b.apply(this,arguments);try{const e=live().get(keyOf(fxD().sup,''));
+      return e?e.bills.filter(b=>b.due>0.004).sort(byDate).map(b=>[b.id,b.d,(b.inv||'')+(b.p?(b.inv?' ':'')+'⏳':''),b.due]):[];}catch(e){console.warn('5.06 bills',e);return _b.apply(this,arguments);}};}
+  {const _s=fxSupSel;fxSupSel=function(){let h=_s.apply(this,arguments);try{if(f2()&&fxTab==='spay'){const d=fxD(),N=newSups();if(N.length)h=h.replace('</select>',N.map(([k,n])=>`<option value="${esc(k)}" ${d.sup===k?'selected':''}>${esc(n)} ⏳ අලුත්</option>`).join('')+'</select>');}}catch(e){}return h;};}
+  {const _f=fxSpay;fxSpay=function(d){try{if(f2()&&String(d.sup||'')[0]==='~'){const k=keyOf(d.sup,'');if(k!==d.sup){d.sup=k;d.pick=[];save();}}}catch(e){}
+    let h=_f.apply(this,arguments);try{const e=f2()&&d.sup?live().get(keyOf(d.sup,'')):null;if(e&&(e.plus>0||e.minus>0)){const i=h.indexOf('</select></div>');
+        if(i>0)h=h.slice(0,i+15)+`<div class="small" data-f2="1" style="color:#b45309;margin:-4px 0 6px">⏳ PC එකට යනකම්: ${e.plus>0?'🛒 ගැනුම් +'+money(e.plus):''}${e.plus>0&&e.minus>0?' · ':''}${e.minus>0?'💸 ගෙවීම් −'+money(e.minus):''}${e.adv>0.004?' ('+money(e.adv)+' බිල් වලට වැඩියි)':''} — පහළ ගණන් වලට දැනටමත් දාලා</div>`+h.slice(i+15);}}catch(e){console.warn('5.06 spay',e);}return h;};}
+  {const _s=fxSpaySend;fxSpaySend=function(){try{if(f2()){const d=fxD(),a=r2(num(d.amt)),k=keyOf(d.sup,'');
+        if(k&&a>0&&pend('fspay').some(x=>keyOf(x.rec.sup,x.rec.sn)===k&&x.rec.d===d.d&&Math.abs(num(x.rec.amt)-a)<0.005)&&!confirm(`${nameOf(k)} — ${dmy(d.d)} දිනට රු. ${a} ගෙවීමක් දැනටමත් යවලා තියෙනවා (⏳ PC එකට යනකම්).\nආයෙත් එකක් යවන්නද?`))return;}}catch(e){}
+    return _s.apply(this,arguments);};}
+  /* a supplier the PC does not know yet goes by name (the PC finds it once the purchase is approved) */
+  {const _s=send;send=function(k,body){const A=[].slice.call(arguments);try{if(body&&typeof body.sup==='string'&&body.sup[0]==='~'){
+        if(k==='fspay'&&f2()){const n=(newSups().find(x=>x[0]===body.sup)||[])[1]||body.sup.slice(1);A[1]={...body,sup:'',sn:n};A[2]=String(A[2]||'').replace(/^🏪\s+/,'🏪 '+n+' ');}
+        else{toast('මේ සැපයුම්කරු තාම PC එකේ නැහැ — PC එකේ ✅ කළාට පස්සේ','warn');return Promise.resolve(false);}}}catch(e){}
+    return _s.apply(this,A);};}
+
+  /* ---------- 🛒 බඩු ආවා: ⏳ new suppliers as chips · “අන්තිමට ගත්තේ” from what was just sent ---------- */
+  {const _c=buySupChips;buySupChips=function(q){let h=_c.apply(this,arguments);try{if(f2()){const n=norm(q),d=BD(),N=newSups();
+        if(n&&N.some(x=>norm(x[1])===n))h=h.replace(/<button class="chip[^"]*" onclick="BD\(\)\.sup='';BD\(\)\.sn=\$\('buySupQ'\)\.value\.trim\(\);save\(\);render\(\)">[^<]*<\/button>/,'');
+        N.filter(x=>!n||norm(x[1]).includes(n)).slice(0,6).forEach(x=>{h+=`<button class="chip ${!d.sup&&norm(d.sn)===norm(x[1])?'ok':''}" data-f2new="1" onclick="BD().sup='';BD().sn=${esc(JSON.stringify(x[1]))};save();render()">${esc(x[1])} ⏳</button>`;});}}catch(e){}return h;};}
+  {const _l=buyLast;buyLast=function(){const x=_l.apply(this,arguments);try{if(!f2())return x;const d=BD(),k=keyOf(d.sup,d.sn);if(!k)return x;
+      const P=pend('buy').filter(s=>keyOf(s.rec.sup,s.rec.sn)===k).sort((a,b)=>String(b.rec.d).localeCompare(String(a.rec.d))||String(b.at).localeCompare(String(a.at)))[0];
+      if(P&&(!x||String(P.rec.d)>=String(x[0]).slice(0,10)))return [P.rec.d+' ⏳',(P.rec.it||[]).map(i=>[i[0],i[1],i[2],num(i[3])])];}catch(e){}return x;};}
+
+  /* ---------- 🧂 stock: what was bought on this phone is already added (⏳) — same units the PC will use ---------- */
+  function toBig(m,i){const x=i[7]&&typeof i[7]==='object'?i[7]:{},u=i[2]||'kg',q=num(x.wq)>0?num(x.wq):num(i[1]),big=m[3];if(!(q>0))return null;
+    if(u==='kg'||u==='g')return big==='kg'?(u==='kg'?q:q/1000):null;
+    if(u==='ලීටර්'||u==='l'||u==='L'||u==='ml')return big==='ලීටර්'?(u==='ml'?q/1000:q):null;
+    if(u==='ගණන'||u==='ඒකක'||u==='pcs')return big==='ගණන'?q:null;
+    const v=(m[9]&&typeof m[9]==='object'&&num(m[9][u]))||(x.pk&&x.pk.u===u&&num(x.pk.v))||0;return v>0?q*v:null;}
+  function buyDelta(L){const D={},N=[],U=[];let n=0;const by=new Map();L.forEach(m=>{by.set(norm(m[1]),m);(m[8]||[]).forEach(a=>{if(!by.has(norm(a)))by.set(norm(a),m);});});
+    pend('buy').forEach(x=>{let any=false;(x.rec.it||[]).forEach(i=>{const m=by.get(norm(i[0]));if(!m){N.push(i);return;}const q=toBig(m,i);if(q===null){U.push(i);return;}D[m[0]]=r3((D[m[0]]||0)+q);any=true;});if(any)n++;});return {D,n,N,U};}
+  let _mc={k:'',src:null,v:null};
+  {const _mt=MT;MT=function(){const L=_mt.apply(this,arguments);try{if(!L.length||!f2())return L;const s0=(S.sent||[])[0];
+      const k=String((S.cfg&&S.cfg.pushAt)||'')+'|'+L.length+'|'+(S.sent||[]).length+'|'+(s0?s0.uid:'')+'|'+(S.sent||[]).reduce((t,x)=>t+(x&&(x.gone||x.void)?1:0),0)+'|'+((S.cfg&&S.cfg.ok)||[]).length+'|'+((S.cfg&&S.cfg.rj)||[]).length;
+      if(_mc.k===k&&_mc.src===L)return _mc.v;const D=buyDelta(L).D;if(!Object.keys(D).length){_mc={k,src:L,v:L};return L;}
+      const out=L.map(m=>{const d=D[m[0]];if(!d||m[4]===null||m[4]===undefined)return m;const c=m.slice();c[4]=r3(num(m[4])+d);c[10]='⏳';return c;});_mc={k,src:L,v:out};return out;}catch(e){console.warn('5.06 mt',e);return L;}};}
+  {const _m=renderMats;renderMats=function(){const r=_m.apply(this,arguments);try{if(f2()&&$('matsBody')){const X=buyDelta(((S.cfg&&S.cfg.mt)||[])),ids=Object.keys(X.D);
+        if(ids.length||X.N.length){const nm=id=>{const m=((S.cfg&&S.cfg.mt)||[]).find(y=>y[0]===id);return m?`${esc(m[1])} +${esc(String(X.D[id]))} ${esc(m[3])}`:'';};
+          $('matsBody').insertAdjacentHTML('afterbegin',`<div class="card small" id="f2lv">⏳ මේ phone එකෙන් යැව්ව 🛒 ගැනුම් මෙතන දැනටමත් එකතු කරලා${ids.length?': '+ids.slice(0,8).map(nm).filter(Boolean).join(' · ')+(ids.length>8?' …':''):''}${X.N.length?`<div class="muted">🆕 අලුත් ද්‍රව්‍ය (PC එකේ ✅ කළාම ලැයිස්තුවට එනවා): ${X.N.slice(0,6).map(i=>esc(String(i[0]))+' '+esc(String(i[1]))+' '+esc(String(i[2]||''))).join(' · ')}</div>`:''}<div class="muted">PC එකේ ✅ කළාම PC ගණනම පේනවා.</div></div>`);}}}catch(e){console.warn('5.06 mats',e);}return r;};}
+
+  /* ---------- 🏪 සැපයුම්කරු ණය (S8 / V5) — බලන්න + 💸 ගෙවීමකට යන්න ---------- */
+  TITLES.sdue='🏪 සැපයුම්කරු ණය';let OPEN='';
+  if(!$('s-sdue')){const s=document.createElement('section');s.className='screen';s.id='s-sdue';s.innerHTML='<div id="sdueBody"></div>';const a=$('s-pkl')||$('s-chq')||$('s-fx2')||document.querySelector('.screen:last-of-type');a.parentNode.insertBefore(s,a.nextSibling);}
+  window.sdOpen=function(k){OPEN=OPEN===k?'':k;render();};
+  window.sdPay=function(k){fxTab='spay';fxClr();const d=fxD();d.sup=k;d.pick=[];d.al='old';save();go('fx2');};
+  function renderSdue(){const box=$('sdueBody');if(!box)return;
+    if(!f2()){box.innerHTML='<div class="card empty">PC එකෙන් සැපයුම්කරු ණය ලැයිස්තුව තවම ආවේ නැහැ. PC එක (v5.5.11) Owner login එකෙන් on කරලා විනාඩි 2කින් 🔄.</div>';return;}
+    const R=rows(),owe=r2(R.reduce((t,r)=>t+Math.max(0,r.net),0)),pl=r2(R.reduce((t,r)=>t+r.plus,0)),mi=r2(R.reduce((t,r)=>t+r.minus,0)),W=((S.cfg&&S.cfg.pq&&S.cfg.pq.m)||[]);
+    const card=r=>{const op=OPEN===r.k,w=W.filter(x=>norm(x[1])===norm(r.name)),K=esc(JSON.stringify(r.k));
+      return `<div class="card sdc" data-sd="${esc(r.k)}"><div class="sdr" onclick="sdOpen(${K})"><div class="grow"><strong>${esc(r.name)}</strong>${r.isNew?' <span class="small warn">⏳ අලුත්</span>':''}
+          <div class="small muted">${r.plus>0||r.minus>0?`PC ${money(r.pc)}${r.plus>0?' · ⏳ 🛒 +'+money(r.plus):''}${r.minus>0?' · ⏳ 💸 −'+money(r.minus):''}`:(r.isNew?'PC එකේ ✅ කළාම ගණන් එනවා':'බිල් '+r.bills.length)}</div></div>
+          <div class="sdn">${r.net>0.004?'<strong>≈ '+money(r.net)+'</strong>':r.net<-0.004?'<span class="small warn">👀 '+money(-r.net)+' වැඩියෙන් ගෙවලා</span>':'<span class="small muted">0</span>'}</div></div>
+        ${op?`<div class="sdb">${r.bills.length?r.bills.map(b=>`<div class="sdl"><span>${esc(dmy(b.d))}${b.inv?' · '+esc(b.inv):''}${b.p?' <span class="warn">⏳</span>':''}</span><strong>${money(b.due)}</strong></div>`).join(''):'<div class="small muted">ගෙවන්න තියෙන බිල් නැහැ.</div>'}
+          ${r.xp>0?`<div class="sdl"><span>🧾 ණයට වියදම් <span class="warn">⏳</span></span><strong>${money(r.xp)}</strong></div>`:''}${r.adv>0.004?`<div class="small warn">⏳ ගෙවීම් වලින් ${money(r.adv)} බිල් වලට වැඩියි (advance)</div>`:''}
+          ${w.length?`<div class="small muted" style="margin-top:4px">✍️ ලියපු චෙක් (තාම බැංකුවෙන් නොගිය): ${w.map(x=>esc(dmy(x[0]))+' · '+money(x[2])+(x[3]?' · #'+esc(x[3]):'')).join(' | ')}</div>`:''}
+          <button class="btn light block" style="margin-top:8px" onclick="sdPay(${K})">💸 මේ සැපයුම්කරුට ගෙවීමක් දාන්න</button></div>`:''}</div>`;};
+    box.innerHTML=`<div class="card"><div class="small muted">සැපයුම්කරුවන්ට ගෙවන්න තියෙන එකතුව</div><div id="sdTot" style="font-size:24px;font-weight:800">≈ ${money(owe)}</div>
+        ${pl>0||mi>0?`<div class="small" id="sdPend" style="color:#b45309">⏳ ඒකේ PC එකට තාම නොගිය: ${pl>0?'🛒 +'+money(pl):''}${pl>0&&mi>0?' · ':''}${mi>0?'💸 −'+money(mi):''}</div>`:''}
+        <div class="small muted">≈ ආසන්න — තාත්තා කියපු ගෙවීම් අනුව. ලොකුම එක උඩින්. නම ඔබලා බිල් බලන්න.</div></div>
+      ${R.length?R.map(card).join(''):'<div class="card"><div class="small muted">✅ ගෙවන්න තියෙන ණය නැහැ.</div></div>'}
+      <div class="small muted" style="margin:4px 2px 12px">🔄 PC එකෙන් අන්තිමට ආවේ: ${esc(S.pulledAt?fmtAt(S.pulledAt,true):'—')} · ⏳ = මේ phone එකෙන් යවලා PC එකේ තාම ✅ නොකළ ඒවා.</div>`;}
+  {const _r=render;render=function(){if(screen==='sdue'){try{$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'';renderSdue();a3Head();}catch(e){console.warn('5.06 sdue',e);}return;}return _r.apply(this,arguments);};}
+  try{FT_RULE.push([/'sdue'/,'buy']);FT_WORDS.push([/'sdue'/,'supplier sepayum sapayum naya gewanna gevanna debt']);}catch(e){}
+  {const _h=renderHome0;renderHome0=function(){const r=_h.apply(this,arguments);try{const g=document.querySelector('#homeBody .ftGrid');if(g&&S.cfg&&f2()&&!g.querySelector('[data-sdue]')){const b=ftMk("go('sdue')",'🏪','සැපයුම්කරු ණය','ගෙවන්න තියෙන · ⏳ එවෙලේම');b.dataset.sdue='1';b.dataset.ft='buy';b.dataset.q='0';b.style.display=(S.fTab||'today')==='buy'?'':'none';g.appendChild(b);}}catch(e){console.warn('5.06 home',e);}return r;};}
+  /* fresh lists from the PC → the open screen shows them (never while something is being typed) */
+  {const _s=sync;sync=async function(){const r=await _s.apply(this,arguments);try{if(['sdue','mats','fx2'].includes(screen)&&!document.querySelector('main input:focus,main select:focus,main textarea:focus'))render();}catch(e){}return r;};}
+  document.head.insertAdjacentHTML('beforeend','<style>.sdc{padding:10px}.sdr{display:flex;gap:8px;align-items:center;cursor:pointer}.sdr .grow{flex:1;min-width:0;overflow-wrap:anywhere}.sdn{text-align:right;white-space:nowrap}.sdb{margin-top:8px;border-top:1px solid #e5e7eb;padding-top:6px}.sdl{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-size:14px}.sdl span{min-width:0;overflow-wrap:anywhere}</style>');
+})();
+/* ================= 5.07 (PC v5.5.12) · 032 F-3 · 🏪 කඩ live (owner 12 Nov 12:19: “අලුත් කඩ ඒ වෙලේම”) =================
+   “Live” = මේ phone එකේ එවෙලේම පෙන්නන එක විතරයි (⏳ PC එකට යනකම්). ගිණුම් වලට යන්නේ කලින් වගේම PC එකේ ✅ කළාම විතරයි.
+   K1 🆕 අලුත් කඩ: 🧾 බිලක් / 💰 ගෙවීමක් එක්ක යැව්ව අලුත් කඩය එවෙලේම කඩ සෙවුමේ “⏳ අලුත්” — තෝරපුවම කලින් නම / Route / 📞 / ගමමයි
+      (ආයේ ටයිප් කරලා දෙවෙනි කඩයක් හැදෙන්නේ නැහැ). යවද්දී `nx` = ඒ අලුත් කඩේ පළමු phone පණිවිඩයේ uid → PC (v5.5.12) “ඒ කඩයම ද?” අහනවා.
+   K2 💳 කඩේ ණය = PC ගණන + මේ phone එකෙන් යැව්ව ⏳: ණයට බිල් · ගෙවීම් · බිල එක්ක පරණ ණය · ↩️ බිල එක්ක Return · ✏️ / ❌ නිවැරදි කිරීම් ·
+      අලුත් කඩ (නමින්, PC එක ඒ කඩය හැදුවම ඒ කඩේටම — cfg.ncm / නම).
+   V4 📒 කඩ ණය තිරය (🧾 විකුණුම් tab): ලොකුම / පරණම උඩින් · 🟡 දින 30+ · 🏭 Route නැති · 📞 / 💬 · 💰.
+   🛡️ PC එකේ ✓ ලැයිස්තුව අන්තිම 300යි: ඒක පිරුණම, ඒකේ තියෙන මේ phone එකේ පරණම එකටත් කලින් යවපු ඒවා ආයේ ⏳ නැහැ (pendSent — කඩ ණය + තොගය + ඇණවුම් ඔක්කොටම). */
+(function(){
+  /* ---------- 🛡️ the PC's ✓ list is the newest 300 ---------- */
+  {const _p=pendSent;pendSent=function(k,days){const L=_p.apply(this,arguments);try{const okL=(S.cfg&&S.cfg.ok)||[];if(okL.length<300)return L;const ok=new Set(okL);let floor='';
+      (S.sent||[]).forEach(x=>{if(x&&ok.has(x.uid)&&(!floor||String(x.at)<floor))floor=String(x.at);});return floor?L.filter(x=>!(String(x.at)<floor)):L;}catch(e){return L;}};}
+
+  /* ---------- names: the same rules the PC uses (custCompose) — “–” and “-” are the same here ---------- */
+  const nm=s=>norm(String(s||'').replace(/[–]/g,'-'));
+  const vC=s=>String(s||'').trim().replace(/\s+/g,' ').replace(/[–]/g,'-').slice(0,60);
+  const full=r=>{const raw=String(r.cn||'').trim().replace(/\s+/g,' '),i=raw.lastIndexOf(' – ');let n=raw,v=vC(r.cv);if(i>0){const pv=vC(raw.slice(i+3));if(!v||v===pv){n=raw.slice(0,i);v=pv;}}n=vC(n);return v?n+' – '+v:n;};
+  const showName=r=>{const n=String(r.cn||'').trim().replace(/\s+/g,' '),v=String(r.cv||'').trim().replace(/\s+/g,' ');return v&&!/ – /.test(n)?n+' – '+v:n;};
+  const isNew=r=>!!(r&&!r.c&&r.cn&&r.cn!=='__walk'&&!r.staff);
+  const rName=id=>{const r=((S.cfg&&S.cfg.r)||[]).find(x=>x[0]===id);return r?r[1]:'';};
+  /* a bill: what stays on credit · the old debt paid with it (only for a shop from the list) */
+  const bNet=r=>{if(!r||r.staff)return 0;const p=r.pay||{};return r2(Math.max(0,num(r.est)-num(p.amt)));};
+  const bOld=r=>r&&!r.staff&&r.c&&r.pay?r2(num(r.pay.old)):0;
+  const credit=r=>r2(bNet(r)-bOld(r));
+
+  /* ---------- 🆕 the new shops this phone sent (21 days), oldest message first ---------- */
+  function groups(){const G=new Map(),ncm=new Map(((S.cfg&&S.cfg.ncm)||[]).filter(x=>Array.isArray(x))),rj=rjMap(),since=Date.now()-21*864e5;
+    (S.sent||[]).slice().reverse().forEach(x=>{if(!x||x.gone||!x.rec||(x.k!=='bill'&&x.k!=='pay')||!isNew(x.rec)||rj.has(x.uid)||new Date(x.at).getTime()<since)return;
+      const r=x.rec,k=nm(full(r));if(!k)return;let g=G.get(k);
+      if(!g){g={k,name:showName(r),cn:r.cn,cr:r.cr||'',cph:r.cph||'',cv:r.cv||'',first:x.uid,id:''};G.set(k,g);}else{if(!g.cr&&r.cr)g.cr=r.cr;if(!g.cph&&r.cph)g.cph=r.cph;}
+      if(!g.id&&ncm.has(x.uid))g.id=String(ncm.get(x.uid));});
+    /* the PC made the shop (or linked it to one) → that shop */
+    G.forEach(g=>{if(g.id&&!cust(g.id))g.id='';if(!g.id){const c=C().find(c=>!c[11]&&nm(c[1])===g.k);if(c)g.id=c[0];}});return G;}
+  function keyOf(r,G){if(!r)return '';if(r.c)return String(r.c);if(!isNew(r))return '';const k=nm(full(r));if(!k)return '';const g=G.get(k);return g&&g.id?g.id:'~'+k;}
+
+  /* ---------- 💳 per shop: what this phone sent that the PC has not taken yet ---------- */
+  let _L={k:'',v:null};
+  function sig(){const s=S.sent||[],ok=(S.cfg&&S.cfg.ok)||[];let g=0,f=0,rv=0;s.forEach(x=>{if(!x)return;if(x.gone)g++;if(x.fix)f++;if(x.rec&&x.rec.rev)rv+=num(x.rec.rev);});
+    return [s.length,s[0]&&s[0].uid,g,f,rv,ok.length,ok[0]||'',((S.cfg&&S.cfg.rj)||[]).length,S.cfg&&S.cfg.at,C().length,((S.cfg&&S.cfg.ncm)||[]).length,Math.floor(Date.now()/36e5)].join('|');}
+  function live(){const k=sig();if(_L.k===k&&_L.v)return _L.v;const G=groups(),M=new Map(),rj=rjMap();
+    const E=key=>{let e=M.get(key);if(!e){e={plus:0,old:0,minus:0,ret:0,fix:0,bills:[],nb:0,np:0,last:''};M.set(key,e);}return e;};
+    const seen=x=>{const e=E(x.key);if(String(x.at)>e.last)e.last=String(x.at);return e;};
+    const fixes=new Map();pendSent('fix',21).forEach(x=>{const r=x.rec||{};if(r.ref&&(r.act==='edit'||r.act==='void'))fixes.set(r.ref,x);});
+    const addBill=(r,x)=>{if(!r||r.staff)return;const key=keyOf(r,G);if(!key)return;const e=seen({key,at:x.at}),cr=bNet(r),od=bOld(r);e.nb++;
+      if(cr>0.004){e.plus=r2(e.plus+cr);e.bills.push({uid:x.uid,d:r.d,no:r.book&&num(r.no)>0?'#'+num(r.no):'',due:cr});}if(od>0.004)e.old=r2(e.old+od);};
+    pendSent('bill',21).forEach(x=>{const f=fixes.get(x.uid);if(f){if(f.rec.act==='edit'&&f.rec.nb)addBill(f.rec.nb,x);return;}/* ✏️ / ❌ before the PC took it: the fix replaces it */addBill(x.rec||{},x);});
+    pendSent('pay',21).forEach(x=>{const r=x.rec||{},key=keyOf(r,G);if(!key)return;const e=seen({key,at:x.at});e.np++;e.minus=r2(e.minus+num(r.amt)-num(r.old));});
+    pendSent('ret',21).forEach(x=>{const r=x.rec||{};if(!r.c||!r.v460||r.cash)return;const e=E(String(r.c));e.ret=r2(e.ret+num(r.est));});
+    /* ✏️ / ❌ of a bill the PC already has: − the old bill + the new one */
+    fixes.forEach((x,ref)=>{const o=(S.sent||[]).find(y=>y&&y.uid===ref&&y.k==='bill');if(!o||!o.rec||o.gone||rj.has(o.uid)||pendSent('bill',21).some(y=>y.uid===ref))return;
+      const ok0=keyOf(o.rec,G);if(ok0)E(ok0).fix=r2(E(ok0).fix-credit(o.rec));
+      if(x.rec.act==='edit'&&x.rec.nb){const nk=keyOf(x.rec.nb,G)||ok0;if(nk)E(nk).fix=r2(E(nk).fix+credit(x.rec.nb));}});
+    M.forEach(e=>{e.delta=r2(e.plus-e.old-e.minus-e.ret+e.fix);e.bills.sort((a,b)=>String(a.d).localeCompare(String(b.d)));});
+    _L={k,v:{M,G}};return _L.v;}
+  /* the ⏳ new shops (still unknown to the PC) */
+  function newShops(){const {M,G}=live(),out=[];G.forEach(g=>{if(g.id)return;const key='~'+g.k,e=M.get(key);if(!e)return;out.push({key,g,e,due:r2(Math.max(0,e.delta))});});
+    return out.sort((a,b)=>String(b.e.last).localeCompare(String(a.e.last)));}
+  const pseudo=x=>[x.key,x.g.name,rName(x.g.cr),0,0,0,0,x.g.cph,0,0,x.g.cr,0];
+  const oldestPend=e=>e&&e.bills.length?Math.max(...e.bills.map(b=>v463Age(b.d))):0;
+  window.f3Live=live;window.f3New=newShops;
+
+  /* ---------- K2: every live number goes through here (v463Now · 📱 දැන් ≈ · ණය ලැයිස්තුව · පරණ පොතේ ණය ප්‍රශ්නය) ---------- */
+  liveDueDelta=function(cid){try{const e=live().M.get(String(cid));return e?e.delta:0;}catch(e){console.warn('5.07 due',e);return 0;}};
+
+  /* ---------- K1: ⏳ new shops in the shop search (🧾 bill · 💰 payment — where a new name is allowed) ---------- */
+  function newRow(k,x){const g=x.g;return `<button class="pick" data-f3new="${esc(x.key)}" onclick="f3PickNew('${k}',${esc(JSON.stringify(x.key))})"><span>⏳ ${esc(g.name)}<small>අලුත් (PC එකට යනකම්) · ${esc(rName(g.cr)||'Route නැහැ')}${g.cph?' · 📞 '+esc(g.cph):''}</small></span>${x.due>0.004?`<b>≈ ${money(x.due)}</b>`:''}</button>`;}
+  {const _h=custListHtml;custListHtml=function(k,allowNew,raw){let h=_h.apply(this,arguments);try{if(!allowNew||(k!=='bill'&&k!=='pay')||(k==='bill'&&typeof v455M==='function'&&v455M()==='staff'))return h;const N=newShops();if(!N.length)return h;
+      const q=nm(raw),dq=digits(raw),hit=N.filter(x=>!q||nm(x.g.name).includes(q)||(dq.length>=3&&digits(x.g.cph).includes(dq)));
+      if(q&&N.some(x=>nm(x.g.name)===q))h=h.replace(/<button class="pick new"[\s\S]*?<\/button>/,'');/* the same name again would make a 2nd shop */
+      const rows=(q?hit.slice(0,10):hit.slice(0,5)).map(x=>newRow(k,x)).join('');if(!rows)return h;
+      return q?rows+h:`<div class="small muted" style="margin:2px 0 6px">⏳ අලුත් කඩ — PC එකට යනකම්</div>${rows}${h}`;}catch(e){console.warn('5.07 list',e);return h;}};}
+  window.f3PickNew=function(k,key){const x=newShops().find(y=>y.key===key);if(!x){toast('ඒ අලුත් කඩය දැන් PC එකේ — නමින් සොයන්න','warn');render();return;}const d=D(k),g=x.g;
+    d.c='';d.cn=g.cn;d.cr=g.cr;d.cph=g.cph;d.cv=g.cv;d.staff=0;if(d.pay&&d.pay.m==='salary')d.pay.m='cash';save();render();};
+  /* a draft on a ⏳ new shop the PC has made by now → that shop from the list */
+  function fixDraft(k){try{const d=S.drafts&&S.drafts[k];if(!d||d.c||!isNew(d))return;const {G}=live(),g=G.get(nm(full(d)));if(g&&g.id&&cust(g.id)){d.c=g.id;d.cn='';d.cr='';d.cph='';d.cv='';save();}}catch(e){}}
+  {const _r=renderBill;renderBill=function(){fixDraft('bill');return _r.apply(this,arguments);};}
+  {const _r=renderPay;renderPay=function(){fixDraft('pay');return _r.apply(this,arguments);};}
+  /* the chosen shop: live debt (+ ⚠️ limit with what is ⏳) · a ⏳ new shop says so */
+  {const _p=custPicker;custPicker=function(k,allowNew){let h=_p.apply(this,arguments);try{const d=D(k),c=cust(d.c);
+      if(c&&!c[11]){const dd=liveDueDelta(c[0]);if(Math.abs(dd)>0.004){const now=r2(num(c[3])+dd);h=h.replace(' · ණය '+money(c[3]),` · ණය ≈ ${money(now)} <span class="warn">⏳</span>${c[4]>0&&now>c[4]&&!(c[3]>c[4])?' <span class="bad">⚠️ සීමාව '+money(c[4])+' පැනලා</span>':''}`);}}
+      else if(!c&&isNew(d)){const key=keyOf(d,live().G),x=newShops().find(y=>y.key===key);if(x)h=h.replace(/<div class="small warn">🆕 අලුත් නමක් — PC එකේදී බලනවා<\/div>/,`<div class="small warn" data-f3sel="1">⏳ කලින් යැව්ව අලුත් කඩය${x.due>0.004?' · ණය ≈ '+money(x.due):''} — PC එකේ ✅ කළාම ලැයිස්තුවට එනවා</div>`);}}catch(e){console.warn('5.07 picker',e);}return h;};}
+  /* ⚠️ credit limit with the ⏳ bills too (only when the old check would not ask) */
+  {const _s=sendBill;sendBill=async function(){try{const d=D('bill'),c=cust(d.c);if(c&&c[4]>0&&!c[11]&&!d.fixOf&&!d.editUid&&d.pay&&d.pay.m!=='cash'&&d.it.some(x=>x[1]>0)){const dd=liveDueDelta(c[0]);
+        if(dd>0.004){const t=billCalc(d),m=d.pay.m,amt=(m==='credit'||m==='salary')?0:r2(num(d.pay.amt)),was=num(c[3])+t.net-amt,now=r2(was+dd);
+          if(!(was>c[4])&&now>c[4]&&!confirm(`⚠️ ${c[1]} ණය සීමාව (${money(c[4])}) පනිනවා — මේ phone එකෙන් යැව්ව ⏳ බිල් එක්ක ≈ ${money(now)}. ඒත් යවන්නද?`))return;}}}catch(e){}
+    return _s.apply(this,arguments);};}
+  /* a message for a ⏳ new shop says which earlier message it belongs to (the PC asks “the same shop?”) */
+  {const _s=send;send=function(k,body){const A=[].slice.call(arguments);try{if((k==='bill'||k==='pay')&&body&&isNew(body)&&!body.nx){const g=live().G.get(nm(full(body)));if(g&&g.first&&!g.id)A[1]={...body,nx:g.first};}
+      if(k==='pay'&&body&&!body.c&&body.cn&&!(num(body.old)>0))A[2]=String(A[2]||'').replace(/ · 📒 පරණ පොතේ රු\. 0\.00$/,'');}catch(e){}return _s.apply(this,A);};}
+
+  /* ---------- 💰 a payment from a ⏳ new shop: its ⏳ debt first — “📒 පරණ පොතේ ණය” only for what is over it ---------- */
+  const newDue=d=>{try{if(!d||d.c||!isNew(d))return 0;const e=live().M.get(keyOf(d,live().G));return e&&e.delta>0.004&&keyOf(d,live().G)[0]==='~'?e.delta:0;}catch(e){return 0;}};
+  {const _a=payOldAsk;payOldAsk=function(d,c){if(!c&&payOldOn()&&payNewOn()){const due=newDue(d);if(due>0.004)return r2(num(d.amt))>due+0.004?'first':'';}return _a.apply(this,arguments);};}
+  {const _m=payOldAmt;payOldAmt=function(d,c){if(!c){const due=newDue(d);if(due>0.004){if(!payOldAsk(d,c))return 0;const amt=r2(num(d.amt)),oa=r2(num(d.oa));
+        if(!(oa>0)||oa>1e8){toast('📒 පරණ පොතේ මුළු ණය දාන්න','err');const e=$('payOldCard');if(e)e.scrollIntoView({block:'center'});return null;}
+        if(amt>r2(due+oa)+0.004){toast(`ලැබුණු ගාණ මුළු ණයට (${money(r2(due+oa))}) වඩා වැඩියි — පරණ පොතේ මුළු ණය බලන්න`,'err');return null;}return oa;}}return _m.apply(this,arguments);};}
+  {const _c=payOldCard;payOldCard=function(d,c){if(!c){const due=newDue(d);if(due>0.004){if(!payOldAsk(d,c))return '';const amt=r2(num(d.amt)),oa=r2(num(d.oa));
+        return `<div class="card" id="payOldCard" style="border:1px solid #d97706"><div>⏳ මේ අලුත් කඩේට මේ phone එකෙන් යැව්ව ණය ≈ <b>${money(due)}</b> — ලැබුණු ගාණ ඊට වැඩියි.</div>
+         <div class="field" style="margin-top:8px"><label>📒 පරණ පොතේ මුළු ණය (රු.)</label><input type="number" inputmode="decimal" min="0" value="${esc(d.oa||'')}" oninput="D('pay').oa=this.value;save()" onchange="render()"></div>
+         <div class="small muted">System එකට කලින් පොතේ තිබ්බ මුළු ණය — මේ කඩේට එක පාරයි. විකුණුම් වලට යන්නේ නැහැ.${oa>0&&amt>0?` ගෙවීමෙන් පස්සේ ඉතිරි ණය <b>${money(Math.max(0,r2(due+oa-amt)))}</b>.`:''}</div></div>`;}}return _c.apply(this,arguments);};}
+  function pendBillsHtml(e){return e.bills.map(b=>`${esc(dmy(b.d).slice(0,5))}${b.no?' '+esc(b.no):''} ${money(b.due)}`).join(' · ');}
+  {const _n=payNewHtml;payNewHtml=function(d){let h=_n.apply(this,arguments);try{const key=keyOf(d,live().G),x=newShops().find(y=>y.key===key);
+      if(x&&(x.due>0.004||x.e.minus>0)){const card=`<div class="card" data-f3due="1"><div class="small muted">📒 ඉතිරි ණය (⏳ මේ phone එකෙන් — PC එකට යනකම්)</div><div class="v463big">≈ ${money(x.due)}</div>${x.e.bills.length?`<div class="small">🧾 ${pendBillsHtml(x.e)}</div>`:''}${x.e.minus>0?`<div class="small">💰 ⏳ ගෙවීම් −${money(x.e.minus)}</div>`:''}<div class="small muted">PC එකේ ✅ කළාම කඩ ලැයිස්තුවට එනවා.</div></div>`;
+        h=h.replace('<div class="card"><div class="field"><label>ලැබුණු මුදල',card+'<div class="card"><div class="field"><label>ලැබුණු මුදල');}}catch(e){console.warn('5.07 paynew',e);}return h;};}
+  /* an existing shop's 💰 card: which ⏳ items are already in the number */
+  function pendLine(e,pc){const p=[];if(e.plus>0.004)p.push('🧾 +'+money(e.plus));if(e.minus+e.old>0.004)p.push('💰 −'+money(r2(e.minus+e.old)));if(e.ret>0.004)p.push('↩️ −'+money(e.ret));if(Math.abs(e.fix)>0.004)p.push('✏️ '+(e.fix>0?'+':'−')+money(Math.abs(e.fix)));
+    return p.length?`${pc!==undefined?'PC '+money(pc)+' · ':''}⏳ ${p.join(' · ')}`:'';}
+  {const _v=v463Card;v463Card=function(d,c){let h=_v.apply(this,arguments);try{const e=live().M.get(c[0]);if(e&&(e.bills.length||e.minus>0||e.old>0||e.ret>0||Math.abs(e.fix)>0.004)){
+        const line=`<div class="small" data-f3c="1" style="color:#b45309;margin-top:4px">⏳ PC එකට තාම නොගිය (උඩ ගාණට දැනටමත් දාලා): ${pendLine(e)}${e.bills.length?`<br>🧾 ${pendBillsHtml(e)}`:''}</div>`;h=h.replace(/<\/div>\s*$/,line+'</div>');}}catch(e){console.warn('5.07 card',e);}return h;};}
+  /* 💰 screen list: ⏳ new shops with debt on top */
+  {const _l=v463DebtList;v463DebtList=function(){const h=_l.apply(this,arguments);try{const N=newShops().filter(x=>x.due>0.004);if(!N.length)return h;
+      return `<div class="card" data-f3n="1"><h3 style="margin:0 0 6px">⏳ අලුත් කඩ — PC එකට යනකම් (${N.length})</h3>${N.map(x=>`<div class="hist v463d"><div class="grow" onclick="f3PickNew('pay',${esc(JSON.stringify(x.key))})"><b>${esc(x.g.name)}</b><div class="small muted">${esc(rName(x.g.cr)||'Route නැහැ')}${x.g.cph?' · 📞 '+esc(x.g.cph):''}</div></div><div style="text-align:right"><b>≈ ${money(x.due)}</b><div class="v463b"><button class="btn sm primary" onclick="f3PickNew('pay',${esc(JSON.stringify(x.key))})">💰</button></div></div></div>`).join('')}</div>`+h;}catch(e){console.warn('5.07 dl',e);return h;}};}
+
+  /* ---------- V4 📒 කඩ ණය — එකතු කරන්න ---------- */
+  TITLES.cdue='📒 කඩ ණය';const CD={q:'',r:'',f:'',sort:'amt',open:''};window.f3CD=CD;
+  if(!$('s-cdue')){const s=document.createElement('section');s.className='screen';s.id='s-cdue';s.innerHTML='<div id="cdueBody"></div>';const a=$('s-sdue')||$('s-pkl')||document.querySelector('.screen:last-of-type');a.parentNode.insertBefore(s,a.nextSibling);}
+  function rows(){const {M}=live(),out=[];
+    C().forEach(c=>{if(c[11])return;const e=M.get(c[0]),now=v463Now(c);if(now<=0.004)return;out.push({c,key:c[0],name:c[1],route:c[2]||'',rid:c[10]||'',ph:c[7]||'',pc:num(c[3]),e,now,od:Math.max(v463Oldest(c[0]),oldestPend(e)),lim:num(c[4]),isNew:false});});
+    newShops().forEach(x=>{if(x.due<=0.004)return;out.push({c:pseudo(x),key:x.key,name:x.g.name,route:rName(x.g.cr),rid:x.g.cr,ph:x.g.cph,pc:0,e:x.e,now:x.due,od:oldestPend(x.e),lim:0,isNew:true});});
+    return out;}
+  function pick(R){const q=nm(CD.q),dq=digits(CD.q);let l=R.filter(r=>(!q||nm(r.name).includes(q)||(dq.length>=3&&digits(r.ph).includes(dq)))&&(!CD.r||(CD.r==='__none'?!r.rid:r.route===CD.r))&&(CD.f!=='30'||r.od>30));
+    return l.sort((a,b)=>CD.sort==='old'?(b.od-a.od||b.now-a.now):CD.sort==='name'?String(a.name).localeCompare(String(b.name),'si'):(b.now-a.now));}
+  function card(r){const op=CD.open===r.key,K=esc(JSON.stringify(r.key)),wa=v463Wa(r.c),over=r.lim>0&&r.now>r.lim+0.004,pl=r.e?pendLine(r.e,r.pc):'',ob=r.isNew?[]:v463Ob(r.key).filter(x=>x[0]),lp=!r.isNew&&S.cfg&&S.cfg.lpd&&S.cfg.lpd[r.key];
+    return `<div class="card cdc" data-cd="${esc(r.key)}"><div class="cdr"><div class="grow" onclick="cdOpen(${K})"><strong>${r.isNew?'⏳ ':''}${esc(r.name)}</strong>${r.isNew?' <span class="small warn">අලුත්</span>':''}${over?' <span class="badge bad">⚠️ සීමාව</span>':''} ${v463AgeTag(r.od)}
+        <div class="small muted">${esc(r.route||'Route නැහැ')}${r.ph?' · 📞 '+esc(r.ph):''}</div>${pl?`<div class="small" style="color:#b45309">${pl}</div>`:''}</div>
+      <div class="cdn"><strong>≈ ${money(r.now)}</strong><div class="v463b">${r.ph&&digits(r.ph).length>=9?`<a class="btn sm light" href="tel:${esc(digits(r.ph))}">📞</a>`:''}${wa?`<a class="btn sm light" target="_blank" rel="noopener" href="${esc(wa)}">💬</a>`:''}<button class="btn sm primary" onclick="cdPay(${K})">💰</button></div></div></div>
+      ${op?`<div class="cdb">${ob.map(x=>{const a=v463Age(x[2]);return `<div class="sdl"><span>${esc(x[1])}${x[4]==='f'?' 🏭':''} · ${esc(dmy(x[2]))}${a>30?' <b class="'+(a>60?'bad':'warn')+'">'+a+'d</b>':''}</span><strong>${money(x[3])}</strong></div>`;}).join('')}
+        ${r.e?r.e.bills.map(b=>`<div class="sdl"><span>${esc(dmy(b.d))}${b.no?' · '+esc(b.no):''} <span class="warn">⏳</span></span><strong>${money(b.due)}</strong></div>`).join(''):''}
+        ${!ob.length&&!(r.e&&r.e.bills.length)?'<div class="small muted">බිල් අනුව ලැයිස්තුව PC එකෙන් තවම ආවේ නැහැ.</div>':''}${lp?`<div class="small muted" style="margin-top:4px">අන්තිම ගෙවීම ${esc(dmy(lp[0]))} · ${money(lp[1])} (දින ${v463Age(lp[0])}කට කලින්)</div>`:''}
+        <button class="btn light block" style="margin-top:8px" onclick="cdPay(${K})">💰 මේ කඩෙන් ගෙවීමක් දාන්න</button></div>`:''}</div>`;}
+  function listHtml(R){const l=pick(R);return `<div class="small muted" id="cdCount" style="margin:0 2px 6px">${l.length===R.length?'කඩ '+R.length:`කඩ ${R.length}න් ${l.length}ක් · ≈ ${money(r2(l.reduce((t,r)=>t+r.now,0)))}`}</div>${l.slice(0,80).map(card).join('')||'<div class="card small muted">හමු වුණේ නැහැ</div>'}${l.length>80?`<div class="small muted" style="margin:4px 2px">තව ${l.length-80}ක් — නමින් සොයන්න</div>`:''}`;}
+  function renderCdue(){const box=$('cdueBody');if(!box)return;const R=rows(),tot=r2(R.reduce((t,r)=>t+r.now,0)),n30=R.filter(r=>r.od>30).length,ag=[0,0,0,0];
+    let pl=0,mi=0;live().M.forEach(e=>{pl=r2(pl+e.plus);mi=r2(mi+e.minus+e.old);});C().forEach(c=>{if(!c[11])v463Ages(c[0]).forEach((v,i)=>ag[i]+=v);});
+    const routes=[...new Set(R.map(r=>r.route).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'si'));
+    const seg=(k,v,t)=>`<button class="${CD[k]===v?'on':''}" onclick="CD3('${k}','${v}')">${t}</button>`;
+    box.innerHTML=`<div class="card"><div class="small muted">කඩ වලින් ලැබෙන්න තියෙන ණය</div><div id="cdTot" style="font-size:24px;font-weight:800">≈ ${money(tot)}</div>
+        <div class="small muted">කඩ ${R.length}${n30?` · 🟡 දින 30+ <b>${n30}</b>`:''}</div>${pl>0||mi>0?`<div class="small" id="cdPend" style="color:#b45309">⏳ ඒකේ PC එකට තාම නොගිය: ${pl>0?'🧾 +'+money(pl):''}${pl>0&&mi>0?' · ':''}${mi>0?'💰 −'+money(mi):''}</div>`:''}
+        <div class="v463ag">${['0–30','31–60','61–90','90+'].map((t,i)=>`<div class="${i===3&&ag[3]>0?'bad':i>=1&&ag[i]>0?'warn':''}"><small>දින ${t}</small><b>${Math.round(ag[i]).toLocaleString('en-US')}</b></div>`).join('')}</div>
+        <div class="row2"><input type="search" id="cdQ" placeholder="🔎 නම / 📞" value="${esc(CD.q)}" oninput="CD.q=this.value;cdRedraw()"><select id="cdR" onchange="CD.r=this.value;cdRedraw()"><option value="">සියලු Route</option><option value="__none" ${CD.r==='__none'?'selected':''}>🏭 Route නැති (කම්හලට එන)</option>${routes.map(x=>`<option ${x===CD.r?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
+        <div class="seg">${seg('f','','සියල්ල')}${seg('f','30','🟡 දින 30+')}</div><div class="seg" style="margin-top:6px">${seg('sort','amt','💰 ලොකුම')}${seg('sort','old','⏳ පරණම')}${seg('sort','name','🔤 නම')}</div>
+        <div class="small muted" style="margin-top:4px">≈ = PC ගණන + මේ phone එකෙන් යැව්ව ⏳. ලොකුම / පරණම උඩින් — කම්හලට එන කඩ වලින් ඉල්ලන්න.</div></div>
+      <div id="cdList">${listHtml(R)}</div>
+      <div class="small muted" style="margin:4px 2px 12px">🔄 PC එකෙන් අන්තිමට ආවේ: ${esc(S.pulledAt?fmtAt(S.pulledAt,true):'—')} · ⏳ = මේ phone එකෙන් යවලා PC එකේ තාම ✅ නොකළ ඒවා.</div>`;}
+  window.CD3=function(k,v){CD[k]=v;render();};
+  window.cdRedraw=function(){const el=$('cdList');if(el)el.innerHTML=listHtml(rows());};
+  window.cdOpen=function(k){CD.open=CD.open===k?'':k;cdRedraw();};
+  window.cdPay=function(k){newDraft('pay');if(String(k)[0]==='~'){const x=newShops().find(y=>y.key===k);if(!x){toast('ඒ අලුත් කඩය දැන් PC එකේ — නමින් සොයන්න','warn');go('pay');return;}const d=D('pay'),g=x.g;d.c='';d.cn=g.cn;d.cr=g.cr;d.cph=g.cph;d.cv=g.cv;d.staff=0;}
+    else{const d=D('pay');d.c=k;d.cn='';d.staff=0;}save();go('pay');};
+  /* (+ 🐞 5.06 🏪 සැපයුම්කරු ණය තිරයේ: පහළ tab තීරුව Home එකෙන් පස්සෙත් පේනවා — ඒ තිර දෙකටම තීරුව ආයේ අඳිනවා → Home එකේ විතරයි) */
+  {const _r=render;render=function(){let x;if(screen==='cdue'){try{$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'';renderCdue();a3Head();}catch(e){console.warn('5.07 cdue',e);}}else x=_r.apply(this,arguments);
+    if(screen==='cdue'||screen==='sdue'){try{ftNavDraw();}catch(e){}}return x;};}
+  try{FT_RULE.push([/'cdue'/,'sale']);FT_WORDS.push([/'cdue'/,'naya kada debt credit ekathu ekathukaranna ganna']);}catch(e){}
+  {const _h=renderHome0;renderHome0=function(){const r=_h.apply(this,arguments);try{const g=document.querySelector('#homeBody .ftGrid');if(g&&S.cfg&&!g.querySelector('[data-cdue]')){const b=ftMk("go('cdue')",'📒','කඩ ණය','ලොකුම / පරණම උඩින් · ⏳ එවෙලේම');b.dataset.cdue='1';b.dataset.ft='sale';b.dataset.q='0';b.style.display=(S.fTab||'today')==='sale'?'':'none';
+        const p=g.querySelector('button.tile[onclick*="\'pay\'"]');if(p)p.insertAdjacentElement('afterend',b);else g.appendChild(b);}}catch(e){console.warn('5.07 home',e);}return r;};}
+  /* fresh lists from the PC → the open list shows them (never while something is being typed) */
+  {const _s=sync;sync=async function(){const r=await _s.apply(this,arguments);try{if(screen==='cdue'&&!document.querySelector('main input:focus,main select:focus,main textarea:focus'))render();}catch(e){}return r;};}
+  document.head.insertAdjacentHTML('beforeend','<style>.cdc{padding:10px}.cdr{display:flex;gap:8px;align-items:flex-start}.cdr .grow{flex:1;min-width:0;overflow-wrap:anywhere;cursor:pointer}.cdn{text-align:right;white-space:nowrap}.cdb{margin-top:8px;border-top:1px solid #e5e7eb;padding-top:6px}</style>');
+})();
+
 </script>
 </body>
 </html>
