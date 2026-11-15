@@ -881,7 +881,7 @@ function lrChip(k){const el=document.querySelector(`#loadList [data-lrow="${CSS.
 
 
 /* ================= v4.5.2 · 🕓 04:00 වැඩ දවස · 🔐 encrypt (lx) · 📋 කම්හලේ අලුත් ඇණවුම් + 🔴 hold live · 🔄 update තීරුව ================= */
-const LA_VER='5.1.7';
+const LA_VER='5.1.8';
 /* v5.1 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v5.1.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuL',A='l',_f=window.fetch.bind(window);
@@ -1037,7 +1037,7 @@ function v5Day(T){T=T||today();const ev=v5Ev(T),one=k=>ev.filter(e=>e.k===k)[0]|
 /* new / changed / cancelled event → this phone, the other phones (day doc) and the PC (mailbox) */
 function v5Put(e,label){S.lv=S.lv||[];const now=new Date().toISOString();{const ex=v5Find(e.uid,e.d||today());e.rev=Math.max(num(e.rev),ex?num(ex.rev):0)+1;if(ex&&!e.void&&ex.void&&!e.first)e.first=now;}e.at=now;e.first=e.first||now;e.by=e.by||v5Me();e.d=e.d||today();e.dev=ensureDev();
   S.lv.push(JSON.parse(JSON.stringify(e)));S.lv=S.lv.filter(x=>x.d>=addDays(today(),-10)).slice(-400);
-  const p={uid:e.uid,rev:e.rev,k:e.k,d:e.d,at:e.at,first:e.first,by:e.by,dev:e.dev,...(e.amt!==undefined?{amt:e.amt}:{}),...(e.cat?{cat:e.cat}:{}),...(e.note?{note:e.note}:{}),...(e.den?{den:e.den}:{}),...(e.opt?{opt:e.opt}:{}),...(e.void?{void:1}:{})};
+  const p={uid:e.uid,rev:e.rev,k:e.k,d:e.d,at:e.at,first:e.first,by:e.by,dev:e.dev,...(e.amt!==undefined?{amt:e.amt}:{}),...(e.cat?{cat:e.cat}:{}),...(e.note?{note:e.note}:{}),...(e.den?{den:e.den}:{}),...(e.opt?{opt:e.opt}:{}),...(e.emp?{emp:e.emp,en:e.en||''}:{}),...(e.void?{void:1}:{})};/* 5.1.8 H-11: 💵 අත්තිකාරම් — කාටද */
   const text=`${label}\n\n${sbpEncode('lday',p)}`;S.sent.push({t:'lday',uid:p.uid,rev:p.rev,d:p.d,at:p.at,by:p.by,label,text});S.sent=S.sent.slice(-400);
   if(S.cloud){const id=`lday_${p.uid}_${p.rev}`;if(!S.outbox.some(x=>x.id===id))S.outbox.push({id,code:sbpEncode('lday',p),at:p.at});S.sent[S.sent.length-1].cloudId=id;}else shareSheet(label,text,null);save();
   try{lrSync(true).then(()=>{if(screen==='home')renderHome();});}catch(x){}try{cloudFlush();}catch(x){}}
@@ -1053,12 +1053,15 @@ function v5FloatSheet(u){const old=u?v5Find(u):null;window._v5den={...((old&&old
 function v5DenDraw(){const t=V5_DEN.reduce((a,d)=>a+d*num(window._v5den[d]),0);$('v5flT').textContent=t.toLocaleString('en-US');if(t)$('v5flA').value=t;}
 /* 💸 වියදම් */
 function v5ExSheet(u,cat){const old=u?v5Find(u):null;cat=cat||(old&&old.cat)||'fuel';
-  sheet(old?'✏️ 💸 වියදම වෙනස් කරන්න':'💸 වියදමක් දාන්න',`<div class="v5cats">${Object.entries(V5_EX).map(([k,t])=>`<button class="btn sm ${k===cat?'primary':'light'}" onclick="v5ExCat('${k}')">${t}</button>`).join('')}</div><input type="hidden" id="v5exC" value="${cat}">
-   <div class="field"><label>මුදල (රු.)</label><input id="v5exA" type="text" inputmode="decimal" value="${old?num(old.amt):''}" placeholder="උදා: 3500"></div>
+  /* 5.1.8 · 032 H-11: 💵 අත්තිකාරම් — ලොරියේ අයට විතරයි (නම් PC එකෙන් එනවා · PC එකේ ✅ කළාම පඩියෙන් ඉබේම අඩු) */
+  const advOk=h11St().length>0||!!(old&&old.cat==='adv');if(cat==='adv'&&!advOk)cat='fuel';window._h11emp=old&&old.cat==='adv'&&old.emp?{id:String(old.emp),n:String(old.en||'')}:null;
+  sheet(old?'✏️ 💸 වියදම වෙනස් කරන්න':'💸 වියදමක් දාන්න',`<div class="v5cats">${Object.entries(V5_EX).map(([k,t])=>`<button class="btn sm ${k===cat?'primary':'light'}" onclick="v5ExCat('${k}')">${t}</button>`).join('')}${advOk?`<button class="btn sm ${cat==='adv'?'primary':'light'}" onclick="v5ExCat('adv')">${H11_ADV}</button>`:''}</div><input type="hidden" id="v5exC" value="${cat}">
+   ${advOk?h11WhoHtml(cat):''}<div class="field"><label>මුදල (රු.)</label><input id="v5exA" type="text" inputmode="decimal" value="${old?num(old.amt):''}" placeholder="උදා: 3500"></div>
    <div class="field"><label>සටහන (ඕනේ නම්)</label><input id="v5exN" maxlength="80" value="${esc(old&&old.note||'')}"></div><div class="small muted">📷 ෆොටෝ ඕනේ නැහැ.</div>`,
    [{t:old?'💾 වෙනස සුරකින්න':'✅ දාන්න',c:'primary',f:()=>{const raw=String($('v5exA').value).replace(/,/g,'').trim();const a=Math.round(num(raw)*100)/100;if(!/^\d+(\.\d{1,2})?$/.test(raw)||!(a>0)||a>500000){toast('මුදල හරියට දාන්න (රු. 1 – 5,00,000)','err');return;}
-      const c=$('v5exC').value;if(!old){const dup=v5Day().ex.find(x=>!x.mine&&x.cat===c&&Math.abs(num(x.amt)-a)<0.01&&Math.abs(Date.now()-new Date(x.first||x.at).getTime())<15*60e3);if(dup&&!confirm(`🔁 ${dup.by||'වෙන phone එකක'}ගේ phone එකෙනුත් ${V5_EX[c]} ${a.toLocaleString('en-US')} දැම්මා (${lrHM(dup.first||dup.at)}). මේක වෙනම වියදමක්ද? (ඔව් නම් දාන්න)`))return;}
-      const e=old?{...old}:{k:'ex',uid:uid()};delete e.mine;e.cat=c;e.amt=a;e.note=$('v5exN').value.trim().slice(0,80);closeSheet();v5Put(e,`💸 ${V5_EX[c]} රු. ${a.toLocaleString('en-US')}`);toast('💸 දැම්මා');}},
+      const c=$('v5exC').value,adv=c==='adv',w=adv?window._h11emp:null;if(adv&&!(w&&w.id)){toast('👷 කාටද කියලා නම තෝරන්න','err');return;}
+      if(!old){const dup=v5Day().ex.find(x=>!x.mine&&x.cat===c&&(!adv||x.emp===w.id)&&Math.abs(num(x.amt)-a)<0.01&&Math.abs(Date.now()-new Date(x.first||x.at).getTime())<15*60e3);if(dup&&!confirm(`🔁 ${dup.by||'වෙන phone එකක'}ගේ phone එකෙනුත් ${adv?H11_ADV+' — '+w.n:V5_EX[c]} ${a.toLocaleString('en-US')} දැම්මා (${lrHM(dup.first||dup.at)}). මේක වෙනම ${adv?'අත්තිකාරමක්':'වියදමක්'}ද? (ඔව් නම් දාන්න)`))return;}
+      const e=old?{...old}:{k:'ex',uid:uid()};delete e.mine;e.cat=c;e.amt=a;e.note=$('v5exN').value.trim().slice(0,80);if(adv){e.emp=w.id;e.en=w.n;}else{delete e.emp;delete e.en;}closeSheet();v5Put(e,adv?`💵 අත්තිකාරම් — ${w.n} රු. ${a.toLocaleString('en-US')}`:`💸 ${V5_EX[c]} රු. ${a.toLocaleString('en-US')}`);toast(adv?'💵 දැම්මා — PC එකේ ✅ කළාම පඩියෙන් අඩු වෙනවා':'💸 දැම්මා');}},
     ...(old?[{t:'🗑 අයින් කරන්න',c:'light',f:()=>{if(!confirm('මේ වියදම අයින් කරන්නද?'))return;const e={...old,void:1};delete e.mine;closeSheet();v5Put(e,'💸 වියදම අයින් කළා');}}]:[])]);}
 function v5ExCat(k){$('v5exC').value=k;document.querySelectorAll('.v5cats button').forEach(b=>{b.className='btn sm '+(b.getAttribute('onclick').includes(`'${k}'`)?'primary':'light');});}
 /* 🚚 / 🏁 / 🚫 */
@@ -1080,8 +1083,8 @@ function v5Undo(k){const D=v5Day(),e=D[k];if(!e){toast('ඒක ඔබලා න�
 /* the home screen by the step of the day */
 function v5Chips(D){const L=[['A','🔢 ගණන්'],['B','📦 පටවන'],['C','🛣️ ගමනේ'],['E','🏁 ඉවරයි']],ord={A:0,B:1,C:2,E:3,F:3},cur=ord[D.step];
   return `<div class="v5chips">${L.map(([k,t],i)=>`<span class="${i<cur?'done':i===cur?'on':''}">${i<cur?'✓ ':''}${t}</span>`).join('<i>›</i>')}</div>`;}
-function v5ExCard(D,top){return `<div class="card v5ex ${top?'v5top':''}"><div class="v5hd"><h3>💸 වියදම්</h3><b>රු. ${D.exT.toLocaleString('en-US')}</b></div>${D.ex.map(e=>`<div class="v5row"><span>${V5_EX[e.cat]||e.cat}${e.note?' · '+esc(e.note):''}<small>${esc(lrHM(e.first||e.at))} · ${e.mine?'📱 මගේ':'📱 '+esc(e.by||'')}</small></span><b>${num(e.amt).toLocaleString('en-US')}</b>${e.mine&&v5Edit(e)?`<button class="btn sm light" onclick="v5ExSheet('${e.uid}')">✏️</button>`:''}</div>`).join('')||'<div class="small muted">තවම වියදම් නැහැ</div>'}
-   <div class="v5cats">${Object.entries(V5_EX).map(([k,t])=>`<button class="btn sm light" onclick="v5ExSheet('','${k}')">${t}</button>`).join('')}</div></div>`;}
+function v5ExCard(D,top){return `<div class="card v5ex ${top?'v5top':''}"><div class="v5hd"><h3>💸 වියදම්</h3><b>රු. ${D.exT.toLocaleString('en-US')}</b></div>${D.ex.map(e=>`<div class="v5row"><span>${e.cat==='adv'?H11_ADV+' — '+esc(e.en||''):V5_EX[e.cat]||e.cat}${e.note?' · '+esc(e.note):''}<small>${esc(lrHM(e.first||e.at))} · ${e.mine?'📱 මගේ':'📱 '+esc(e.by||'')}</small></span><b>${num(e.amt).toLocaleString('en-US')}</b>${e.mine&&v5Edit(e)?`<button class="btn sm light" onclick="v5ExSheet('${e.uid}')">✏️</button>`:''}</div>`).join('')||'<div class="small muted">තවම වියදම් නැහැ</div>'}
+   <div class="v5cats">${Object.entries(V5_EX).map(([k,t])=>`<button class="btn sm light" onclick="v5ExSheet('','${k}')">${t}</button>`).join('')}${h11St().length?`<button class="btn sm light" onclick="v5ExSheet('','adv')">${H11_ADV}</button>`:''}</div></div>`;}
 function v5FlCard(D){return `<div class="card v5fl"><div class="v5hd"><h3>🪙 සිල්ලර</h3><b>${D.flT?'අද රු. '+D.flT.toLocaleString('en-US'):'තවම නැහැ'}</b></div>${D.fl.map(e=>`<div class="v5row"><span>රු. ${num(e.amt).toLocaleString('en-US')}<small>${esc(lrHM(e.first||e.at))} · ${e.mine?'📱 මගේ':'📱 '+esc(e.by||'')}</small></span>${e.mine&&v5Edit(e)?`<button class="btn sm light" onclick="v5FloatSheet('${e.uid}')">✏️</button>`:''}</div>`).join('')}<button class="btn ${D.flT?'light':'primary'} block" onclick="v5FloatSheet()">🪙 සිල්ලර ${D.flT?'තව ':''}දාන්න</button></div>`;}
 function v5LorryCard(D){const st=D.st;return `<div class="card lr-card v5lorry"><div class="lr-top"><div><div class="lr-k">🚚 ලොරියේ දැන් — හැම බඩුවක්ම</div><div class="lr-big">${st.sum} <small>පැකට් · ${Object.keys(st.tot).length} වර්ග</small></div></div>${S.cloud?`<button class="btn light sm" onclick="lrSync(true).then(()=>renderHome())">🔄</button>`:''}</div>
    <input type="search" class="v5q" placeholder="🔎 සොයන්න (උදා: 50g)" oninput="v5Filter(this.value)">${lrTableHtml(st)}${lrSum(st.rem.dm)?`<div class="warnbox small">⚠️ Damage ${lrSum(st.rem.dm)}ක් ලොරියේ — කම්හලට බාන්න මතක් කරන්න.</div>`:''}
@@ -1138,6 +1141,20 @@ const FBG=(function(){const K='sbpFbG',LIM=8000;const day=()=>new Intl.DateTimeF
 (function(){const _s=sendUnload;sendUnload=function(){try{const d=unloadDraft(),day=($('unloadDate')||{}).value||d.d||today();
     if(!d.all&&!d.sentRev&&!d._cntOk&&day===today()&&Object.keys(d.i||{}).length){const D=v5Day(day);if(D&&!D.counted&&!D.nt&&!D.fin){if(!confirm('⚠️ අද ලොරිය තාම 🔢 ගණන් කරලා නැහැ.\n\nමුලින් ලොරියේ ඉතුරු බඩු ගණන් කරලා, ඊට පස්සේ බාන එක හරි — නැත්නම් ගණන ගැළපෙන්නේ නැහැ.\n\nඑහෙමම යවන්නද? (Cancel = මුලින් ගණන් කරන්නම්)'))return;d._cntOk=1;}}}catch(e){}
   return _s.apply(this,arguments);};})();
+/* ================= 5.1.8 · 032 H-11 (owner 14 Nov 23:21 — the one exception to "no lorry app changes") · 💸 → 💵 අත්තිකාරම් =================
+   ලොරියේ අයට (driver / helper) විතරයි: නම PC එකෙන් එන ලැයිස්තුවෙන් (cfg `st` = [[id, නම]]) තෝරලා ගාණ.
+   වියදමක් වගේම ලොරි සල්ලි වලින් අඩු වෙනවා (රෑ cash ගණන වෙනස් නැහැ) — PC එකේ රෑ ගණන සුරකිද්දී (✅) 1110 සේවක අත්තිකාරම් → පඩියෙන් ඉබේම අඩු.
+   PC එක ලැයිස්තුවක් එවලා නැත්නම් (පරණ PC / නම් නැහැ) 💵 බොත්තම පේන්නේ නැහැ — කලින් වගේමයි. */
+const H11_ADV='💵 අත්තිකාරම්';
+function h11St(){const L=S.cfg&&Array.isArray(S.cfg.st)?S.cfg.st:[];return L.filter(x=>Array.isArray(x)&&x[0]&&x[1]).map(x=>[String(x[0]).slice(0,40),String(x[1]).slice(0,40)]);}
+function h11WhoHtml(cat){const sel=window._h11emp,L=h11St();if(sel&&sel.id&&!L.some(x=>x[0]===sel.id))L.push([sel.id,sel.n||'?']);
+  return `<div id="h11who" style="${cat==='adv'?'':'display:none'}"><div class="field"><label>👷 කාටද? (ලොරියේ අය)</label><div class="h11n">${L.map(([id,n])=>`<button type="button" class="btn sm ${sel&&sel.id===id?'primary':'light'}" data-id="${esc(id)}" data-n="${esc(n)}" onclick="h11Pick(this)">${esc(n)}</button>`).join('')}</div></div><div class="small muted h11hint">💵 ලොරි සල්ලි වලින් දුන්නා → රෑ ගණනෙන් අඩු වෙනවා · PC එකේ ✅ කළාම පඩියෙන් ඉබේම අඩු වෙනවා.</div></div>`;}
+function h11Pick(b){window._h11emp={id:b.dataset.id,n:b.dataset.n};document.querySelectorAll('.h11n button').forEach(x=>{x.className='btn sm '+(x===b?'primary':'light');});}
+(function(){const _c=v5ExCat;v5ExCat=function(k){const r=_c.apply(this,arguments);try{const w=$('h11who');if(w)w.style.display=k==='adv'?'':'none';}catch(e){}return r;};})();
+/* the PC sends the names with the lorry cfg; a report (rep) without them keeps the last list */
+(function(){const _ac=applyCodes;applyCodes=function(codes){const ex=(codes||[]).map(c=>c&&!c.error&&(c.type==='cfg'?c.data:(c.type==='rep'&&c.data?c.data.cfg:null))).filter(x=>x&&typeof x==='object').pop(),keep=S.cfg&&S.cfg.st;
+  const r=_ac.apply(this,arguments);try{if(S.cfg){if(ex&&Array.isArray(ex.st))S.cfg.st=ex.st.filter(x=>Array.isArray(x)&&x[0]&&x[1]).slice(0,30).map(x=>[String(x[0]).slice(0,40),String(x[1]).slice(0,40)]);else if(keep&&!S.cfg.st)S.cfg.st=keep;save();}}catch(e){}return r;};})();
+document.head.insertAdjacentHTML('beforeend','<style id="h11css">.h11n{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.h11n .btn{min-height:44px}.h11hint{margin:2px 0 8px}</style>');
 </script>
 </body>
 </html>
