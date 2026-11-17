@@ -52,7 +52,7 @@ textarea{width:100%;min-height:110px;border:1.5px solid #cbd5e1;border-radius:12
 .row.has{background:#fef2f2}.row.has .sz{color:var(--red)}
 .row .l{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .row .t{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.sz{font-weight:800;font-size:18px;overflow-wrap:anywhere}
+.sz{font-weight:800;font-size:18px;overflow-wrap:anywhere}.sz .mrp{font-weight:400;font-size:12px;color:#6b7280;white-space:nowrap}.row.has .sz .mrp{color:#6b7280}
 .amt{font-weight:800;font-size:15px;color:var(--ok);background:var(--okbg);border-radius:8px;padding:1px 8px;white-space:nowrap}
 .amt:empty{display:none}
 .pr{display:flex;align-items:center;gap:6px;font-size:13px;flex-wrap:wrap}
@@ -147,7 +147,7 @@ if(SW_OK)try{navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}
    Offline first (v1.8: the offline helper starts first and ⚙️ / the footer say whether this phone can open it without internet). The product list + wholesale prices come from the PC through Firebase (boxes/<box>/out/cfg · out/rep — the same
    messages the lorry app reads; the PC v4.7.3 sends a new one whenever a price changes). Also accepts a pasted WhatsApp message,
    and the lorry app's saved list on the same phone (read only). Nothing is ever sent anywhere. */
-const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.9',QMAX=9999;
+const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.10',QMAX=9999;
 const FS='https://firestore.googleapis.com/v1/projects/';
 const SIZE_RE=/^(\d+(?:\.\d+)?(?:g|kg|ml|l|P)|Card|Packet)$/i;
 const $=id=>document.getElementById(id);
@@ -170,7 +170,7 @@ function sbpDecodeAll(text){const out=[];const src=String(text||'');SBP_CODE_RE.
   if(!out.length&&/SBP1:/.test(src))out.push({type:'?',error:'cut'});return out;}
 
 /* ---- state ---- */
-function blank(){return {p:[],src:'',at:'',prices:{},cloud:null,pulledAt:'',cloudErr:'',fp:[],bill:{q:{},pr:{},f:{},dt:'%',dv:''}};}
+function blank(){return {p:[],src:'',at:'',prices:{},cloud:null,pulledAt:'',cloudErr:'',fp:[],fpAt:'',fpErr:'',pm:{},bill:{q:{},pr:{},f:{},dt:'%',dv:''}};}
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');if(x&&typeof x==='object'){const b=blank(),bl=x.bill&&typeof x.bill==='object'?x.bill:{};
   return {...b,...x,p:Array.isArray(x.p)?x.p:[],prices:x.prices&&typeof x.prices==='object'?x.prices:{},bill:{...b.bill,...bl,q:bl.q&&typeof bl.q==='object'?bl.q:{},pr:bl.pr&&typeof bl.pr==='object'?bl.pr:{},f:bl.f&&typeof bl.f==='object'?bl.f:{},dt:bl.dt==='rs'?'rs':'%',dv:String(bl.dv??'')}};}}catch(e){}return blank();}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast('Phone එකේ save කරන්න බැරි වුණා');}}
@@ -189,6 +189,8 @@ function takeCfg(cfg,src,force){const p=cleanP(cfg&&cfg.p);if(!p.length)return f
     const nd=Array.isArray(cfg.nd)?cfg.nd.map(String):[],dm=num(cfg.dmax)>0?num(cfg.dmax):0,fa=cfg.fa===0?0:1;if(JSON.stringify([fr,nd,dm,fa])!==JSON.stringify([S.fr,S.nd,S.dmax,S.fa])){S.fr=fr;S.nd=nd;S.dmax=dm;S.fa=fa;rch=true;}}
   /* 🏭 v1.9: the PC's later-day prices (pf) + the phone price changes it has taken (pu) — only a PC list that carries them (v5.5.10+) changes what is kept */
   if(Array.isArray(cfg.pu)){const pf={};Object.entries(cfg.pf&&typeof cfg.pf==='object'?cfg.pf:{}).forEach(([k,v])=>{if(Array.isArray(v)&&num(v[0])>0&&/^\d{4}-\d{2}-\d{2}$/.test(String(v[1]||'')))pf[String(k)]=[r2(num(v[0])),String(v[1])];});const pu=cfg.pu.map(String).slice(0,60);if(JSON.stringify([pf,pu])!==JSON.stringify([S.pf,S.pu])){S.pf=pf;S.pu=pu;rch=true;}}
+  /* 🏷️ v1.10 (035 A2): retail price (MRP) per item from the PC — shown small beside the size, never used in the bill */
+  if(cfg.pm&&typeof cfg.pm==='object'){const pm={};Object.entries(cfg.pm).forEach(([k,v])=>{if(num(v)>0)pm[String(k)]=r2(num(v));});if(JSON.stringify(pm)!==JSON.stringify(S.pm||{})){S.pm=pm;rch=true;}}
   const ch=JSON.stringify(p)!==JSON.stringify(S.p)||rch;if(!ch&&!force&&S.src)return false;S.p=p;S.src=src;if(at||force)S.at=at||new Date().toISOString();save();return ch;}
 function fromLorry(){try{const x=JSON.parse(localStorage.getItem(LORRY_KEY)||'null');if(x&&x.cloud&&x.cloud.p)setCloud(x.cloud.p,x.cloud.b);if(x&&x.cfg)return x.cfg;}catch(e){}return null;}
 function syncLorry(){const c=fromLorry();return c?takeCfg(c,'lorry',false):false;}
@@ -214,20 +216,30 @@ function softRender(){if(typing()){pendingRender=true;return;}pendingRender=fals
    Prices that start on a later day: the PC's own list carries them (“pf”); with an older PC the factory phone's rows (at = '') are used instead. */
 const FP_DAYS=7;let fpBusy=false,_fpm={k:null,m:null};
 function dayLK(){try{return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Colombo'});}catch(e){return new Date().toISOString().slice(0,10);}}
-function fpClean(arr){const out=[];(Array.isArray(arr)?arr:[]).forEach(x=>{if(!Array.isArray(x)||!x[0]||!(num(x[1])>0)||!/^\d{4}-\d{2}-\d{2}$/.test(String(x[2]||'')))return;const old=x[3]===null||x[3]===undefined||x[3]===''?null:r2(num(x[3]));out.push([String(x[0]),r2(num(x[1])),String(x[2]),old,String(x[4]||''),String(x[5]||'')]);});return out.slice(0,400);}
+function fpClean(arr){const out=[];(Array.isArray(arr)?arr:[]).forEach(x=>{if(!Array.isArray(x)||!x[0]||!/^\d{4}-\d{2}-\d{2}$/.test(String(x[2]||'')))return;const m=x.length>6&&x[6]!==null&&x[6]!==''&&num(x[6])>0?r2(num(x[6])):null;if(!(num(x[1])>0)&&m===null)return;const old=x[3]===null||x[3]===undefined||x[3]===''?null:r2(num(x[3]));const r=[String(x[0]),num(x[1])>0?r2(num(x[1])):0,String(x[2]),old,String(x[4]||''),String(x[5]||'')];if(m!==null)r.push(m);out.push(r);});return out.slice(0,400);}
 async function fpPull(){if(!S.cloud||fpBusy||navigator.onLine===false)return false;fpBusy=true;
   try{const ac=window.AbortController?new AbortController():null,tm=setTimeout(()=>{try{ac&&ac.abort();}catch(e){}},15000);let r;
-    try{r=await fetch(`${FS}${S.cloud.p}/databases/(default)/documents/boxes/${S.cloud.b}/out/fp`,{cache:'no-store',signal:ac?ac.signal:undefined});}catch(e){return false;}finally{clearTimeout(tm);}
-    let list=[];if(r.status!==404){if(!r.ok)return false;let j;try{j=await r.json();}catch(e){return false;}
+    try{r=await fetch(`${FS}${S.cloud.p}/databases/(default)/documents/boxes/${S.cloud.b}/out/fp`,{cache:'no-store',signal:ac?ac.signal:undefined});}catch(e){S.fpErr='Internet නැහැ';save();return false;}finally{clearTimeout(tm);}
+    let list=[];if(r.status!==404){if(!r.ok){S.fpErr=r.status===429?'Firebase අද සීමාව ඉවරයි':r.status===403?'Firebase අවසර නැහැ':'Firebase දෝෂය '+r.status;save();return false;}let j;try{j=await r.json();}catch(e){S.fpErr='කියවන්න බැරි වුණා';save();return false;}
       Object.entries(j.fields||{}).forEach(([k,v])=>{if(!k.startsWith('p_'))return;try{const x=JSON.parse((v&&v.stringValue)||'{}');list=list.concat(fpClean(x&&x.it));}catch(e){}});}
-    list.sort((a,b)=>a[4].localeCompare(b[4])||a[0].localeCompare(b[0]));
-    if(JSON.stringify(list)===JSON.stringify(S.fp||[]))return false;const was=fpCount();S.fp=list;save();return was>0||fpCount()>0;}
+    list.sort((a,b)=>a[4].localeCompare(b[4])||a[0].localeCompare(b[0]));S.fpAt=new Date().toISOString();S.fpErr='';
+    if(JSON.stringify(list)===JSON.stringify(S.fp||[])){save();return false;}const was=fpCount();S.fp=list;save();return was>0||fpCount()>0;}
   finally{fpBusy=false;}}
 function fpRows(id){if(_fpm.k!==S.fp){const m=new Map();(Array.isArray(S.fp)?S.fp:[]).forEach(e=>{if(!m.has(e[0]))m.set(e[0],[]);m.get(e[0]).push(e);});_fpm={k:S.fp,m};}return _fpm.m.get(id)||null;}
 function fpApply(id,v,pcOnly){const t=dayLK(),newPc=Array.isArray(S.pu),f=newPc&&S.pf?S.pf[id]:null;if(f&&f[1]<=t)v=f[0];/* the PC's own later-day price: its day has come */
   const L=pcOnly?null:fpRows(id);if(!L)return v;const lim=new Date(Date.now()-FP_DAYS*864e5).toISOString();
   L.forEach(e=>{if(e[2]>t)return;if(!e[4]){if(!newPc&&Math.abs(v-e[3])<0.005)v=e[1];return;}if(e[4]<lim)return;if(newPc&&e[5]&&S.pu.includes(e[5]))return;
-    if(e[3]===null?e[4]>String(S.at||''):Math.abs(v-e[3])<0.005)v=e[1];});return v;}
+    if(!(e[1]>0))return;/* MRP-only row */
+    if(e[4]>String(S.at||'')||(e[3]!==null&&Math.abs(v-e[3])<0.005))v=e[1];});return v;}
+/* 🔎 v1.10 (035 A1): why each factory-phone price is / is not used — shown in ⚙️ (nothing is dropped silently any more) */
+function fpWhy(e){const t=dayLK(),lim=new Date(Date.now()-FP_DAYS*864e5).toISOString(),newPc=Array.isArray(S.pu);
+  if(!(e[1]>0))return 'mrp';if(e[2]>t)return 'later';if(!e[4])return 'pcl';if(e[4]<lim)return 'old';if(newPc&&e[5]&&S.pu.includes(e[5]))return 'pc';
+  return e[4]>String(S.at||'')?'use':e[3]!==null?'pcnew':'use';}
+function fpDiag(){const last=new Map();(Array.isArray(S.fp)?S.fp:[]).forEach(e=>{if(e[4]&&e[1]>0)last.set(e[0],e);});const o={n:0,use:0,pc:0,later:0,old:0,pcnew:[]};
+  last.forEach(e=>{if(!prod(e[0]))return;o.n++;const w=fpWhy(e);if(w==='use'||w==='pcnew'){if(fpOn(e[0]))o.use++;else if(w==='use')o.pc++;else o.pcnew.push(e);}else if(o[w]!==undefined)o[w]++;});return o;}
+/* 🏷️ v1.10 (035 A2): retail price (MRP) — the PC's, or a newer one saved in the කම්හල් app that the PC has not taken yet */
+function mrpOf(id){let m=S.pm&&num(S.pm[id])>0?num(S.pm[id]):0;const L=fpRows(id);if(L){const t=dayLK(),lim=new Date(Date.now()-FP_DAYS*864e5).toISOString(),newPc=Array.isArray(S.pu);
+    L.forEach(e=>{if(e.length<7||!e[4]||e[2]>t||e[4]<lim)return;if(newPc&&e[5]&&S.pu.includes(e[5]))return;m=e[6];});}return m>0?m:0;}
 /* 🏭 shown only for a price that comes from the factory phone (not for the PC's own later-day price) */
 function fpOn(id){const p=prod(id),v=p&&num(p[2])>0?num(p[2]):0;return v>0&&!!fpRows(id)&&fpApply(id,v)!==fpApply(id,v,true);}
 function fpCount(){let n=0;const seen=new Set();(Array.isArray(S.fp)?S.fp:[]).forEach(e=>{if(!seen.has(e[0])){seen.add(e[0]);if(fpOn(e[0]))n++;}});return n;}
@@ -288,7 +300,7 @@ function render(){({items:renderItems,bill:renderBill,setup:renderSetup})[screen
 function renderCloud(){const el=$('cline');if(el&&screen==='items'){
     if(!S.p.length)el.innerHTML='';
     else if(!S.cloud)el.innerHTML=`<div class="cl bad"><span>⚠️</span><span class="grow">මිල ඉබේම අලුත් වෙන්නේ නැහැ — ⚙️ එකේ “📲 භාණ්ඩ ලැයිස්තුව” message එක එක පාරක් දාන්න</span></div>`;
-    else el.innerHTML=`<div class="cl ${S.cloudErr?'bad':''}"><span>${pulling?'⏳':S.cloudErr?'⚠️':'☁️'}</span><span class="grow">${pulling?'මිල ලැයිස්තුව බලනවා…':S.cloudErr?esc(S.cloudErr)+' — අන්තිමට ගත්ත මිල':'මිල අලුත්'}${S.at&&!pulling?' · PC '+esc(hm(S.at)):''}${!pulling&&fpCount()?' · 🏭 කම්හල් app මිල '+fpCount():''}</span><button onclick="cloudPull(true)" aria-label="මිල අලුත් කරන්න">🔄</button></div>`;}
+    else el.innerHTML=`<div class="cl ${S.cloudErr?'bad':''}"><span>${pulling?'⏳':S.cloudErr?'⚠️':'☁️'}</span><span class="grow">${pulling?'මිල ලැයිස්තුව බලනවා…':S.cloudErr?esc(S.cloudErr)+' — අන්තිමට ගත්ත මිල':'මිල අලුත්'}${S.at&&!pulling?' · PC '+esc(hm(S.at)):''}${!pulling&&fpCount()?' · 🏭 කම්හල් app මිල '+fpCount():''}${!pulling&&S.fpErr?' · 🏭 ⚠️ කම්හල් මිල කියවන්න බැහැ':''}</span><button onclick="cloudPull(true)" aria-label="මිල අලුත් කරන්න">🔄</button></div>`;}
   if(screen==='setup')renderCloudInfo();}
 
 /* ---- screen 1: items (one product open at a time) ---- */
@@ -297,7 +309,7 @@ function famSum(list){let pk=0,s=0,f=0;list.forEach(x=>{const n=qty(x.id);if(n){
 
 function chgOf(id){return hasOwn(id)&&price(id)!==basePrice(id);}
 function rowHtml(x){const n=qty(x.id),pr=price(x.id),chg=chgOf(x.id);
-  return `<div class="row ${n?'has':''}" data-r="${esc(x.id)}"><div class="l"><div class="t"><span class="sz">${esc(x.size)}</span><span class="amt">${n&&pr>0?'රු. '+money(line(x.id)):''}</span></div>
+  return `<div class="row ${n?'has':''}" data-r="${esc(x.id)}"><div class="l"><div class="t"><span class="sz">${esc(x.size)}${mrpOf(x.id)?`<span class="mrp"> · සිල්ලර ${money(mrpOf(x.id))}</span>`:''}</span><span class="amt">${n&&pr>0?'රු. '+money(line(x.id)):''}</span></div>
    <div class="pr"><label class="${chg?'chg':''}">රු.<input type="text" inputmode="decimal" autocomplete="off" value="${pr>0||hasOwn(x.id)?esc(String(pr)):''}" placeholder="මිල" aria-label="${esc(x.name)} මිල" onfocus="this.select()" onchange="setPrice(this.closest('.row').dataset.r,this.value)"></label><span class="cm">${chg?'වෙනස් කළා':''}</span><span class="need">${!(pr>0)&&!hasOwn(x.id)?'මිල දාන්න':''}</span><span class="frw">${freeHtml(x.id)}</span>${noDisc(x.id)?'<span class="ndt">🚫 වට්ටම් නැහැ</span>':''}</div></div>
    <div class="st"><button class="sb" aria-label="අඩු කරන්න" onclick="step(this.closest('.row').dataset.r,-1)">−</button><input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="${QMAX}" value="${n||''}" placeholder="0" aria-label="${esc(x.name)} ගණන" onfocus="this.select()" oninput="setQty(this.closest('.row').dataset.r,this.value)" onblur="if(this.value!==String(qty(this.closest('.row').dataset.r)||''))this.value=qty(this.closest('.row').dataset.r)||''"><button class="sb" aria-label="වැඩි කරන්න" onclick="step(this.closest('.row').dataset.r,1)">＋</button></div><div class="fedrow">${fedHtml(x.id)}</div></div>`;}
 function renderItems(){const el=$('list');renderCloud();$('qx').style.display=Q?'':'none';
@@ -358,9 +370,16 @@ function undoClear(){if(!UNDO)return;S.bill=UNDO;UNDO=null;save();undoBar();rend
 function clearBill(){if(!confirm('මේ බිල මකලා අලුත් බිලක් පටන් ගන්නද?'))return;S.bill={q:{},pr:{},f:{},dt:S.bill.dt||'%',dv:''};OPEN=null;Q='';$('q').value='';save();toast('🆕 අලුත් බිලක්');go('items');}
 
 /* ---- settings: where the list comes from + saved prices ---- */
+function fpInfo(){if(!S.cloud)return '';const d=fpDiag(),bad=`style="color:#9a3412"`;
+  let h=`<div style="margin-top:8px;padding-top:8px;border-top:1px dashed #e5e7eb">🏭 <b>කම්හල් app එකෙන් මිල</b>${S.fpAt?` · අන්තිමට කියෙව්වේ: <b>${esc(hm(S.fpAt))}</b>`:' · <span '+bad+'>තාම කියවලා නැහැ</span>'}`;
+  if(S.fpErr)h+=`<br><span ${bad}>⚠️ කියවන්න බැරි වුණා: ${esc(S.fpErr)}</span>`;
+  if(!d.n)h+=`<br><span class="muted">දැනට කම්හල් app එකෙන් ආපු අලුත් මිල නැහැ.</span>`;
+  else{h+=`<br>ලැබුණා <b>${d.n}</b> · දැන් පාවිච්චි කරනවා <b>${d.use}</b>${d.pc?` · PC මිලම (PC ගත්තා) ${d.pc}`:''}${d.later?` · පස්සේ දිනයකට ${d.later}`:''}${d.old?` · දින ${FP_DAYS}ට වඩා පරණයි ${d.old}`:''}`;
+    if(d.pcnew.length)h+=`<br><span ${bad}>⚠️ නොගත්තා ${d.pcnew.length} — ඊට පස්සේ PC එකේ මිල වෙනස් කරලා (PC මිල පාවිච්චි කරනවා): ${d.pcnew.slice(0,4).map(e=>{const p=prod(e[0]);return esc(p?p[1]:e[0])+' '+money(e[1]);}).join(' · ')}</span>`;}
+  return h+'</div>';}
 function renderCloudInfo(){const el=$('cloudInfo');if(!el)return;
   el.innerHTML=!S.cloud?'<span style="color:#9a3412">⚠️ තවම සකසලා නැහැ — පහළ “📲 භාණ්ඩ ලැයිස්තුව” message එක එක පාරක් දාන්න.</span>'
-   :`✅ සකසලා තියෙනවා. Internet තියෙනකොට app එක open කරන හැම පාරම PC එකේ අලුත්ම මිල ගන්නවා.<br>PC එකෙන් අන්තිම ලැයිස්තුව: <b>${esc(hm(S.at)||'—')}</b>${fpCount()?` · 🏭 කම්හල් app එකෙන් ආපු මිල <b>${fpCount()}</b>`:''}${S.pulledAt?` · අන්තිමට බැලුවේ: ${esc(hm(S.pulledAt))}`:''}${S.cloudErr?`<br><span style="color:#9a3412">⚠️ ${esc(S.cloudErr)}</span>`:''}`;
+   :`✅ සකසලා තියෙනවා. Internet තියෙනකොට app එක open කරන හැම පාරම PC එකේ අලුත්ම මිල ගන්නවා.<br>PC එකෙන් අන්තිම ලැයිස්තුව: <b>${esc(hm(S.at)||'—')}</b>${S.pulledAt?` · අන්තිමට බැලුවේ: ${esc(hm(S.pulledAt))}`:''}${S.cloudErr?`<br><span style="color:#9a3412">⚠️ ${esc(S.cloudErr)}</span>`:''}${fpInfo()}`;
   $('pullBtn').disabled=!S.cloud||pulling;$('pullBtn').textContent=pulling?'⏳ බලනවා…':'🔄 දැන් අලුත් කරන්න';}
 /* 📴 ready = this page is run by the offline helper AND the page is saved on this phone */
 let OFF='',offTries=0;/* '' checking · ok · wait · no */

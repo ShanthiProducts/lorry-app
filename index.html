@@ -80,6 +80,8 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 .cloudline{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;border-radius:12px;padding:8px 12px;margin-bottom:10px;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
 .cloudline.wait{background:#fffbeb;color:#92400e;border-color:#fde68a}.cloudline.bad{background:#fef2f2;color:#991b1b;border-color:#fecaca}.cloudline.off{background:#f1f5f9;color:#475569;border-color:#e2e8f0}
 .cloudline .grow{flex:1}.sug{font-size:12px;font-weight:800;color:#065f46;background:#d1fae5;border-radius:999px;padding:2px 8px;white-space:nowrap}
+.stb{border:1px solid #e5e7eb;background:#fff;border-radius:999px;font-size:13px;line-height:1;padding:4px 8px;margin-left:4px;color:#9ca3af;vertical-align:middle;white-space:nowrap}.stb.on{background:#fef3c7;border-color:#f59e0b;color:#92400e;font-weight:800}
+.starbox{background:#fffbeb;border:2px solid #f59e0b;color:#78350f;border-radius:12px;padding:10px 12px;margin-bottom:10px}.starbox .si{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px dashed #fcd34d}.starbox .si:first-of-type{border-top:0}.starbox .si .grow{flex:1;font-weight:700}
 .sendstate{border-radius:12px;padding:12px;font-weight:800;margin-bottom:10px;background:#eff6ff;color:#1e3a8a;border:1px solid #bfdbfe}.sendstate.ok{background:#ecfdf5;color:#065f46;border-color:#a7f3d0}.sendstate.wait{background:#fffbeb;color:#92400e;border-color:#fde68a}
 .lockbox{border:2px solid #86efac;background:#f0fdf4}
 .row2{display:flex;justify-content:space-between;gap:8px}.hbtns{display:flex;flex-wrap:wrap;gap:6px}
@@ -137,7 +139,7 @@ textarea{min-height:150px;font:13px ui-monospace,monospace}
 
   <section class="screen" id="s-load">
     <div class="card"><div class="field"><label for="loadDate">📅 පටවන දිනය</label><input type="date" id="loadDate" onchange="loadDraft().d=this.value;save()"></div></div>
-    <div id="loadInfo"></div><div id="loadSug"></div><div id="loadScan"></div>
+    <div id="loadInfo"></div><div id="loadSug"></div><div id="loadScan"></div><div id="loadStar"></div>
     <div class="tools"><input type="search" id="loadQ" placeholder="🔎 භාණ්ඩය සොයන්න" oninput="loadQ=this.value;renderLoad();this.focus()"><label class="check" style="margin:0"><input type="checkbox" id="loadOnly" onchange="loadOnly=this.checked;renderLoad()"> දාපු ඒවා</label></div>
     <div id="loadList"></div>
     <div class="card"><div class="field"><label for="loadNote">සටහන (ඕනේ නම්)</label><input type="text" id="loadNote" maxlength="200" onchange="loadDraft().note=this.value;save()"></div></div>
@@ -881,7 +883,7 @@ function lrChip(k){const el=document.querySelector(`#loadList [data-lrow="${CSS.
 
 
 /* ================= v4.5.2 · 🕓 04:00 වැඩ දවස · 🔐 encrypt (lx) · 📋 කම්හලේ අලුත් ඇණවුම් + 🔴 hold live · 🔄 update තීරුව ================= */
-const LA_VER='5.1.8';
+const LA_VER='5.1.9';
 /* v5.1 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v5.1.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuL',A='l',_f=window.fetch.bind(window);
@@ -1155,6 +1157,31 @@ function h11Pick(b){window._h11emp={id:b.dataset.id,n:b.dataset.n};document.quer
 (function(){const _ac=applyCodes;applyCodes=function(codes){const ex=(codes||[]).map(c=>c&&!c.error&&(c.type==='cfg'?c.data:(c.type==='rep'&&c.data?c.data.cfg:null))).filter(x=>x&&typeof x==='object').pop(),keep=S.cfg&&S.cfg.st;
   const r=_ac.apply(this,arguments);try{if(S.cfg){if(ex&&Array.isArray(ex.st))S.cfg.st=ex.st.filter(x=>Array.isArray(x)&&x[0]&&x[1]).slice(0,30).map(x=>[String(x[0]).slice(0,40),String(x[1]).slice(0,40)]);else if(keep&&!S.cfg.st)S.cfg.st=keep;save();}}catch(e){}return r;};})();
 document.head.insertAdjacentHTML('beforeend','<style id="h11css">.h11n{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.h11n .btn{min-height:44px}.h11hint{margin:2px 0 8px}</style>');
+
+/* ================= 5.1.9 · 035 A3 · ⭐ “පැකට් අංශයෙන් ගන්න” ලකුණ (owner 17 Nov 16:25) =================
+   While loading: tap ⭐ beside an item → remember to take it from the packing section (count optional).
+   A box on top lists them; ✅ “ගත්තා” removes one. Sending with ⭐ left → a reminder (does not stop).
+   A reminder ONLY: kept on this phone (S.star) — never sent; lorry stock / cash / reports do not change. */
+(function(){
+  const ST=()=>{if(!S.star||typeof S.star!=='object'||!S.star.i||typeof S.star.i!=='object')S.star={i:{}};return S.star;};
+  const left=()=>Object.entries(ST().i).filter(([id])=>id).sort((a,b)=>String(a[1].d||'').localeCompare(String(b[1].d||''))||porder(a[0])-porder(b[0]));
+  const txt=([id,x])=>pname(id,x.nm)+(x.n?' × '+x.n:'');
+  window.starTap=function(id){const st=ST(),x=st.i[id];
+    if(x){delete st.i[id];save();vibrate();toast('⭐ අයින් කළා');renderLoad();return;}
+    const a=prompt(`⭐ ${pname(id)} — පැකට් අංශයෙන් ගන්න.\nගණන (ඕනේ නම් — හිස්ව OK කරන්නත් පුළුවන්):`,'');if(a===null)return;
+    const n=Math.max(0,Math.floor(Number(String(a).replace(/[^\d.]/g,''))||0));st.i[id]={n:n||0,d:today(),at:new Date().toISOString(),nm:pname(id)};save();vibrate();toast('⭐ ලකුණු කළා — උඩ කොටුවේ පේනවා');renderLoad();};
+  window.starGot=function(id){const st=ST();if(!st.i[id])return;delete st.i[id];save();vibrate();toast('✅ ගත්තා');renderLoad();};
+  window.starClear=function(){if(!confirm('⭐ ලකුණු ඔක්කොම අයින් කරන්නද?'))return;S.star={i:{}};save();renderLoad();};
+  function boxHtml(){const L=left();if(!L.length)return '';const t=today(),old=L.some(([,x])=>x.d&&x.d<t);
+    return `<div class="starbox"><div style="font-weight:900">⭐ පැකට් අංශයෙන් ගන්න තියෙනවා (${L.length})${old?' <span class="small">· ⚠️ කලින් දවසක ඒවා ඉතුරුයි</span>':''}</div>`+
+      L.map(e=>`<div class="si"><span class="grow">${esc(txt(e))}${e[1].d&&e[1].d<t?` <span class="small">(${esc(e[1].d===yday()?'ඊයේ':e[1].d)})</span>`:''}</span><button class="btn light sm" onclick="starGot('${esc(e[0])}')">✅ ගත්තා</button></div>`).join('')+
+      `<div class="small" style="margin-top:6px">ලකුණක් විතරයි — ලොරි ගණන් / සල්ලි වෙනස් වෙන්නේ නැහැ.${L.length>1?` <button class="btn light sm" onclick="starClear()">🧹 ඔක්කොම අයින්</button>`:''}</div></div>`;}
+  function yday(){try{const d=new Date(today()+'T00:00:00Z');d.setUTCDate(d.getUTCDate()-1);return d.toISOString().slice(0,10);}catch(e){return '';}}
+  const btn=id=>{const x=ST().i[id];return `<button class="stb${x?' on':''}" onclick="event.stopPropagation();starTap('${esc(id)}')" aria-label="පැකට් අංශයෙන් ගන්න ලකුණ">${x?'⭐'+(x.n?' '+x.n:''):'☆'}</button>`;};
+  const _r=renderLoad;renderLoad=function(){const r=_r.apply(this,arguments);try{if(screen!=='load')return r;const b=$('loadStar');if(b)b.innerHTML=boxHtml();
+      document.querySelectorAll('#loadList [data-lrow]').forEach(row=>{const id=row.getAttribute('data-lrow'),l=row.querySelector('.lbl');if(l&&!l.querySelector('.stb'))l.insertAdjacentHTML('beforeend',btn(id));});}catch(e){console.warn('5.1.9 star',e);}return r;};
+  const _s=sendLoad;sendLoad=function(){try{const d=loadDraft(),L=left();if(L.length&&!(d.sentRev&&!d.unlock)&&!confirm(`⭐ පැකට් අංශයෙන් ගන්න ඉතුරුයි:\n${L.map(e=>'• '+txt(e)).join('\n')}\n\nඒවා අමතක වුණේ නැද්ද? තාම යවන්නද? (OK = යවන්න)`))return;}catch(e){console.warn('5.1.9 star send',e);}return _s.apply(this,arguments);};
+})();
 </script>
 </body>
 </html>
