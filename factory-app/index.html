@@ -1247,7 +1247,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='5.30';
+const FA_VER='5.36';
 /* v4.64 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v4.64.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuF',A='f',_f=window.fetch.bind(window);
@@ -4293,6 +4293,224 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
      <button class="btn light block" onclick="sheet()">↩️ ආපහු</button>`);};
   try{FT_RULE.unshift([/s4Open\(\)/,'prod']);FT_WORDS.push([/s4Open\(\)/,'ansha section balance awa giya nasthiya']);const _g=v455Grp;v455Grp=function(k){return /s4Open\(\)/.test(String(k))?_g.call(this,"go('batches')"):_g.apply(this,arguments);};}catch(e){h14E(e,250)}
   try{const _t=batchTiles;batchTiles=function(){const h=_t.apply(this,arguments);try{if(!SC()||!h||/s4Open\(\)/.test(h))return h;const tile=`<button class="tile" onclick="s4Open()"><span>🏭</span>අංශ<small>ආවා · ගියා kg</small></button>`;return h.replace(/<\/div>\s*$/,tile+'</div>');}catch(e){h14E(e,251);return h;}};}catch(e){h14E(e,252)}
+})();
+/* ================= app 5.31 (PC v5.5.58) · 035 D-3f — 📊 ලාභ දැනුම්දීම් 3 (🏠 “📋 අද කරන්න”) =================
+   PC එකෙන් එන S.cfg.d3a = [[key, පේළිය, විස්තර], …] (වැඩිම 3): 🌶️ ද්‍රව්‍ය මිල ±5% · ❌ cost > තොග මිල · 🚚 අන්තිම ගමන් 3ම පාඩු route.
+   බලන්න විතරයි — කිසිවක් යවන්නේ නැහැ. ✕ / “✓ දැක්කා” = ඒ දේ වෙනස් වෙනකම් (key එක වෙනස් වෙනකම්) ආයේ පෙන්නන්නේ නැහැ (S.d3x).
+   A cfg without the key (an old PC · a manager signed in on the PC) keeps the last list for 7 days (S.d3l); an empty list clears it. */
+(function(){
+  const ok=a=>Array.isArray(a)?a.filter(x=>Array.isArray(x)&&typeof x[0]==='string'&&/^[a-z0-9]{2,16}$/.test(x[0])&&typeof x[1]==='string'&&x[1]).slice(0,3):[];
+  const seen=()=>{if(!Array.isArray(S.d3x))S.d3x=[];return S.d3x;};
+  function list(){const a=S.cfg&&S.cfg.d3a,t=today();
+    if(Array.isArray(a)){const L=ok(a);if(!S.d3l||S.d3l.d!==t||JSON.stringify(S.d3l.a)!==JSON.stringify(L))S.d3l={d:t,a:L};return L;}
+    const o=S.d3l;return o&&Array.isArray(o.a)&&String(o.d)>=addDays(t,-7)?ok(o.a):[];}
+  window.d3fList=list;
+  window.d3fOpen=function(k){try{const x=list().find(y=>y[0]===k);if(!x)return;
+    sheet(`<h3 style="margin:0 0 8px;overflow-wrap:anywhere">${esc(x[1])}</h3>${String(x[2]||'').split('\n').filter(Boolean).map(l=>`<div class="d3fl" style="padding:7px 0;border-top:1px solid #f1f5f9;font-size:15px;line-height:1.45;overflow-wrap:anywhere">${esc(l)}</div>`).join('')}<div class="small muted" style="margin:8px 0">බලන්න විතරයි — PC එකෙන් එන ගණන්.</div><div style="display:flex;gap:8px"><button class="btn light" style="flex:1" onclick="sheet()">වසන්න</button><button class="btn" style="flex:1" onclick="d3fSeen('${k}')">✓ දැක්කා</button></div>`);}catch(e){h14E(e,253)}};
+  window.d3fSeen=function(k){try{const X=seen();if(!X.includes(k)){X.push(k);if(X.length>30)X.splice(0,X.length-30);}save();sheet();render();}catch(e){h14E(e,254)}};
+  {const _x=a3X;a3X=function(k){if(String(k).startsWith('d3:'))return window.d3fSeen(String(k).slice(3));return _x.apply(this,arguments);};}
+  {const _a=a3Rows;a3Rows=function(){const R=_a.apply(this,arguments);try{if(!S.cfg)return R;const X=seen(),add=list().filter(x=>!X.includes(x[0])).map(x=>({k:'d3:'+x[0],t:x[1],go:`d3fOpen('${x[0]}')`}));
+    if(add.length)R.splice(R.length&&R[0].k==='notes'?1:0,0,...add);}catch(e){h14E(e,255)}return R;};}
+})();
+/* ================= app 5.32 (PC v5.5.59) · 035 D-4a — 📅 දවස් ගණනක් යන භාණ්ඩ: stamp එකේ MFD = පැක් කරපු දවස =================
+   අයිතිකරුගේ 11 Nov නීතිය: 🕒 පපඩම් · ලුණු දෙහි · “අමු කහ වලින්” → MFD = පැක් කරපු දවස · EXP = ඒ දවස + මාස (පටන් ගත්ත දවසෙන් නෙවෙයි).
+   · PC (v5.5.59+) cfg.sl = {f:[families], r:[recipe ids]} — sl නැති (පරණ) PC → මේ කොටස නිහඬයි, කලින් වගේම.
+   · Batch එකේ උඩ දිනය (b.d) = පටන් ගත්ත දවස (අංකය / තොග දින). පැකට් ගණන දැම්මාම “📦 පැක් කරපු දවස = MFD” (b.pk — කලින් ඉඳන් තියෙන PKD field එකමයි),
+     EXP ඉබේම = b.pk + මාස. Batch message එකට sl:1 → PC එක MFD = pkd කියලා සලකුණු කරනවා. b.sl = 1 (මේ phone එකේ) → stamp sheet / WhatsApp / QR වල MFD = b.pk.
+   · packet වලට stamp ගහලා ඉවර batch එකකට (➕ තව පැක් කළා) MFD / EXP වෙනස් වෙන්නේ නැහැ. නීතියට කලින් පැක් කරපු batch එහෙමමයි. */
+(function(){
+  const XD=/^\d{4}-\d{2}-\d{2}$/;
+  const SL=()=>{const x=S.cfg&&S.cfg.sl;return x&&typeof x==='object'&&Array.isArray(x.f)?x:null;};
+  const slowFam=fam=>{const s=SL();return !!(s&&fam&&(s.f.includes(fam)||s.f.includes(famNow(fam))));};
+  const mo=fam=>{const f=bfOf(fam);return f?num(f[3])||8:8;};
+  const pkts=()=>bd&&bd.fam?sizeLines(bd.fam).reduce((t,s)=>t+Math.max(0,Math.floor(num(bd.sz[s[3]]))),0):0;
+  const oldOf=()=>bd&&bd.bid?myB().find(x=>x.bid===bd.bid)||null:null;
+  const oldPk=b=>!!(b&&(b.sz||[]).some(x=>num(x[1])>0));
+  function slowBd(){if(!bd||!bd.fam||!SL())return false;if(slowFam(bd.fam))return true;try{const r=faCurRc(),s=SL();return !!(r&&Array.isArray(s.r)&&s.r.includes(r.i));}catch(e){return false;}}
+  /* the rule is on for: a new batch · a batch that has no packets yet · a batch already under the rule */
+  function ruleOn(){if(!slowBd())return false;const o=oldOf();return !o||!!o.sl||!oldPk(o);}
+  const frozen=()=>{const o=oldOf();return !!(o&&o.sl&&XD.test(o.pk||'')&&oldPk(o));};/* stamp is on the packets */
+  const defPk=()=>{let d=workDay();const t=today();if(d>t)d=t;if(XD.test(bd.d||'')&&d<bd.d)d=bd.d;return d;};
+  window.d4Rule=()=>({on:ruleOn(),slow:slowBd(),frozen:frozen(),pk:bd?bd.pk||'':'',exp:bd?bExp():''});
+
+  const _ae=bAutoExp;bAutoExp=function(){try{if(ruleOn()&&XD.test(bd.pk||''))return addMonths(bd.pk,mo(bd.fam));}catch(e){h14E(e,256)}return _ae.apply(this,arguments);};
+  const _e=bEdit;bEdit=function(bid){const r=_e.apply(this,arguments);try{const b=myB().find(x=>x.bid===bid);if(bd&&b&&b.sl&&XD.test(b.pk||'')&&bd.x===addMonths(b.pk,mo(b.fam)))bd.x='';}catch(e){h14E(e,257)}return r;};
+
+  function paint(){const box=$('bnewBody');let el=$('d4Box');if(!box||!bd||!bd.fam||!ruleOn()){if(el)el.remove();return;}
+    const n=pkts(),fz=frozen(),m=mo(bd.fam);
+    if(n>0&&!XD.test(bd.pk||'')){bd.pk=defPk();bd.pkA=1;}else if(n===0&&bd.pkA){bd.pk='';delete bd.pkA;}
+    if(!el){el=document.createElement('div');el.id='d4Box';el.className='card small';const sum=$('v476sum'),btn=box.querySelector('button.btn.primary.block.big');if(sum&&sum.parentNode)sum.parentNode.insertBefore(el,sum);else if(btn)btn.parentNode.insertBefore(el,btn);else box.appendChild(el);
+      el.innerHTML='<div id="d4Txt"></div>';}
+    /* the start-day label */
+    try{const lb=[...box.querySelectorAll('div.small.muted')].find(x=>/^(📅 (පැක් කරපු දිනය|ඇඹරුම් දිනය|කැඩු දිනය)|🕒 පටන් ගත්ත දිනය)/.test(x.textContent.trim()));if(lb)lb.textContent='🕒 පටන් ගත්ත දිනය (පිටි / පදම් දාපු දවස)';}catch(e){}
+    /* the pack-day field (the PKD input the save already reads) */
+    let pi=$('bdPk'),fld=pi?pi.closest('.field'):null;
+    if(n>0||XD.test(bd.pk||'')){
+      if(!fld){fld=document.createElement('div');fld.className='field';fld.innerHTML='<label></label><input type="date" id="bdPk">';pi=fld.querySelector('input');}
+      if(fld.parentNode!==el)el.appendChild(fld);
+      fld.querySelector('label').innerHTML='📦 පැක් කරපු දවස = <b>MFD</b> <span class="small muted">(stamp එකේ ගහන්නේ මේ දිනය)</span>';
+      pi.min=bd.d||'';pi.max=today();if(document.activeElement!==pi)pi.value=bd.pk||'';pi.disabled=fz;
+      pi.onchange=function(){bd.pk=XD.test(this.value)?this.value:'';delete bd.pkA;paint();};}
+    else if(fld&&fld.parentNode===el)fld.remove();
+    const L=[],ex=bExp(),pk=XD.test(bd.pk||'')?bd.pk:'';
+    if(!pk)L.push(`🕒 <b>දවස් ගණනක් යන භාණ්ඩයක්.</b> උඩ දිනය = පටන් ගත්ත දවස. Stamp එකේ <b>MFD / EXP</b> තීරණය වෙන්නේ <b>පැක් කරපු දවසේ</b> (පැකට් ගණන දාද්දී).`);
+    else{L.push(`📅 Stamp එකට: <b>MFD ${dmy(pk)}</b> <span class="muted">(පැක් කරපු දවස)</span> · <b>EXP ${dmy(ex)}</b> ${bd.x?'<span class="warn">✏️ අතින්</span>':`<span class="muted">(+ මාස ${m})</span>`}`);
+      L.push(`<span class="muted">🕒 පටන් ගත්තේ ${dmy(bd.d)}</span>${fz?' · 🔒 packet වල දැනටමත් ගහලා — MFD වෙනස් වෙන්නේ නැහැ':''}`);
+      if(pk<bd.d)L.push('<span class="bad">⛔ පැක් කරපු දවස පටන් ගත්ත දවසට කලින් වෙන්න බැහැ</span>');}
+    const tx=$('d4Txt');if(tx)tx.innerHTML=L.join('<br>');
+    try{const sm=$('v476sum'),want='📅 EXP <b>'+dmy(ex)+'</b>';if(sm&&/📅 EXP <b>[^<]*<\/b>/.test(sm.innerHTML)&&!sm.innerHTML.includes(want))sm.innerHTML=sm.innerHTML.replace(/📅 EXP <b>[^<]*<\/b>/,want);}catch(e){}/* the 🤖 line was drawn before the pack day was known */
+    const ei=$('bdExp');if(ei){if(!bd.x&&document.activeElement!==ei)ei.value=ex;ei.min=bd.d||'';const s=ei.closest('.field')&&ei.closest('.field').querySelector('label .small');if(s)s.textContent=pk?`— ඉබේම ${dmy(bAutoExp())} (පැක් කරපු දවස + මාස ${m})`:`— පැක් කරපු දවස + මාස ${m} (තාම පැක් කරලා නැහැ)`;}}
+  const _rn=renderBNew;renderBNew=function(){const r=_rn.apply(this,arguments);try{paint();}catch(e){h14E(e,258)}return r;};
+  const _fp=faPaint;faPaint=function(){const r=_fp.apply(this,arguments);try{paint();}catch(e){h14E(e,259)}return r;};
+  window.d4Paint=paint;
+
+  /* the batch message says the rule was used (PC: mfp) */
+  const _sd=send;send=async function(k,body){try{const X=window._d4S;if(k==='batch'&&body&&X&&body.fam===X.fam){body.sl=1;X.bid=body.bid;}}catch(e){h14E(e,260)}return _sd.apply(this,arguments);};
+  const _bs=bSave;bSave=async function(){let X=null;
+    try{if(bd&&bd.fam&&ruleOn()){const n=pkts(),pi=$('bdPk'),d=($('bdDate')||{}).value||bd.d;
+        if(n>0){let pk=pi?pi.value:(bd.pk||'');if(!XD.test(pk))pk=defPk();
+          if(pk<d){toast('📦 පැක් කරපු දවස පටන් ගත්ත දවසට කලින් වෙන්න බැහැ','err');return;}if(pk>today()){toast('📦 පැක් කරපු දවස — අනාගත දිනයක් බැහැ','err');return;}
+          bd.pk=pk;if(pi)pi.value=pk;X={fam:bd.fam,pk};}
+        else{bd.pk='';delete bd.pkA;if(pi)pi.value='';}}}catch(e){h14E(e,261)}
+    window._d4S=X;try{return await _bs.apply(this,arguments);}finally{window._d4S=null;try{if(X&&X.bid){const b=myB().find(x=>x.bid===X.bid);if(b&&!b.sl&&XD.test(b.pk||'')){b.sl=1;save();}}}catch(e){h14E(e,262)}}};
+
+  /* stamp sheet · WhatsApp · QR: MFD = pack day */
+  const isV=b=>!!(b&&XD.test(b.pk||'')&&(b.sl||(window._d4S&&window._d4S.bid===b.bid)));
+  const asV=(L,fn)=>{const K=L.filter(isV).map(b=>[b,b.d,b.pk]);K.forEach(([b])=>{b.d=b.pk;b.pk='';});try{return fn();}finally{K.forEach(([b,d,pk])=>{b.d=d;b.pk=pk;});}};
+  const _sh=bShow;bShow=function(bid){const b=myB().find(x=>x.bid===bid),a=arguments,t=this;return asV(b?[b]:[],()=>_sh.apply(t,a));};
+  const _wt=bWaText;bWaText=function(list){const a=arguments,t=this;return asV(Array.isArray(list)?list:[],()=>_wt.apply(t,a));};
+})();
+/* ================= app 5.33 (PC v5.5.60) · 035 D-4b — V7 📅 කල් ඉකුත් වෙන්න ළඟ batch (තොගයේ තියෙන) =================
+   PC එකෙන් දැනටමත් එන batch විස්තර (out/fbat → BT: x = EXP · fl = 🏭 කම්හලේ ඉතුරු · ll = 🚚 ලොරියේ ඉතුරු · s = තත්ත්වය) වලින්ම — PC ගණන් වෙනස් නැහැ.
+   PC එකේ ⚠️ “කල් ඉකුත් වෙන්න දින 30ට අඩු batch” නීතියමයි: තොගයේ (🏭 + 🚚 > 0) · EXP දින 30ට අඩු / ඉකුත් · ❌ අවලංගු නැහැ.
+   🏠 “📋 අද කරන්න” පේළිය (ඉකුත් / දින 7ට අඩු නම් උඩින්, රතු) → sheet: batch එකින් එක (එබුවම batch කාඩ් එක). බලන්න විතරයි — කිසිවක් යවන්නේ නැහැ. */
+(function(){
+  const V7_DAYS=30;
+  function list(){const L=[];try{BT.forEach((t,no)=>{if(!t||t.s==='void'||!t.x)return;/* ⚫ ඉවරයි but still in stock → still warned (same as the PC) */const q=Math.max(0,Math.floor(num(t.fl)))+Math.max(0,Math.floor(num(t.ll)));if(!(q>0))return;const d=daysTo(t.x);if(d===null||d>=V7_DAYS)return;
+      L.push({no,f:t.f||'',x:t.x,d,fl:Math.max(0,Math.floor(num(t.fl))),ll:Math.max(0,Math.floor(num(t.ll))),hold:t.s==='hold'});});}catch(e){h14E(e,263)}
+    return L.sort((a,b)=>a.d-b.d||String(a.no).localeCompare(String(b.no)));}
+  window.v7List=list;
+  const lab=x=>x.d<0?`🔴 ඉකුත් වෙලා දින ${-x.d}`:x.d===0?'🔴 අද ඉකුත් වෙනවා':`🟠 තව දින ${x.d}`;
+  window.v7Open=function(){try{const L=list(),at=S.fbatAt?fmtAt(S.fbatAt,true):'';
+    sheet(`<h3 style="margin:0 0 4px">📅 කල් ඉකුත් වෙන්න ළඟ batch (${L.length})</h3><div class="small muted" style="margin-bottom:6px">තොගයේ තියෙන batch — EXP දින ${V7_DAYS}ට අඩු. මුලින්ම මේවා යවන්න / ලොරියට පටවන්න.${L.some(x=>x.d<0)?' 🔴 ඉකුත් වුණ ඒවා <b>විකුණන්න එපා</b> — ආපහු ගන්න.':''}</div>
+      ${L.map(x=>`<button type="button" class="v7r${x.d<=7?' hot':''}" onclick="v7Card('${esc(x.no).replace(/'/g,'')}')"><span class="v7a"><b>${esc(x.no)}</b> ${esc(x.f)}${x.hold?' · 🔴 නවත්වලා':''}<br><span class="small">EXP ${dmy(x.x)} · <b class="${x.d<=7?'bad':'warn'}">${lab(x)}</b></span></span><span class="v7q small">${x.fl?'🏭 '+x.fl:''}${x.fl&&x.ll?'<br>':''}${x.ll?'🚚 '+x.ll:''}</span></button>`).join('')||'<div class="small muted" style="padding:8px 0">✅ කල් ඉකුත් වෙන්න ළඟ batch තොගයේ නැහැ</div>'}
+      <div class="small muted" style="margin:8px 0">🏭 කම්හලේ · 🚚 ලොරියේ ඉතුරු පැකට් — PC එකේ ගණන්${at?' ('+esc(at)+')':''}. ලොරියේ ඒවා ලොරි app එකේ වෙනසක් නැහැ.</div><button class="btn light block" onclick="sheet()">වසන්න</button>`);}catch(e){h14E(e,264)}};
+  window.v7Card=function(no){try{sheet(bCard(no)+'<button class="btn light block" style="margin-top:8px" onclick="v7Open()">‹ ආපහු</button>');}catch(e){h14E(e,265)}};
+  {const _a=a3Rows;a3Rows=function(){const R=_a.apply(this,arguments);try{if(!S.cfg||!bOn()||a3Hide().k.includes('v7'))return R;const L=list();if(!L.length)return R;
+      const bad=L.filter(x=>x.d<0).length,urg=L.some(x=>x.d<=7),t=bad?`🔴 කල් ඉකුත් batch ${bad} තොගයේ${L.length>bad?' · ළඟ '+(L.length-bad):''} — ${a3Short(L.map(x=>x.no).join(', '),18)}`:`📅 කල් ඉකුත් වෙන්න ළඟ batch ${L.length} — ${a3Short(L.map(x=>x.no+' ('+x.d+')').join(', '),20)}`;
+      const row={k:'v7',t,go:'v7Open()',hot:urg?1:0};if(urg)R.splice(R.length&&R[0].k==='notes'?1:0,0,row);else R.push(row);}catch(e){h14E(e,266)}return R;};}
+  try{document.head.insertAdjacentHTML('beforeend',`<style>.v7r{display:flex;width:100%;gap:8px;align-items:center;justify-content:space-between;text-align:left;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin:6px 0;font-size:15px;color:#111}.v7r.hot{border-color:#fca5a5;background:#fef2f2}.v7a{flex:1;min-width:0;overflow-wrap:anywhere}.v7q{text-align:right;white-space:nowrap;font-weight:700}</style>`);}catch(e){}
+})();
+
+/* ================= app 5.34 (PC v5.5.62) · 035 D-4d — C5c 🏠 batch එකෙන් කොටසක් විතරක් පරණ තොගයෙන් =================
+   034 ඉතුරු: 🏠 තිබුණේ මුළු batch එකටම විතරයි. අලුතින් හදපු ඒවයි, කලින් හදපු / පරණ තොගයේ ඒවයි එකට පැක් කළාම → “පරණ kg කීයද?” එක ගාණක් (දළ වශයෙන්).
+   · PC (v5.5.62+) cfg c5 තියෙනවා නම් විතරයි — පරණ PC එකක් එක්ක මේ කොටස නිහඬයි (app එක කලින් වගේම).
+   · bd.hg (kg) → batch පණිවිඩයට hg (0 = අයින් කළා) → PC b.hmG. ඒ ටිකට lot / අමු ද්‍රව්‍ය අඩු වෙන්නේ නැහැ; ඉතුරු ටික “දාපු අමු kg” එකෙන් (කලින් වගේම).
+   · 🤖 ඉබේම අමු kg = (පැක් කළ බර − පරණ kg) ÷ අස්වැන්න · “≈ කිරුවේ නැහැ” = පැක් කළ බර − පරණ kg · අතින් ගහපු kg එකක් වෙනස් කරන්නේ නැහැ.
+   · ⚠️ “දාපු kg එකෙන් එච්චර හැදෙන්න බැහැ” කොටුවේ එක බොත්තමක්: “🏠 වැඩිපුර ≈ X kg පරණ තොගයෙන්”.
+   · මතකය: S.h2[bid].hg (මේ phone එක) · PC ලැයිස්තුවේ hg (වෙන phone එකකින් දාපු batch). 🏠 මුළු batch එකම කළොත් කොටස අයින් වෙනවා.
+   ඇසුරුම් / පැකට් තොගය / batch අංකය / MFD / EXP — වෙනස් නැහැ. */
+(function(){
+  const on=()=>!!(S.cfg&&S.cfg.c5);
+  const q1=x=>Math.round(num(x)*10)/10,q3=x=>Math.round(num(x)*1000)/1000;
+  const pkG=()=>{try{if(!bd||!bd.fam)return 0;let g=0;sizeLines(bd.fam).forEach(([size,t,n,pid])=>{g+=Math.floor(num((bd.sz||{})[pid]))*num(v471GG(pid,size));});return g;}catch(e){return 0;}};
+  const hg=()=>{if(!on()||!bd||bd.hm)return 0;if(bd.hg&&bd.hgF&&bd.hgF!==bd.fam){delete bd.hg;delete bd.hgF;}/* another product was picked → the part does not follow */return Math.max(0,num(bd.hg));};
+  function H(){S.h2=S.h2&&typeof S.h2==='object'?S.h2:{};return S.h2;}
+  const yOf=()=>{try{const Y=window.v471Yield(bd.fam);return Y&&Y.y>0?Y.y:0;}catch(e){return 0;}};
+  window.c5Hg=hg;
+  /* what is known about a saved batch: this phone's own note first, else the PC's list */
+  function known(b){try{if(!b)return 0;const x=H()[b.bid];if(x&&x.hg!==undefined)return Math.max(0,num(x.hg));const t=BT.get(b.no);return t&&!t.local?Math.max(0,num(t.hg)):0;}catch(e){return 0;}}
+  /* ---------- the row under the 🏠 button ---------- */
+  function row(){const old=$('c5row');if(old)old.remove();if(!on()||!bd||!bd.fam||bd.hm)return;const o=hg(),a=$('h2hm')||(o>0?$('v476sum'):null);if(!a)return;const el=document.createElement('div');el.id='c5row';
+    if(o>0){const pk=pkG()/1000,np=Math.max(0,q3(pk-o));el.className='card okbox small';el.innerHTML=`🏠 <b>කොටසක් පරණ තොගයෙන්: ${q3(o)} kg</b> — ඒ ටිකට lot / අමු ද්‍රව්‍ය අඩු වෙන්නේ නැහැ.${pk>0?` <span id="c5np">පැක් කළ ≈ ${q1(pk)} kg න් අලුතින් හදපු ≈ <b>${q1(np)} kg</b> — අමු kg ඒ ටිකට විතරයි.</span>`:' ඉතුරු ටික අලුතින් දාපු kg එකෙන්.'} <a href="#" onclick="c5Ask();return false">✏️ වෙනස්</a> · <a href="#" id="c5off" onclick="c5Set(0);return false">✕ අයින්</a>`;}
+    else{el.className='small';el.style.cssText='margin:-2px 0 10px;text-align:center';el.innerHTML=`<a href="#" id="c5link" onclick="c5Ask();return false">🏠 කොටසක් විතරක් පරණ තොගයෙන්ද? <span class="muted">(අලුත් + පරණ එකට පැක් කළා)</span></a>`;}
+    a.insertAdjacentElement('afterend',el);}
+  window.c5Set=function(v){if(!bd)return;v=Math.max(0,q3(v));if(v>0){bd.hg=String(v);bd.hgF=bd.fam;delete bd.hm;}else{delete bd.hg;delete bd.hgF;}try{save();}catch(e){h14E(e,270)}try{sheet();}catch(e){}render();};
+  window.c5Ask=function(){if(!bd||!bd.fam)return;const pk=q1(pkG()/1000),cur=hg();
+    sheet(`<h3>🏠 කොටසක් පරණ තොගයෙන්</h3><p>අලුතින් හදපු ඒවයි, <b>කලින් හදපු / පරණ තොගයේ</b> ඒවයි එකට පැක් කළා නම් — පරණ ටික <b>kg කීයක් විතරද?</b></p>
+      <div class="small muted">ඒ ටිකට lot / අමු ද්‍රව්‍ය අඩු වෙන්නේ නැහැ. ඇසුරුම් / පැකට් කලින් වගේම.${pk>0?' පැක් කළ බර ≈ <b>'+pk+' kg</b>.':''}</div>
+      <div class="field"><label>🏠 පරණ තොගයෙන් kg <small class="muted">(දළ වශයෙන්)</small></label><input type="number" inputmode="decimal" min="0" step="any" id="c5In" value="${cur?esc(String(q3(cur))):''}" oninput="const m=$('c5msg');if(m)m.textContent=''"></div><div id="c5msg" class="small" style="color:#b91c1c;font-weight:600;min-height:4px;margin:-4px 0 6px"></div>
+      <button class="btn primary block" id="c5ok" onclick="c5Ok()">✅ හරි</button>${cur?'<button class="btn light block" onclick="c5Set(0)">✕ අයින් කරන්න — ඔක්කොම අලුතින් හදපු ඒවා</button>':''}<button class="btn light block" onclick="sheet()">↩️ ආපහු</button>`);
+    setTimeout(()=>{try{const i=$('c5In');if(i)i.focus();}catch(e){}},80);};
+  window.c5Ok=function(){const v=q3(num(($('c5In')||{}).value)),pk=pkG()/1000,say=t=>{const m=$('c5msg');if(m)m.textContent=t;};if(!(v>0)){say('kg ගණන දාන්න.');return;}
+    if(pk>0&&v>=pk-0.0005){say('පැක් කළ බරට ('+q1(pk)+' kg) වඩා අඩු වෙන්න ඕනේ. ඔක්කොම පරණ නම් ආපහු ගිහින් “🏠 … පරණ තොගයෙන්” බොත්තම ඔබන්න.');return;}c5Set(v);};
+  {const _rn=renderBNew;renderBNew=function(){const r=_rn.apply(this,arguments);try{row();}catch(e){h14E(e,271)}return r;};}
+  /* whole 🏠 → the part goes */
+  {const _h=window.h2Hm;if(_h)window.h2Hm=function(o){try{if(o&&bd){delete bd.hg;delete bd.hgF;}}catch(e){}return _h.apply(this,arguments);};}
+  /* ---------- ⚖️ the raw kg follows the NEW part (only a kg the app worked out itself) ---------- */
+  {const _p=window.v471Paint;if(_p)window.v471Paint=function(){const r=_p.apply(this,arguments);try{const o=hg();if(o>0){const pk=pkG()/1000,np=Math.max(0,q3(pk-o)),i=$('bdKg');let v=null;
+        if(pk>0){if(bd.s2e)v=np>0?String(q1(np)):'';else if(bd.kgA&&!bd.kgM){const y=yOf();v=np>0?String(y>0?q1(np/(y/100)):q1(np)):'';}}
+        if(v!==null&&v!==String(bd.kg)){bd.kg=v;if(bd.s2e)bd.s2kg=v;if(i)i.value=v;}
+        const L=$('v471loss'),ok=num(bd.okg);if(L&&ok>0&&pk-o-ok<=0.2)L.innerHTML=L.innerHTML.replace(/ · ⚠️ පැක් කළ බර හැදුණු [^<]*බරට වඩා වැඩියි/,` · 🏠 පරණ ${q3(o)} kg ඇතුළුව`);}}catch(e){h14E(e,272)}return r;};}
+  /* ---------- the ⚠️ “this kg cannot make that much” box ---------- */
+  {const _s=window.v476Sum;if(_s)window.v476Sum=function(){const r=_s.apply(this,arguments);try{if(on()&&bd&&bd.fam&&!bd.hm){const w=$('c1w'),o=hg(),kg=num(bd.kg),pk=pkG()/1000,y=yOf();
+        if(w&&o>0){const lim=y>0?kg*y/100*1.15:kg*1.5;if(pk-o<=lim)w.remove();}
+        else if(w&&y>0&&kg>0){const ex=q1(pk-kg*y/100);if(ex>0&&ex<pk&&!w.querySelector('#c5fix'))w.insertAdjacentHTML('beforeend',` <button type="button" class="btn sm light" id="c5fix" onclick="c5Set(${ex})">🏠 වැඩිපුර ≈ ${ex} kg පරණ තොගයෙන්</button>`);}
+        row();/* the row follows the packets as they are typed */}}catch(e){h14E(e,273)}return r;};}
+  /* ---------- no raw kg → “≈ කිරුවේ නැහැ” takes the new part only ---------- */
+  {const _e=window.s2Est;if(_e)window.s2Est=function(){try{const o=hg();if(o>0&&bd){const np=q1(pkG()/1000-o);if(!(np>0)){sheet();return;}bd.s2e=1;bd.kgM=1;bd.kgA=0;bd.kg=bd.s2kg=String(np);const i=$('bdKg');if(i)i.value=bd.kg;save();sheet();bSave();return;}}catch(e){h14E(e,274)}return _e.apply(this,arguments);};
+   const _n=window.v471NoKg;if(_n)window.v471NoKg=function(sz){const r=_n.apply(this,arguments);try{const o=hg(),b=r?$('s2estB'):null;if(b&&o>0){const np=q1(pkG()/1000-o);if(np>0)b.textContent=`≈ කිරුවේ නැහැ — පැක් කළ බරෙන් (🏠 පරණ ${q3(o)} kg අඩු කරලා) ගන්න (${np} kg)`;else b.remove();}}catch(e){h14E(e,275)}return r;};}
+  /* ---------- open a saved batch · send ---------- */
+  {const _e=bEdit;bEdit=function(bid){const r=_e.apply(this,arguments);try{if(bd&&bd.bid===bid){delete bd.hg;delete bd.hgF;if(on()&&!bd.hm){const v=known(myB().find(x=>x.bid===bid));if(v>0){bd.hg=String(q3(v));bd.hgF=bd.fam;if(typeof screen==='string'&&screen==='bnew')render();}}}}catch(e){h14E(e,276)}return r;};}
+  {const _sd=send;send=async function(k,body,label,quiet){let mine=false;
+    try{if(k==='batch'&&body&&body.bid&&on()){mine=!!bd&&(bd.bid===body.bid||!bd.bid);if(mine){const o=hg();if(o>0)body.hg=q3(o);else if(known({bid:body.bid,no:body.no})>0)body.hg=0;}}}catch(e){h14E(e,277)}
+    const ok=await _sd.apply(this,arguments);
+    try{if(ok&&mine&&body.hg!==undefined){const X=H();X[body.bid]=Object.assign({},X[body.bid]||{},{hg:body.hg});save();}}catch(e){h14E(e,278)}
+    return ok;};}
+  /* the batch list: one small line */
+  {const _b=window.v471BW;if(_b)window.v471BW=function(b){let h=_b.apply(this,arguments);try{if(on()&&b){const hm=H()[b.bid],v=hm&&hm.hm?0:known(b);if(v>0)h=(h||'')+`<div class="small c5tag" style="color:#065f46">🏠 කොටසක් පරණ තොගයෙන් ${q3(v)} kg</div>`;}}catch(e){}return h;};}
+})();
+
+/* ================= app 5.35 (PC v5.5.63) · 035 G-6a — 🧼 GMP කාලසටහන → “📋 අද කරන්න” =================
+   PC එකෙන් එන S.cfg.gm = [[id, ලකුණ, නම, ඊළඟ දිනය, එක පාරක්?1:0], …] (දිනය පැන්න / ළඟ ඒවා විතරයි · වැඩිම 8).
+   🏠 පේළිය “🧼 GMP: … ” (පැන්නා / අද නම් රතු, උඩින්) → sheet: එකින් එක · “✅ කළා” → දිනය + සටහන → 'gmpd' {t, d, nt} → PC එකේ ඉබේම සටහනට.
+   යැව්ව එක PC එකෙන් ඊළඟ ලැයිස්තුව එනකම් මෙතන පේන්නේ නැහැ (S.gmd). cfg එකේ gm නැත්නම් (පරණ PC) මේ කොටස නැහැ. ✕ = අදට විතරයි. */
+(function(){
+  const ok=a=>Array.isArray(a)?a.filter(x=>Array.isArray(x)&&typeof x[0]==='string'&&/^[A-Za-z0-9]{2,30}$/.test(x[0])&&typeof x[2]==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(String(x[3]||''))).slice(0,8):[];
+  const sent=()=>{if(!S.gmd||typeof S.gmd!=='object')S.gmd={};return S.gmd;};
+  function list(){const a=S.cfg&&S.cfg.gm;if(!Array.isArray(a))return [];const L=ok(a),M=sent();
+    Object.keys(M).forEach(id=>{const x=L.find(y=>y[0]===id);if(!x||x[3]!==M[id])delete M[id];});/* the PC moved on → forget */
+    return L.filter(x=>M[x[0]]!==x[3]).map(x=>({id:x[0],ic:x[1]||'🧼',n:x[2],due:x[3],one:!!x[4],d:daysTo(x[3])})).sort((a,b)=>a.d-b.d);}
+  window.gmList=list;
+  const lab=x=>x.d<0?`🔴 දින ${-x.d} පරක්කුයි`:x.d===0?'🔴 අද':`🟠 තව දින ${x.d}`;
+  window.gmOpen=function(){try{const L=list();
+    sheet(`<h3 style="margin:0 0 4px">🧼 GMP — කරන්න තියෙන (${L.length})</h3><div class="small muted" style="margin-bottom:6px">PC එකේ 🧼 GMP කාලසටහනෙන්. කළාම “✅ කළා” — PC එකේ සටහනට යනවා.</div>
+      ${L.map(x=>`<div class="gmr${x.d<=0?' hot':''}"><div class="gma"><b>${esc(x.ic)} ${esc(x.n)}</b><br><span class="small">${x.one?'📅 කරන්න ඕනේ':'ඊළඟට'} ${dmy(x.due)} · <b class="${x.d<=0?'bad':'warn'}">${lab(x)}</b></span></div><button class="btn sm gmb" onclick="gmAsk('${esc(x.id)}')">✅ කළා</button></div>`).join('')||'<div class="small muted">දැන් කරන්න දෙයක් නැහැ ✅</div>'}
+      <button class="btn light block" style="margin-top:8px" onclick="sheet()">වසන්න</button>`);}catch(e){h14E(e,280)}};
+  window.gmAsk=function(id){try{const x=list().find(y=>y.id===id);if(!x)return gmOpen();
+    sheet(`<h3 style="margin:0 0 6px">✅ ${esc(x.ic)} ${esc(x.n)}</h3><div class="field"><label>කළ දිනය</label><input type="date" id="gmD" max="${today()}" value="${workDay()}"></div>
+      <div class="field"><label>සටහන <small class="muted">(කවුද / රිසිට් අංකය — ඕනේ නම්)</small></label><input id="gmN" maxlength="200"></div><div id="gmMsg" class="small" style="color:#b91c1c;font-weight:600;min-height:4px"></div>
+      <div style="display:flex;gap:8px;margin-top:6px"><button class="btn light" style="flex:1" onclick="gmOpen()">‹ ආපහු</button><button class="btn primary" style="flex:1" id="gmGo" onclick="gmSend('${esc(x.id)}')">✅ PC එකට යවන්න</button></div>`);}catch(e){h14E(e,281)}};
+  window.gmSend=async function(id){try{const x=list().find(y=>y.id===id);if(!x){sheet();return;}const d=String(($('gmD')||{}).value||''),m=$('gmMsg');
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d)||d>today()){if(m)m.textContent='දිනය හරි නැහැ (අනාගත දිනයක් බැහැ).';return;}
+      const okk=await send('gmpd',{t:id,d,nt:String(($('gmN')||{}).value||'').trim().slice(0,200)},`🧼 ${x.n}`);if(!okk)return;
+      sent()[id]=x.due;save();toast('✅ '+x.n+' — යැව්වා');const L=list();if(L.length)gmOpen();else sheet();render();}catch(e){h14E(e,282)}};
+  {const _a=a3Rows;a3Rows=function(){const R=_a.apply(this,arguments);try{if(!S.cfg||a3Hide().k.includes('gm'))return R;const L=list();if(!L.length)return R;
+      const hot=L.some(x=>x.d<=0),t=`🧼 GMP: ${L[0].n}${L.length>1?' (+'+(L.length-1)+')':''} — ${lab(L[0]).replace(/^[🔴🟠]\s*/u,'')}`;
+      const row={k:'gm',t,go:'gmOpen()',hot:hot?1:0};if(hot)R.splice(R.length&&R[0].k==='notes'?1:0,0,row);else R.push(row);}catch(e){h14E(e,283)}return R;};}
+  try{document.head.insertAdjacentHTML('beforeend',`<style>.gmr{display:flex;gap:8px;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:10px;margin:6px 0;font-size:15px;color:#111}.gmr.hot{border-color:#fca5a5;background:#fef2f2}.gma{flex:1;min-width:0;overflow-wrap:anywhere}.gmb{white-space:nowrap}</style>`);}catch(e){}
+})();
+
+/* ================= app 5.36 (PC v5.5.64) · 035 G-6b — 🔍 PC ඉබේම පරීක්ෂාව + 🏛️ EPF / ETF → “📋 අද කරන්න” =================
+   PC cfg t3 = [🔴, ⚠️, [පේළි ≤ 4], දිනය] (PC එක ඇරලා තියෙද්දී පැය 3න් 3ට ඊයේ + අද — බරපතළ ඒවා විතරයි) · ep = [[මාසය, EPF ඉතුරු, ETF ඉතුරු, අන්තිම දිනය]] (Owner).
+   🏠 පේළි 2: “🔍 PC පරීක්ෂාව: 🔴 1 · ⚠️ 2” (🔴 නම් රතු, උඩින්) · “🏛️ EPF / ETF 2026-10 — රු. X · 30.11 ට කලින්” (දින 5ට අඩු / පැන්නා නම් රතු).
+   බලන්න විතරයි — කිසිවක් යවන්නේ නැහැ. ✕ = අදට. cfg එකේ නැත්නම් (පරණ PC) පේළියක් නැහැ. */
+(function(){
+  const rs=x=>'රු. '+Math.round(num(x)).toLocaleString('en-US');
+  function t3(){const a=S.cfg&&S.cfg.t3;if(!Array.isArray(a)||a.length<4)return null;const b=Math.max(0,Math.floor(num(a[0]))),w=Math.max(0,Math.floor(num(a[1]))),L=Array.isArray(a[2])?a[2].filter(x=>typeof x==='string').slice(0,4):[],d=String(a[3]||'');
+    if(!(b+w)||!/^\d{4}-\d{2}-\d{2}$/.test(d)||d<addDays(today(),-2))return null;return {b,w,L,d};}
+  function ep(){const a=S.cfg&&S.cfg.ep;if(!Array.isArray(a))return [];return a.filter(x=>Array.isArray(x)&&/^\d{4}-\d{2}$/.test(String(x[0]))&&/^\d{4}-\d{2}-\d{2}$/.test(String(x[3]))).slice(0,3).map(x=>({m:x[0],e:num(x[1]),t:num(x[2]),due:x[3],d:daysTo(x[3])}));}
+  window.t3List=t3;window.epList=ep;
+  const epLab=x=>x.d<0?`🔴 දින ${-x.d} පරක්කුයි`:x.d===0?'🔴 අද අන්තිම දවස':`${x.d<=5?'🔴':'🟠'} තව දින ${x.d}`;
+  window.t3Open=function(){try{const r=t3();if(!r){sheet();return;}
+    sheet(`<h3 style="margin:0 0 4px">🔍 PC ඉබේම පරීක්ෂාව</h3><div class="small muted" style="margin-bottom:6px">${dmy(r.d)} · ඊයේ + අද · 🔴 ${r.b} · ⚠️ ${r.w}</div>${r.L.map(l=>`<div class="t3pl">${esc(l)}</div>`).join('')}${r.b+r.w>r.L.length?`<div class="small muted">+ තව ${r.b+r.w-r.L.length}</div>`:''}
+      <div class="small muted" style="margin:8px 0">PC එකේ ✅ දවසේ පරීක්ෂාව → “🔍 ඉබේම පරීක්ෂාව” එකේ පේළිය ඔබලා හරි කරන්න. (බලන්න විතරයි.)</div><button class="btn light block" onclick="sheet()">වසන්න</button>`);}catch(e){h14E(e,290)}};
+  window.epOpen=function(){try{const L=ep();sheet(`<h3 style="margin:0 0 6px">🏛️ EPF / ETF ගෙවන්න</h3>${L.map(x=>`<div class="t3pl"><b>${esc(x.m)}</b> — ${rs(x.e+x.t)}<br><span class="small">EPF ${rs(x.e)} (8% + 12%) · ETF ${rs(x.t)} (3%)<br>අන්තිම දිනය ${dmy(x.due)} · <b class="${x.d<=5?'bad':'warn'}">${epLab(x)}</b></span></div>`).join('')||'<div class="small muted">ගෙවන්න දෙයක් නැහැ ✅</div>'}
+      <div class="small muted" style="margin:8px 0">ඊළඟ මාසයේ අන්තිම වැඩ දිනයට කලින් (නිවාඩු දවසක් නම් ඊට කලින්) — පරක්කු වුණොත් surcharge. ගෙව්වාම PC එකේ 👷 මාසික පඩි → 🏛️ EPF ගෙව්වා / ETF ගෙව්වා.</div><button class="btn light block" onclick="sheet()">වසන්න</button>`);}catch(e){h14E(e,291)}};
+  {const _a=a3Rows;a3Rows=function(){const R=_a.apply(this,arguments);try{if(!S.cfg)return R;const H=a3Hide().k,top=R.length&&R[0].k==='notes'?1:0;
+      const r=t3();if(r&&!H.includes('t3')){const row={k:'t3',t:`🔍 PC පරීක්ෂාව: 🔴 ${r.b} · ⚠️ ${r.w}${r.L[0]?' — '+String(r.L[0]).replace(/^[🔴⚠️]+\s*/u,'').slice(0,40):''}`,go:'t3Open()',hot:r.b?1:0};if(r.b)R.splice(top,0,row);else R.push(row);}
+      const E=ep();if(E.length&&!H.includes('ep')){const x=E[0],hot=E.some(y=>y.d<=5),row={k:'ep',t:`🏛️ EPF / ETF ${x.m} — ${rs(x.e+x.t)} · ${dmy(x.due).slice(0,5)} ට කලින්${E.length>1?' (+'+(E.length-1)+')':''}`,go:'epOpen()',hot:hot?1:0};if(hot)R.splice(top,0,row);else R.push(row);}}catch(e){h14E(e,292)}return R;};}
+  try{document.head.insertAdjacentHTML('beforeend',`<style>.t3pl{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:9px 10px;margin:6px 0;font-size:15px;line-height:1.45;color:#111;overflow-wrap:anywhere}</style>`);}catch(e){}
 })();
 </script>
 </body>
