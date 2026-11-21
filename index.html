@@ -883,7 +883,7 @@ function lrChip(k){const el=document.querySelector(`#loadList [data-lrow="${CSS.
 
 
 /* ================= v4.5.2 · 🕓 04:00 වැඩ දවස · 🔐 encrypt (lx) · 📋 කම්හලේ අලුත් ඇණවුම් + 🔴 hold live · 🔄 update තීරුව ================= */
-const LA_VER='5.1.9';
+const LA_VER='5.1.10';
 /* v5.1 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v5.1.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuL',A='l',_f=window.fetch.bind(window);
@@ -1022,7 +1022,11 @@ lrLeft=function(x){if(!x||!x.at)return 0;return Math.max(0,lrDayEnd(x.at)-Date.n
 
 /* ================= ලොරි app v5 (2026-11-07) · දවසේ පිළිවෙළ Ⓐ–Ⓖ · 🪙 සිල්ලර · 💸 වියදම් · 🚚 පිටත් වුණා · 🏁 ඉවරයි · 📱 phones කිහිපයක් ================= */
 const V5K={fl:1,ex:1,dep:1,fin:1,nt:1,ek:1};
-const V5_EX={fuel:'⛽ ඩීසල්',food:'🍛 කෑම',park:'🅿️ Parking / Toll',fix:'🔧 අලුත්වැඩියා',hire:'👷 කුලී',other:'🎁 වෙනත්'};
+const V5_EX={pet:'⛽ පෙට්‍රල්',tea:'☕ තේ',mnt:'🔧 නඩත්තු',other:'🎁 වෙනත්',ownc:'👤 අයිතිකරු ලබාගැනීම් — 💵 මුදල්',owns:'👤 අයිතිකරු ලබාගැනීම් — 🛒 සාප්පුවට භාණ්ඩ',fuel:'⛽ ඩීසල්',food:'🍛 කෑම',park:'🅿️ Parking / Toll',fix:'🔧 අලුත්වැඩියා',hire:'👷 කුලී'};
+/* 5.1.10 · 036 A (owner 21 Nov): buttons ⛽ පෙට්‍රල් · ☕ තේ · 🔧 නඩත්තු · 🎁 වෙනත් · 💵 අත්තිකාරම් · 👤 අයිතිකරු ලබාගැනීම් — the old kinds (ඩීසල් / කෑම / Parking / අලුත්වැඩියා / කුලී) only show on old entries */
+const V5_BTN=['pet','tea','mnt','other'],V36_OWN={ownc:1,owns:1},V36_OWNB='👤 අයිතිකරු ලබාගැනීම්';
+function v36Btns(cat){return V5_BTN.concat(cat&&V5_EX[cat]&&!V5_BTN.includes(cat)&&!V36_OWN[cat]?[cat]:[]);}
+function v36OwnHtml(cat){return `<div id="v36own" style="${V36_OWN[cat]?'':'display:none'}"><div class="field"><label>👤 මොකක්ද?</label><div class="v36o"><button type="button" class="btn sm ${cat==='ownc'?'primary':'light'}" data-k="ownc" onclick="v5ExCat('ownc')">💵 මුදල් ලබාගැනීම</button><button type="button" class="btn sm ${cat==='owns'?'primary':'light'}" data-k="owns" onclick="v5ExCat('owns')">🛒 සාප්පුවට භාණ්ඩ මිලදී ගැනීම</button></div></div><div class="small muted v36hint">👤 ලොරි සල්ලි වලින් අඩු වෙනවා · වියදමක් නෙවෙයි (ලාභයට නැහැ).</div></div>`;}
 const V5_DEN=[5000,1000,500,100,50,20,10];
 function v5Me(){return S.me||'';}
 function v5Own(T){const last={};(S.lv||[]).forEach(e=>{if(e.d!==T)return;const p=last[e.uid];if(!p||num(e.rev)>=num(p.rev))last[e.uid]=e;});return Object.values(last);}
@@ -1054,10 +1058,10 @@ function v5FloatSheet(u){const old=u?v5Find(u):null;window._v5den={...((old&&old
     ...(old?[{t:'🗑 අයින් කරන්න',c:'light',f:()=>{if(!confirm('මේ සිල්ලර අයින් කරන්නද?'))return;const e={...old,void:1};delete e.mine;closeSheet();v5Put(e,'🪙 සිල්ලර අයින් කළා');}}]:[])]);setTimeout(()=>{if($('v5flT'))$('v5flT').textContent=V5_DEN.reduce((a,d)=>a+d*num(window._v5den[d]),0).toLocaleString('en-US');},30);}
 function v5DenDraw(){const t=V5_DEN.reduce((a,d)=>a+d*num(window._v5den[d]),0);$('v5flT').textContent=t.toLocaleString('en-US');if(t)$('v5flA').value=t;}
 /* 💸 වියදම් */
-function v5ExSheet(u,cat){const old=u?v5Find(u):null;cat=cat||(old&&old.cat)||'fuel';
+function v5ExSheet(u,cat){const old=u?v5Find(u):null;cat=cat||(old&&old.cat)||'pet';if(cat==='own')cat='ownc';
   /* 5.1.8 · 032 H-11: 💵 අත්තිකාරම් — ලොරියේ අයට විතරයි (නම් PC එකෙන් එනවා · PC එකේ ✅ කළාම පඩියෙන් ඉබේම අඩු) */
-  const advOk=h11St().length>0||!!(old&&old.cat==='adv');if(cat==='adv'&&!advOk)cat='fuel';window._h11emp=old&&old.cat==='adv'&&old.emp?{id:String(old.emp),n:String(old.en||'')}:null;
-  sheet(old?'✏️ 💸 වියදම වෙනස් කරන්න':'💸 වියදමක් දාන්න',`<div class="v5cats">${Object.entries(V5_EX).map(([k,t])=>`<button class="btn sm ${k===cat?'primary':'light'}" onclick="v5ExCat('${k}')">${t}</button>`).join('')}${advOk?`<button class="btn sm ${cat==='adv'?'primary':'light'}" onclick="v5ExCat('adv')">${H11_ADV}</button>`:''}</div><input type="hidden" id="v5exC" value="${cat}">
+  const advOk=h11St().length>0||!!(old&&old.cat==='adv');if(cat==='adv'&&!advOk)cat='pet';window._h11emp=old&&old.cat==='adv'&&old.emp?{id:String(old.emp),n:String(old.en||'')}:null;
+  sheet(old?'✏️ 💸 වියදම වෙනස් කරන්න':'💸 වියදමක් දාන්න',`<div class="v5cats">${v36Btns(cat).map(k=>`<button class="btn sm ${k===cat?'primary':'light'}" onclick="v5ExCat('${k}')">${V5_EX[k]}</button>`).join('')}${advOk?`<button class="btn sm ${cat==='adv'?'primary':'light'}" onclick="v5ExCat('adv')">${H11_ADV}</button>`:''}<button class="btn sm ${V36_OWN[cat]?'primary':'light'}" data-own="1" onclick="v5ExCat('ownc')">${V36_OWNB}</button></div>${v36OwnHtml(cat)}<input type="hidden" id="v5exC" value="${cat}">
    ${advOk?h11WhoHtml(cat):''}<div class="field"><label>මුදල (රු.)</label><input id="v5exA" type="text" inputmode="decimal" value="${old?num(old.amt):''}" placeholder="උදා: 3500"></div>
    <div class="field"><label>සටහන (ඕනේ නම්)</label><input id="v5exN" maxlength="80" value="${esc(old&&old.note||'')}"></div><div class="small muted">📷 ෆොටෝ ඕනේ නැහැ.</div>`,
    [{t:old?'💾 වෙනස සුරකින්න':'✅ දාන්න',c:'primary',f:()=>{const raw=String($('v5exA').value).replace(/,/g,'').trim();const a=Math.round(num(raw)*100)/100;if(!/^\d+(\.\d{1,2})?$/.test(raw)||!(a>0)||a>500000){toast('මුදල හරියට දාන්න (රු. 1 – 5,00,000)','err');return;}
@@ -1072,7 +1076,7 @@ function v5Dep(){const D=v5Day();if(D.dep){toast(`${D.dep.by||''} ${lrHM(D.dep.f
   v5Put({k:'dep',uid:'dep-'+today()},'🚚 ලොරිය පිටත් වුණා');toast('🚚 සුබ ගමනක්!');renderHome();}
 function v5Fin(){const D=v5Day();if(D.fin){toast(`${D.fin.by||''} ${lrHM(D.fin.first||D.fin.at)} ට දැනටමත් ඔබුවා`,'warn');renderHome();return;}
   const o=(S.ord&&S.ord.o)||[],left=o.filter(x=>!(S.ordDone||{})[x[0]]).length;if(left&&!confirm(`📋 ඇණවුම් ${left}ක් තවම “දුන්නා” කියලා නැහැ. ඒත් ඉවරද?`))return;
-  if(!D.ex.length&&!confirm('💸 වියදම් දාලා නැහැ (ඩීසල් / කෑම). වියදම් නැද්ද?'))return;
+  if(!D.ex.length&&!confirm('💸 වියදම් දාලා නැහැ (පෙට්‍රල් / තේ). වියදම් නැද්ද?'))return;
   v5Put({k:'fin',uid:'fin-'+today()},'🏁 ගමන ඉවරයි');renderHome();}
 function v5NoTrip(){if(!confirm('🚫 අද ලොරි ගමනක් නැද්ද? (ලොරියේ බඩු කම්හලට බානවා)'))return;v5Put({k:'nt',uid:'nt-'+today()},'🚫 අද ගමනක් නැහැ');go('unload');}
 function v5EndKeep(opt){
@@ -1086,7 +1090,7 @@ function v5Undo(k){const D=v5Day(),e=D[k];if(!e){toast('ඒක ඔබලා න�
 function v5Chips(D){const L=[['A','🔢 ගණන්'],['B','📦 පටවන'],['C','🛣️ ගමනේ'],['E','🏁 ඉවරයි']],ord={A:0,B:1,C:2,E:3,F:3},cur=ord[D.step];
   return `<div class="v5chips">${L.map(([k,t],i)=>`<span class="${i<cur?'done':i===cur?'on':''}">${i<cur?'✓ ':''}${t}</span>`).join('<i>›</i>')}</div>`;}
 function v5ExCard(D,top){return `<div class="card v5ex ${top?'v5top':''}"><div class="v5hd"><h3>💸 වියදම්</h3><b>රු. ${D.exT.toLocaleString('en-US')}</b></div>${D.ex.map(e=>`<div class="v5row"><span>${e.cat==='adv'?H11_ADV+' — '+esc(e.en||''):V5_EX[e.cat]||e.cat}${e.note?' · '+esc(e.note):''}<small>${esc(lrHM(e.first||e.at))} · ${e.mine?'📱 මගේ':'📱 '+esc(e.by||'')}</small></span><b>${num(e.amt).toLocaleString('en-US')}</b>${e.mine&&v5Edit(e)?`<button class="btn sm light" onclick="v5ExSheet('${e.uid}')">✏️</button>`:''}</div>`).join('')||'<div class="small muted">තවම වියදම් නැහැ</div>'}
-   <div class="v5cats">${Object.entries(V5_EX).map(([k,t])=>`<button class="btn sm light" onclick="v5ExSheet('','${k}')">${t}</button>`).join('')}${h11St().length?`<button class="btn sm light" onclick="v5ExSheet('','adv')">${H11_ADV}</button>`:''}</div></div>`;}
+   <div class="v5cats">${V5_BTN.map(k=>`<button class="btn sm light" onclick="v5ExSheet('','${k}')">${V5_EX[k]}</button>`).join('')}${h11St().length?`<button class="btn sm light" onclick="v5ExSheet('','adv')">${H11_ADV}</button>`:''}<button class="btn sm light" onclick="v5ExSheet('','ownc')">${V36_OWNB}</button></div></div>`;}
 function v5FlCard(D){return `<div class="card v5fl"><div class="v5hd"><h3>🪙 සිල්ලර</h3><b>${D.flT?'අද රු. '+D.flT.toLocaleString('en-US'):'තවම නැහැ'}</b></div>${D.fl.map(e=>`<div class="v5row"><span>රු. ${num(e.amt).toLocaleString('en-US')}<small>${esc(lrHM(e.first||e.at))} · ${e.mine?'📱 මගේ':'📱 '+esc(e.by||'')}</small></span>${e.mine&&v5Edit(e)?`<button class="btn sm light" onclick="v5FloatSheet('${e.uid}')">✏️</button>`:''}</div>`).join('')}<button class="btn ${D.flT?'light':'primary'} block" onclick="v5FloatSheet()">🪙 සිල්ලර ${D.flT?'තව ':''}දාන්න</button></div>`;}
 function v5LorryCard(D){const st=D.st;return `<div class="card lr-card v5lorry"><div class="lr-top"><div><div class="lr-k">🚚 ලොරියේ දැන් — හැම බඩුවක්ම</div><div class="lr-big">${st.sum} <small>පැකට් · ${Object.keys(st.tot).length} වර්ග</small></div></div>${S.cloud?`<button class="btn light sm" onclick="lrSync(true).then(()=>renderHome())">🔄</button>`:''}</div>
    <input type="search" class="v5q" placeholder="🔎 සොයන්න (උදා: 50g)" oninput="v5Filter(this.value)">${lrTableHtml(st)}${lrSum(st.rem.dm)?`<div class="warnbox small">⚠️ Damage ${lrSum(st.rem.dm)}ක් ලොරියේ — කම්හලට බාන්න මතක් කරන්න.</div>`:''}
@@ -1157,6 +1161,12 @@ function h11Pick(b){window._h11emp={id:b.dataset.id,n:b.dataset.n};document.quer
 (function(){const _ac=applyCodes;applyCodes=function(codes){const ex=(codes||[]).map(c=>c&&!c.error&&(c.type==='cfg'?c.data:(c.type==='rep'&&c.data?c.data.cfg:null))).filter(x=>x&&typeof x==='object').pop(),keep=S.cfg&&S.cfg.st;
   const r=_ac.apply(this,arguments);try{if(S.cfg){if(ex&&Array.isArray(ex.st))S.cfg.st=ex.st.filter(x=>Array.isArray(x)&&x[0]&&x[1]).slice(0,30).map(x=>[String(x[0]).slice(0,40),String(x[1]).slice(0,40)]);else if(keep&&!S.cfg.st)S.cfg.st=keep;save();}}catch(e){}return r;};})();
 document.head.insertAdjacentHTML('beforeend','<style id="h11css">.h11n{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.h11n .btn{min-height:44px}.h11hint{margin:2px 0 8px}</style>');
+/* ================= 5.1.10 · 036 A (owner 21 Nov) · 💸 බොත්තම් — ⛽ පෙට්‍රල් · ☕ තේ · 🔧 නඩත්තු · 🎁 වෙනත් · 💵 අත්තිකාරම් · 👤 අයිතිකරු ලබාගැනීම් =================
+   තිරය කලින් විදිහමයි. 👤 = ගමන අතරතුර ලොරි සල්ලි වලින් අයිතිකරුට ගිය දේ: 💵 මුදල් ලබාගැනීම (ownc) · 🛒 සාප්පුවට භාණ්ඩ මිලදී ගැනීම (owns) → ගාණ + සටහන.
+   අනිත් වියදම් වගේම lday `ex` (cat ownc / owns) → PC එකේ රෑ ගණනට පේළියක් (වර්ගය 3100 — ලාභයට නැහැ). ලොරි සල්ලි ගණන ක්‍රමය වෙනස් නැහැ. */
+(function(){const _c=v5ExCat;v5ExCat=function(k){const r=_c.apply(this,arguments);try{const o=$('v36own'),own=!!V36_OWN[k];if(o){o.style.display=own?'':'none';o.querySelectorAll('.v36o button').forEach(b=>{b.className='btn sm '+(b.dataset.k===k?'primary':'light');});}
+  document.querySelectorAll('.v5cats button[data-own]').forEach(b=>{b.className='btn sm '+(own?'primary':'light');});}catch(e){}return r;};})();
+document.head.insertAdjacentHTML('beforeend','<style id="v36css">.v36o{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}.v36o .btn{min-height:44px}.v36hint{margin:2px 0 8px}</style>');
 
 /* ================= 5.1.9 · 035 A3 · ⭐ “පැකට් අංශයෙන් ගන්න” ලකුණ (owner 17 Nov 16:25) =================
    While loading: tap ⭐ beside an item → remember to take it from the packing section (count optional).

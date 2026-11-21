@@ -1247,7 +1247,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='5.36';
+const FA_VER='5.40';
 /* v4.64 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v4.64.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuF',A='f',_f=window.fetch.bind(window);
@@ -4511,6 +4511,73 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
       const r=t3();if(r&&!H.includes('t3')){const row={k:'t3',t:`🔍 PC පරීක්ෂාව: 🔴 ${r.b} · ⚠️ ${r.w}${r.L[0]?' — '+String(r.L[0]).replace(/^[🔴⚠️]+\s*/u,'').slice(0,40):''}`,go:'t3Open()',hot:r.b?1:0};if(r.b)R.splice(top,0,row);else R.push(row);}
       const E=ep();if(E.length&&!H.includes('ep')){const x=E[0],hot=E.some(y=>y.d<=5),row={k:'ep',t:`🏛️ EPF / ETF ${x.m} — ${rs(x.e+x.t)} · ${dmy(x.due).slice(0,5)} ට කලින්${E.length>1?' (+'+(E.length-1)+')':''}`,go:'epOpen()',hot:hot?1:0};if(hot)R.splice(top,0,row);else R.push(row);}}catch(e){h14E(e,292)}return R;};}
   try{document.head.insertAdjacentHTML('beforeend',`<style>.t3pl{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:9px 10px;margin:6px 0;font-size:15px;line-height:1.45;color:#111;overflow-wrap:anywhere}</style>`);}catch(e){}
+})();
+/* ================= app 5.37 (PC v5.5.66) · 037 — 📒 දෛනික වාර්තාව: උඩ කොටු 8 අයින් · 🛣️ Route අනුව (උඩින්ම) · 🕘 අද වෙනස් කළ දේවල් (අයිතිකරු 21 Nov 17:58 / 18:01) =================
+   බලන්න විතරයි. r.rt / r.ch නැති (පරණ PC) වාර්තාවකට ඒ කොටස් නැහැ — කොටු 8 ඒවාටත් පේන්නේ නැහැ. “🧾 දවසේ විකුණුම් + ලැබුණු ණය” පිටුව / PDF / WhatsApp text වෙනස් නැහැ. */
+(function(){
+  const N=v=>v===''||v===null||v===undefined?'':rpN(v);
+  {const _h=rpHtml;rpHtml=function(r){let h=_h.apply(this,arguments);try{
+    const t=document.createElement('div');t.innerHTML=h;const ks=[...t.querySelectorAll('.rp-ks')].find(e=>!e.closest('.rp-sec'));if(ks)ks.remove();
+    let add='';const T=Array.isArray(r&&r.rt)?r.rt.filter(x=>Array.isArray(x)):[];
+    if(T.length){const s=i=>T.reduce((a,x)=>a+(Number(x[i])||0),0);
+      add+=rpSec('rt','🛣️','Route අනුව',T.length,rpTable(['Route','බිල්','මුළු විකුණුම්','Cash','චෙක් / බැංකු','ණයට ගියා','පරණ ණය ලැබුණා','Return / Damage'],
+        T.map(x=>[esc(x[0]),x[1],`<b>${N(x[2])}</b>`,N(x[3]),N(x[4]),x[5]?`<b class="neg">${N(x[5])}</b>`:N(x[5]),x[6]?`<b class="okc">${N(x[6])}</b>`:N(x[6]),N(x[7])]),[1,2,3,4,5,6,7],
+        ['<b>ඔක්කොම</b>',`<b>${s(1)}</b>`,`<b>${N(s(2))}</b>`,`<b>${N(s(3))}</b>`,`<b>${N(s(4))}</b>`,`<b>${N(s(5))}</b>`,`<b>${N(s(6))}</b>`,`<b>${N(s(7))}</b>`]),true);}
+    const C=Array.isArray(r&&r.ch)?r.ch.filter(x=>Array.isArray(x)&&x[1]):null;
+    if(C){const more=Math.max(0,(Number(r.chN)||C.length)-C.length);
+      add+=rpSec('ch','🕘','අද වෙනස් කළ දේවල්',(Number(r.chN)||C.length)||'',C.length?'<div class="c37ch">'+rpTable(['වෙලාව','වෙනස් කළේ','කවුද'],C.map(x=>[esc(x[2]||''),`${esc(x[0]||'')} ${esc(x[1])}`,esc(x[3]||'')]),[])+'</div>'+(more?`<div class="small muted" style="margin:4px 0">… කලින් තව ${more}ක් (PC එකේ ⚙️ → 📜 Audit log)</div>`:''):'<div class="small muted" style="padding:6px 0">අද කිසිවක් වෙනස් කළේ නැහැ ✅</div>',C.length>0);}
+    if(add){const f=t.querySelector('details.rp-sec');if(f)f.insertAdjacentHTML('beforebegin',add);else t.insertAdjacentHTML('beforeend',add);}
+    h=t.innerHTML;}catch(e){h14E(e,293)}return h;};}
+  try{document.head.insertAdjacentHTML('beforeend',`<style>.c37ch .rp-t td{white-space:normal!important;overflow-wrap:anywhere;vertical-align:top}.c37ch .rp-t td:first-child,.c37ch .rp-t td:last-child{white-space:nowrap!important}</style>`);}catch(e){}
+})();
+/* ================= app 5.38 (PC v5.5.67) · 035 G-6c — 📊 කලින් මාසයේ සාරාංශය → “📋 අද කරන්න” =================
+   PC cfg ms = [මාසය, විකුණුම්, ශුද්ධ ලාභය | null, mk, ලැබුණු ගෙවීම්, බිල්, batch, පැකට්] — PC එක මාසේ 1–7 විතරයි යවන්නේ (Owner).
+   🏠 පේළිය “📊 ඔක්තෝබර් සාරාංශය — විකුණුම් රු. X · ලාභය රු. Y” → ඔබුවම විස්තරය · “✓ බැලුවා” = ඒ මාසෙට ආයේ නැහැ · ✕ = අදට.
+   බලන්න විතරයි — කිසිවක් යවන්නේ නැහැ. සම්පූර්ණ එක (ණය · වියදම් · නිෂ්පාදනය · GMP) + 🖨️ PDF PC එකේ 📈 වාර්තා → 📊 මාසික සාරාංශය. */
+(function(){
+  const rs=x=>'රු. '+Math.round(num(x)).toLocaleString('en-US'),MON=['ජනවාරි','පෙබරවාරි','මාර්තු','අප්‍රේල්','මැයි','ජූනි','ජූලි','අගෝස්තු','සැප්තැම්බර්','ඔක්තෝබර්','නොවැම්බර්','දෙසැම්බර්'],mn=m=>MON[+String(m).slice(5,7)-1]||m;
+  const seen=()=>{try{return localStorage.getItem('faMS')||'';}catch(e){return '';}};
+  function ms(){const a=S.cfg&&S.cfg.ms;if(!Array.isArray(a)||a.length<8||!/^\d{4}-\d{2}$/.test(String(a[0])))return null;
+    return {m:a[0],s:num(a[1]),p:a[2]===null||a[2]===undefined||a[2]===''?null:num(a[2]),mk:String(a[3]||''),pay:num(a[4]),b:Math.floor(num(a[5])),nb:Math.floor(num(a[6])),pk:Math.floor(num(a[7]))};}
+  window.msInfo=ms;
+  const mkT=k=>k==='g'?'':k==='y'?' 🟡':' ⚪';
+  window.msOpen=function(){try{const r=ms();if(!r){sheet();return;}
+    sheet(`<h3 style="margin:0 0 4px">📊 ${esc(mn(r.m))} සාරාංශය</h3><div class="small muted" style="margin-bottom:6px">${esc(r.m)} · PC එකෙන්</div>
+      <div class="t3pl">🧾 විකුණුම් <b>${rs(r.s)}</b><br><span class="small">බිල් ${r.b}</span></div>
+      ${r.p===null?'<div class="t3pl small muted">💰 ලාභය PC එකේ තවම හැදෙනවා — ටිකකින් එයි</div>':`<div class="t3pl">💰 ශුද්ධ ලාභය <b class="${r.p<0?'bad':''}">${rs(r.p)}</b>${mkT(r.mk)}${r.mk==='y'?'<br><span class="small">🟡 සමහර cost / පඩි ඇස්තමේන්තු</span>':r.mk==='w'?'<br><span class="small">⚪ දත්ත මදි</span>':''}</div>`}
+      <div class="t3pl">📒 ලැබුණු ගෙවීම් <b>${rs(r.pay)}</b></div>
+      <div class="t3pl">🏭 Batch ${r.nb} · පැකට් ${r.pk.toLocaleString('en-US')}</div>
+      <div class="small muted" style="margin:8px 0">සම්පූර්ණ එක (ණය · වියදම් · තොගය · GMP) + 🖨️ PDF → PC එකේ 📈 වාර්තා → 📊 මාසික සාරාංශය.</div>
+      <button class="btn block" onclick="msSeenOk()">✓ බැලුවා</button><button class="btn light block" style="margin-top:6px" onclick="sheet()">වසන්න</button>`);}catch(e){h14E(e,295)}};
+  window.msSeenOk=function(){try{const r=ms();if(r)localStorage.setItem('faMS',r.m);}catch(e){}sheet();try{render();}catch(e){}};
+  {const _a=a3Rows;a3Rows=function(){const R=_a.apply(this,arguments);try{if(!S.cfg)return R;const r=ms();if(r&&seen()!==r.m&&!a3Hide().k.includes('ms'))
+      R.push({k:'ms',t:`📊 ${mn(r.m)} සාරාංශය — විකුණුම් ${rs(r.s)}${r.p===null?'':' · ලාභය '+rs(r.p)+mkT(r.mk)}`,go:'msOpen()',hot:0});}catch(e){h14E(e,296)}return R;};}
+})();
+/* ================= app 5.39 (PC v5.5.68) · 035 G-6d — 🔁 “මේ කඩේ සාමාන්‍යයෙන් ගන්නේ” (බිල / ඇණවුම) =================
+   PC cfg us = {කඩය: [බිල් ගණන, අන්තිම දිනය, [[භාණ්ඩය, ගණන, වාර]]]} — PC එකේ අන්තිම බිල් 8 (දින 180) අතරින් භාගයකවත් තිබුණ ඒවා · ගණන = මැද ගාණ.
+   කඩය තෝරලා බඩු තාම නැත්නම් → “🔁 සාමාන්‍යයෙන් ගන්නේ” බොත්තම (🧾 බිලේ “අන්තිම බිල වගේම” ට උඩින්) → ඔබුවම බඩු පිරෙනවා, ගණන් වෙනස් කරන්න පුළුවන්.
+   යවන්නේ ඔයා 📤 ඔබුවම විතරයි. PC එක v5.5.68 නැත්නම් බොත්තම නැහැ. බිලේ ක්‍රමයට ගැළපෙන බඩු විතරයි (prodOk — 🧾 කඩ බිලට 🌶️ අමු නැහැ · 🌶️ ලිහිල් ක්‍රමයට පැකට් නැහැ · ඇණවුමට ⚖️ නැහැ). */
+(function(){
+  const us=cid=>{try{const u=S.cfg&&S.cfg.us&&S.cfg.us[cid];return Array.isArray(u)&&Array.isArray(u[2])?u:null;}catch(e){return null;}};
+  const ok=(k,u)=>u[2].filter(x=>{const p=prod(x[0]);return p&&P().some(q=>q[0]===x[0])&&prodOk(k,'it',p)&&x[1]>0;});
+  window.usualBtn=function(d,k){try{if(!d.c||!cust(d.c))return '';const u=us(d.c);if(!u)return '';const l=ok(k,u);if(!l.length)return '';
+    return `<button class="btn light block usual" onclick="usualFill('${k}')">🔁 සාමාන්‍යයෙන් ගන්නේ <span class="small muted">(බිල් ${u[0]}න් · ${l.map(x=>esc(prod(x[0])[1])+' '+qText(prod(x[0]),x[1])).slice(0,4).join(', ')}${l.length>4?' … +'+(l.length-4):''})</span></button>`;}catch(e){h14E(e,297);return '';}};
+  window.usualFill=function(k){try{const d=D(k),c=cust(d.c),u=us(d.c);if(!u)return;const l=ok(k,u);if(!l.length)return;
+    d.it=l.map(([pid,q])=>{const p=prod(pid);return k==='bill'?[pid,q,freeFor(p,q),isW(p)?loosePrice(d,p):custPrice(c,p)]:[pid,q,0,custPrice(c,p)];});
+    save();render();toast('🔁 සාමාන්‍ය බඩු '+l.length+'ක් දැම්මා — ගණන් වෙනස් කරන්න පුළුවන්');}catch(e){h14E(e,298)}};
+  {const _cp=custPicker;custPicker=function(k,allowNew){let h=_cp.apply(this,arguments);try{if(k!=='bill'&&k!=='order')return h;const d=D(k);if(!d.c||d.it.length)return h;const b=usualBtn(d,k);if(!b)return h;
+      const i=h.indexOf('<button class="btn light block" onclick="sameAsLast()"');if(i>=0)return h.slice(0,i)+b+h.slice(i);const j=h.lastIndexOf('</div>');return j>=0?h.slice(0,j)+b+h.slice(j):h+b;}catch(e){h14E(e,297)}return h;};}
+})();
+/* ================= app 5.40 (PC v5.5.69) · 035 G-6e — 🤖 PC එකේ off කළ මතක් කිරීම් phone එකෙත් නැහැ =================
+   PC cfg ao = [පේළි keys] (t3 · gm · ep · ms · v7 · d3 · g2b · g2m · g3s · g3d) — PC 🤖 Automation එකේ off කළ ඒවා.
+   “📋 අද කරන්න” එකේ ඒ පේළි නැහැ · 🌅 අද උදේ කාඩ් එකේ 🛒 / 🏭 / 📒 30+ / 🛑 පේළිත් නැහැ. ලැයිස්තු / තිර එහෙමමයි. PC එක 5.5.69 නැත්නම් වෙනසක් නැහැ. */
+(function(){
+  const off=()=>{try{return S.cfg&&Array.isArray(S.cfg.ao)?S.cfg.ao.map(String):[];}catch(e){return [];}};
+  const hid=(a,k)=>a.some(x=>k===x||String(k).startsWith(x+':'));
+  {const _a=a3Rows;a3Rows=function(){const R=_a.apply(this,arguments);try{const a=off();if(a.length&&Array.isArray(R))return R.filter(r=>!(r&&hid(a,r.k)));}catch(e){h14E(e,299)}return R;};}
+  {const _h=renderHome0;renderHome0=function(){const r=_h.apply(this,arguments);try{const a=off();if(!a.length)return r;const card=document.getElementById('g5am');if(!card)return r;
+      const F={g2b:'g2BuyOpen',g2m:'g2MkOpen',g3d:'g3DebtOpen',g3s:'g3StOpen'};a.forEach(k=>{const f=F[k];if(f)card.querySelectorAll('.g5l').forEach(b=>{if(String(b.getAttribute('onclick')||'').startsWith(f))b.remove();});});
+      if(!card.querySelector('.g5l'))card.remove();}catch(e){h14E(e,300)}return r;};}
 })();
 </script>
 </body>
