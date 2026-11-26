@@ -1247,7 +1247,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='5.44';
+const FA_VER='5.45';
 /* v4.64 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v4.64.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuF',A='f',_f=window.fetch.bind(window);
@@ -5046,6 +5046,78 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
       const st=S.sp&&S.sp[bid]&&S.sp[bid].P,sd=st&&st.sd;if(sd&&o&&!(num(st.o)>0)&&!$('m3dry')){const n=Math.max(0,Math.round((new Date(workDay()+'T12:00:00Z')-new Date(sd+'T12:00:00Z'))/864e5));o.closest('.field').insertAdjacentHTML('afterend',`<div id="m3dry" class="small muted">☀️ වේලෙනවා — පටන් ගත්තාට දවස් <b>${n}</b> · වේළුණාම කිරලා ⚖️ කොටුවට දාලා ✅ (තාම නම් හිස්ව තියන්න — දවස් ගණනක් බලාගෙන නැහැ)</div>`);}}catch(e){h14E(e,363)}return r;};}
   {const _r=render;render=function(){const r=_r.apply(this,arguments);try{if(screen!=='stp')return r;document.querySelectorAll('#stpBody .stp-r').forEach(row=>{if(row.dataset.m3)return;const btn=row.querySelector('button');const m=btn&&/stpOpen\('([^']*)','P'\)/.exec(btn.getAttribute('onclick')||'');if(!m)return;row.dataset.m3='1';
       const b=myB().find(x=>x.bid===m[1]),st=S.sp&&S.sp[m[1]]&&S.sp[m[1]].P;if(!isPap(b)||!st||!st.sd||num(st.o)>0)return;const n=Math.max(0,Math.round((new Date(workDay()+'T12:00:00Z')-new Date(st.sd+'T12:00:00Z'))/864e5)),inf=row.querySelector('.small.muted');if(inf)inf.insertAdjacentHTML('beforeend',` · ☀️ දවස් ${n}`);});}catch(e){h14E(e,364)}return r;};}
+})();
+
+/* ================= app 5.45 (PC v5.5.76) · 044 — 🏭 tabs පිළිවෙළ + 👤 තාත්තාගේ ගිණුම (owner 26 Nov 17:04 “hama dema pilivelata … vadiya sankirna venna ba”) =================
+   tap උත්තර: අලුත් tabs 5 · පාවිච්චි නොකරන tiles හංගන්න · 👤 තාත්තාගේ ගිණුම එක පිටුවක (PC + phone).
+   · tabs: 🏠 අද · 🧾 විකුණුම් · 🏭 නිෂ්පාදනය · 📦 තොගය · 💰 සල්ලි. පරණ “☰ තව” tab එක නැහැ → ඒ tiles 🏠 අද යටින් “☰ තව” කොටුවේ.
+     කිසිම tile එකක් / go('…') එකක් අයින් වෙලා නැහැ — තැන විතරයි. 🔎 සෙවුම හැම tile එකක්ම හොයනවා (☰ තව ඇතුළේ ඒවාත්).
+   · ✏️ “මේ tab එකේ tiles හංගන්න / පෙන්නන්න” (හැම tab එකකම යටින්) — 🙈 කරපු tile එක පේන්නේ නැහැ, ආයේ 👁 කරන්න පුළුවන් (පරණ 🏠 සකසන්න ලැයිස්තුවමයි — S.home.hide).
+   · 👤 තාත්තාගේ ගිණුම (පරණ 🧮 tile එක, 💰 සල්ලි tab එකේ): fcfg.dg තියෙනවා නම් ① 💵 සල්ලි · ② 🏪 කඩේට බඩු · ③ 💸 ගෙව්වා · ④ ⚖️ ඉතුරු ≈ · ⑤ 📒 ගෙවන්න · 📅 දවසින් දවස.
+     dg නැත්නම් (පරණ PC) පරණ 🧮 තිරයමයි. බලන්න විතරයි — phone එකෙන් කිසිවක් යවන්නේ නැහැ. */
+(function(){
+  const NEW=[['today','🏠','අද'],['sale','🧾','විකුණුම්'],['prod','🏭','නිෂ්පාදනය'],['stock','📦','තොගය'],['money','💰','සල්ලි']];
+  FT_TABS.splice(0,FT_TABS.length,...NEW);
+  const OLD={buy:'stock',more:'today'};if(S&&S.fTab&&OLD[S.fTab]){S.fTab=OLD[S.fTab];try{save();}catch(e){}}
+  /* where every tile lives, and its place inside the tab (first match wins) */
+  const PLACE=[
+    ['sale',[/v455Bill\('shop'\)/,/'pay'/,/'cdue'/,/'ret'/,/'order'\)/,/'orders'/,/v455Bill\('staff'\)/,/v455Bill\('raw'\)/,/'move'/,/'take'/]],
+    ['prod',[/'batches'|'bnew'/,/'stp'/,/s4Open/,/'rcalc'/,/'scan'/,/'loadl'|'ld'/]],
+    ['stock',[/'stock'|'fcount'/,/mcGoToday|'mats'/,/'pks'/,/s3Open/,/s7Open/,/'buy'|buyNew|'raw'/]],
+    ['money',[/fxGo\('exp'\)/,/fxGo\('spay'\)/,/'sdue'/,/'chq'/,/fxGo\('att'\)/,/'bm'/]],
+    ['more',[/'history'/,/'iss'/,/'bc'/,/'price'/,/fxGo\('cmp'\)/,/fxGo\('asset'\)/,/fxGo\('add'\)/,/'notes'/,/'rpt'/,/'setup'/]]];
+  function place(k){for(const [t,L] of PLACE){const i=L.findIndex(re=>re.test(k));if(i>=0)return [t,i];}return ['more',99];}
+  window.ftTab=k=>place(k)[0];
+  const ALL=new Map();/* key → {ic,t} for every tile ever drawn (hidden ones too) */
+  const info=b=>({ic:(b.querySelector('span')||{}).textContent||'',t:(b.childNodes[1]&&b.childNodes[1].textContent||b.textContent).trim().slice(0,40)});
+  if(!$('fa45css'))document.head.insertAdjacentHTML('beforeend',`<style id="fa45css">.fa45more{margin:10px 0 4px;border:1px solid #e2e8f0;border-radius:12px;padding:0 8px}.fa45more>summary{padding:11px 4px;font-weight:700;cursor:pointer;list-style:none}.fa45more>summary::-webkit-details-marker{display:none}.fa45more>summary::after{content:' ▾';opacity:.6}.fa45more[open]>summary::after{content:' ▴'}.fa45more .grid2{margin-bottom:8px}.fa45ed{margin-top:10px}.fa45r{display:flex;align-items:center;gap:8px;border-bottom:1px solid #eef2f7;padding:8px 0}.fa45r .grow{min-width:0}.fa45r.off .grow{opacity:.5}
+  .dgr{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:6px;align-items:start;border-top:1px solid #e5e7eb;padding:10px 0}.dgr .n{font-size:18px}.dgr .v{font-weight:800;font-size:16px;white-space:nowrap;text-align:right}.dgr.tot{background:#fffbeb;border-radius:8px;padding:10px 4px}.dgd{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:4px 8px;font-size:12.5px}.dgd b{font-size:12px}.dgd span:nth-child(4n+2),.dgd span:nth-child(4n+3),.dgd span:nth-child(4n),.dgd b:nth-child(n+2){text-align:right}</style>`);
+  function arrange(){const box=$('homeBody'),g=box&&box.querySelector('.ftGrid');if(!g||!S.cfg)return;const T=S.fTab||'today',H=v455HC();
+    (window._v455Tiles||[]).forEach(x=>{if(!ALL.has(x.k))ALL.set(x.k,{ic:x.ic,t:x.t});});
+    const tiles=[...g.querySelectorAll('button.tile')];
+    tiles.forEach(b=>{const k=v455Key(b);ALL.set(k,info(b));if(H.hide.includes(k)){b.remove();return;}const [t,i]=place(k);b.dataset.ft=t;b.dataset.o=String(i);});
+    if(g.querySelector('[data-bm]')){const b=g.querySelector('[data-bm]');b.innerHTML='<span>👤</span>තාත්තාගේ ගිණුම<small>සල්ලි · කඩේට · ගෙව්වා · ඉතුරු</small>';}
+    const tabI=t=>NEW.findIndex(x=>x[0]===t),live=[...g.querySelectorAll('button.tile')].sort((a,b)=>(tabI(a.dataset.ft)<0?9:tabI(a.dataset.ft))-(tabI(b.dataset.ft)<0?9:tabI(b.dataset.ft))||num(a.dataset.o)-num(b.dataset.o));live.forEach(b=>g.appendChild(b));
+    let more=null;if(T==='today'){const M=live.filter(b=>b.dataset.ft==='more'&&b.dataset.q!=='1');if(M.length){more=document.createElement('details');more.className='fa45more';more.innerHTML=`<summary>☰ තව (${M.length}) — සැකසුම් · Barcode · මිල · වැරදි · යැව්ව ඒවා …</summary>`;const g2=document.createElement('div');g2.className='grid2 ftGrid';M.forEach(b=>{b.style.display='';g2.appendChild(b);});more.appendChild(g2);g.after(more);}}
+    live.forEach(b=>{if(b.parentNode!==g)return;b.style.display=b.dataset.ft===T||(T==='today'&&b.dataset.q==='1')?'':'none';});
+    /* 📉 low stock → only on 📦 තොගය (it showed on every tab before) · 🧺 Product button (was on the old ☰ tab) → 📦 · 🔎 search (was on the old ☰ tab) → 🏠 අද, above ☰ තව */
+    const lo=$('v471home');if(lo&&T!=='today')lo.style.display=T==='stock'?'':'none';
+    const wrap=box.querySelector('.v455home');if(T==='stock'&&wrap&&!$('prodGoH')){const hd=wrap.querySelector('.ftHead');(hd||wrap.firstChild).insertAdjacentHTML(hd?'afterend':'beforebegin','<button id="prodGoH" class="btn light block" onclick="prodOpen()">🧺 Product එකක් බලන්න</button>');}
+    let q=box.querySelector('.ftQ');if(T==='today'){if(!q){q=Object.assign(document.createElement('input'),{type:'search',placeholder:'🔎 සොයන්න (ණය / naya / batch / barcode)',className:'ftQ',oninput(e){ftFind(e.target.value);}});}q.style.display='';q.style.margin='10px 0 4px';(more||g).before(q);}else if(q)q.style.display='none';
+    const ed=document.createElement('button');ed.className='btn ghost block small fa45ed';ed.setAttribute('onclick','fa45Ed()');ed.textContent='✏️ මේ tab එකේ tiles හංගන්න / පෙන්නන්න';(more||g).after(ed);}
+  window.fa45Ed=function(){const T=S.fTab||'today',H=v455HC(),L=[...ALL.entries()].filter(([k])=>{const t=place(k)[0];return t===T||(T==='today'&&t==='more');}).sort((a,b)=>{const pa=place(a[0]),pb=place(b[0]);return (pa[0]==='more')-(pb[0]==='more')||pa[1]-pb[1];});window._fa45L=L.map(x=>x[0]);
+    const hd=NEW.find(x=>x[0]===T)||NEW[0];
+    sheet(`<h3>✏️ ${esc(hd[1]+' '+hd[2])} — tiles</h3><div class="small muted" style="margin-bottom:6px">👁 = පේනවා · 🙈 = හංගලා (මකන්නේ නැහැ — ආයේ 👁 කරන්න පුළුවන්)</div>
+     ${L.map(([k,x],i)=>{const off=H.hide.includes(k);return `<div class="fa45r${off?' off':''}"><div class="grow">${esc(x.ic)} ${esc(x.t)}${place(k)[0]==='more'?' <span class="small muted">· ☰ තව</span>':''}</div><button class="btn sm ${off?'light':'primary'}" onclick="fa45T(${i})">${off?'🙈 හංගලා':'👁 පේනවා'}</button></div>`;}).join('')}
+     <button class="btn primary block" style="margin-top:10px" onclick="sheet();render()">හරි</button>`);};
+  window.fa45T=function(i){const k=(window._fa45L||[])[i];if(!k)return;const H=v455HC(),j=H.hide.indexOf(k);if(j>=0)H.hide.splice(j,1);else H.hide.push(k);save();render();fa45Ed();};
+  {const _h=renderHome0;renderHome0=function(){const r=_h.apply(this,arguments);try{arrange();}catch(e){console.warn('5.45 tabs',e);}return r;};}
+  window.ftFind=function(q){q=String(q||'').trim().toLowerCase();const box=$('homeBody');if(!box)return;const T=S.fTab||'today',md=box.querySelector('.fa45more');let hit=0;
+    box.querySelectorAll('.ftGrid button.tile').forEach(b=>{const k=b.dataset.ft,inM=md&&md.contains(b);if(q){const ok=ftWords(b).includes(q);b.style.display=ok?'':'none';if(ok&&inM)hit++;}else b.style.display=inM||k===T||(T==='today'&&b.dataset.q==='1')?'':'none';});
+    if(md)md.open=q?hit>0:md.open;};
+  {const _s=ftSet;window.ftSet=ftSet=function(k){if(OLD[k])k=OLD[k];return _s.call(this,k);};}
+  try{FT_WORDS.push([/'bm'/,'thaththa ginum ginuma dad father kade']);}catch(e){}
+  /* ---------- 👤 තාත්තාගේ ගිණුම ---------- */
+  TITLES.bm='👤 තාත්තාගේ ගිණුම';
+  const MN=['ජන','පෙබ','මාර්තු','අප්‍රේල්','මැයි','ජූනි','ජූලි','අගෝ','සැප්','ඔක්','නොවැ','දෙසැ'],mname=m=>{const p=String(m||'').split('-');return p.length===2?`${MN[(+p[1]||1)-1]} ${p[0]}`:esc(m);};
+  function dgDraw(){const box=$('bmBody'),B=S.cfg&&S.cfg.bm,G=S.cfg&&S.cfg.dg;if(!box||!B||!G||!Array.isArray(G.m)||!G.m.length||!Array.isArray(B.m))return false;
+    const i=Math.max(0,Math.min(G.m.length-1,S.bmI||0)),g=G.m[i],r=B.m.find(x=>x[0]===g[0])||[],cur=i===0,D=B.due||[0,0,0,0,0];
+    const X={lorry:r[5],flo:r[6],fac:r[7],n:r[8],chq:r[9],bank:r[10],ret:r[11],sup:r[12],exp:r[13],wage:r[14],other:r[15],box:r[18],pl:r[1],est:r[2]},cash=num(g[1]),shop=num(g[2]),own=num(g[3]),paid=num(g[4]),left=num(g[5]);
+    const row=(n,t,v,s,cls)=>`<div class="dgr${cls?' '+cls:''}"><div class="n">${n}</div><div><b>${t}</b>${s?`<div class="small muted">${s}</div>`:''}</div><div class="v">${v}</div></div>`;
+    const cs=[`🚚 ලොරි ${money(X.lorry)}`,num(X.flo)?`− මාරු සල්ලි ${money(X.flo)}`:'',`🏭 Factory ${money(X.fac)}`,num(X.chq)?`🧾 චෙක් ${money(X.chq)}`:'',num(X.bank)?`🏦 බැංකුවට ${money(X.bank)}`:'',num(X.ret)?`↩️ −${money(X.ret)}`:'',own?`👤 ලොරියෙන් ගත්ත ${money(own)}`:'',num(X.box)?`💼 −${money(X.box)}`:''].filter(Boolean).join(' · ');
+    let ans='';if(cur){const need=r2(num(D[4])-left),sv=r2(Math.max(0,left-num(D[4])));ans=`<div class="bmans ${need>0.004?'w':'ok'}"><b>⑤ ට ④ ඇතිද?</b> ${need>0.004?`⚠️ ${money(need)} මදි වගේ`:'✅ ඇති'}<br><b>ඉතුරු කරන්න පුළුවන් ≈</b> ${money(sv)}</div>`;}
+    const days=cur&&Array.isArray(G.d)?G.d:[];let P={n:0,a:0};try{['fspay','fexp','fadv','pay'].forEach(k=>pendSent(k,21).forEach(x=>{P.n++;P.a+=num(x.rec&&x.rec.amt);}));}catch(e){}
+    box.innerHTML=`<div class="card"><div class="bmh"><button class="btn sm light" onclick="bmStep(1)"${i>=G.m.length-1?' disabled':''}>◀</button><b>${mname(g[0])}</b><button class="btn sm light" onclick="bmStep(-1)"${i===0?' disabled':''}>▶</button></div>
+      ${row('①','💵 තාත්තාට ගිය සල්ලි',money(cash),cs)}
+      ${row('②','🏪 කඩේට ගිය බඩු',money(shop),'තොග මිලට — සල්ලි වෙනුවට බඩු')}
+      ${row('③','💸 තාත්තා ගෙව්වා',money(paid),`🏪 සැපයුම්කරු ${money(X.sup)} · 🧾 වියදම් ${money(X.exp)} · 👷 පඩි ${money(X.wage)}${num(X.other)?' · වෙනත් '+money(X.other):''}`)}
+      ${row('④','⚖️ ඉතුරු විය යුතු ≈',money(left),'① + ② − ③ · තාත්තා ළඟ / කඩේට / ගෙදරට','tot')}
+      ${cur?row('⑤','📒 ගෙවන්න තියෙනවා',money(D[4]),`සැපයුම්කරු ≈ ${money(D[0])} · චෙක් ${money(D[1])} · පඩි ${D[3]?'≈ ':''}${money(D[2])}`):''}
+      ${ans}${P.n?`<div class="small warn" style="margin-top:8px">⏳ මේ phone එකෙන් යැව්ව සල්ලි ${P.n}ක් (${money(r2(P.a))}) PC එකට තාම නැහැ.</div>`:''}</div>
+     ${days.length?`<div class="card"><details open><summary><b>📅 දවසින් දවස</b></summary><div class="dgd" style="margin-top:8px"><b>දිනය</b><b>① සල්ලි</b><b>② කඩේට</b><b>③ ගෙව්වා</b>${days.map(d=>`<span>${esc(dmy(d[0]).slice(0,5))}</span><span>${num(d[1])?money(d[1]).replace('රු. ',''):'—'}</span><span>${num(d[2])?money(d[2]).replace('රු. ',''):'—'}</span><span>${num(d[3])?money(d[3]).replace('රු. ',''):'—'}</span>`).join('')}</div></details></div>`:''}
+     ${cur&&((B.sup||[]).length||(B.chq||[]).length)?`<div class="card"><details><summary><b>⑤ ගෙවන්න තියෙන ලැයිස්තුව</b></summary>${(B.sup||[]).map(s=>`<div class="bml"><span>🏪 ${esc(s[0])}</span><b>≈ ${money(s[1])}</b></div>`).join('')}${(B.chq||[]).map(q=>`<div class="bml"><span>✍️ ${q[0]?'#'+esc(q[0])+' ':''}${esc(q[1])} · ${esc(dmy(q[2]))}</span><b>${money(q[3])}</b></div>`).join('')}</details></div>`:''}
+     <div class="small muted" style="margin:4px 2px 12px">📊 ලාභය ≈ ${X.pl===null||X.pl===undefined?'—':money(X.pl)}${X.est?' (ඇස්තමේන්තු)':''} · 🔄 PC ගණන් ${esc(S.cfg.at?fmtAt(S.cfg.at,true):'—')} · බලන්න විතරයි · තාත්තා ගෙව්වා කිව්වම: 💰 සල්ලි tab → 🏪 සැපයුම්කරුට ගෙවීම / 💸 වියදම්.</div>`;return true;}
+  {const _r=render;render=function(){const x=_r.apply(this,arguments);try{if(screen==='bm'){document.querySelector('header h1').textContent=TITLES.bm;dgDraw();try{ftNavDraw();}catch(e){}}}catch(e){console.warn('5.45 dg',e);}return x;};}
 })();
 </script>
 </body>
