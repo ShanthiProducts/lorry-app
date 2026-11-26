@@ -1247,7 +1247,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='5.42';
+const FA_VER='5.44';
 /* v4.64 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v4.64.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuF',A='f',_f=window.fetch.bind(window);
@@ -3687,7 +3687,7 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
   function H2(){S.h2=S.h2&&typeof S.h2==='object'?S.h2:{};return S.h2;}
   function tupOf(b){try{return b&&BT.get(b.no)||null;}catch(e){return null;}}
   /* finished = ✅ all packed here or on the PC, or done / void */
-  function h2Done(b){if(!b||b.st==='void')return true;const x=bxOf(b.bid);if(x&&x.pd)return true;const t=tupOf(b);return !!(t&&(t.pd||t.s==='done'||t.s==='void'));}
+  function h2Done(b){if(!b||b.st==='void')return true;if(window.m0Auto&&m0Auto(b)){const t=tupOf(b);return m0Hid(b)||!!(t&&(t.s==='void'||t.s==='done'));}/* 5.43 M0: 📦 / 🧩 — the ✅ was ticked by the phone itself */const x=bxOf(b.bid);if(x&&x.pd)return true;const t=tupOf(b);return !!(t&&(t.pd||t.s==='done'||t.s==='void'));}
   function h2IsHm(b){if(!b)return false;const h=H2()[b.bid];if(h&&h.hm!==undefined)return !!h.hm;const t=tupOf(b);return !!(t&&t.hm);}
   window.h2Open=function(fam,excl){const d=workDay(),from=addDays(d,-H2D);return myB().filter(b=>b&&b.fam===fam&&b.bid!==excl&&b.d>=from&&b.d<=d&&!h2Done(b)).sort((a,b)=>String(b.d).localeCompare(String(a.d))||String(b.at).localeCompare(String(a.at)));};
   function way(fam){try{const W=S.cfg&&S.cfg.rw;return W&&typeof W==='object'&&W[fam]||'g';}catch(e){return 'g';}}/* = wayOf (4.75 — inside its own block) */
@@ -4691,7 +4691,7 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
    · 📒 දෛනික වාර්තාව: “🪜 අද අංශ වැඩ” (r.sw — පරණ PC නම් නැහැ). */
 (function(){
   const SN={K:['🍳','කුස්සිය'],G:['⚙️','ඇඹරුම්'],P:['🥞','පපඩම්'],X:['📦','පැක්']},XD=/^\d{4}-\d{2}-\d{2}$/,DEV=4;
-  const NOTES=['☀️ වේලෙනවා','🫙 පදම් වෙනවා','🌶️ කුළුබඩු දැම්මා','💧 සේදුවා','🔥 තම්බුවා','🌀 dryer එකේ'];
+  const NOTES=['☀️ වේලෙනවා','🫙 පදම් වෙනවා','🌶️ කුළුබඩු දැම්මා','💧 සේදුවා','🔥 තම්බුවා','🌀 dryer එකේ','🕒 නිවෙන්න / පදම් වෙන්න තිබ්බා']/* 5.44: + 🕒 (චිලි පේස්ට් — හදලා දවසක් තියලා පැක්) */;
   const R3=x=>Math.round(num(x)*1000)/1000,kgT=x=>R3(x).toLocaleString('en-LK',{maximumFractionDigits:3})+' kg',dd=d=>XD.test(String(d||''))?String(d).slice(8,10)+'.'+String(d).slice(5,7):'';
   const X2=()=>{try{const x=S.cfg&&S.cfg.stp;return x&&typeof x==='object'&&num(x.v)>=2&&typeof window.stpOn==='function'&&window.stpOn()?x:null;}catch(e){return null;}};
   const SP=()=>{if(!S.sp||typeof S.sp!=='object'||Array.isArray(S.sp))S.sp={};return S.sp;};
@@ -4798,6 +4798,254 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
       const add=rpSec('sw','🪜','අද අංශ වැඩ',L.length,'<div class="c37ch">'+rpTable(['අංශය','Batch','දාපු → හැදුණු kg','සටහන'],rows,[])+'</div>',true);
       const t=document.createElement('div');t.innerHTML=h;const S2=[...t.querySelectorAll('details.rp-sec')],after=S2.filter(d=>/^(🛣️|🕘)/.test((d.querySelector('summary')||{}).textContent||'')).pop();
       if(after)after.insertAdjacentHTML('afterend',add);else if(S2[0])S2[0].insertAdjacentHTML('beforebegin',add);else t.insertAdjacentHTML('beforeend',add);h=t.innerHTML;}catch(e){h14E(e,331)}return h;};}
+})();
+/* ================= app 5.43 (PC v5.5.73) · 041 M0 + M1 (owner 25 Nov 20:47 “hadamu”) =================
+   M0  📱 21.11 සෝයා batch (SC-AK21) “🔎 පරණ batch” ලැයිස්තුවේ නැති වුණේ: කරන විදිහ 📦 පැක් / 🧩 එකතු කරන භාණ්ඩ (සෝයා …) වලට පැක් නොකළ කුඩු නැති නිසා
+       batch එක හදපු ගමන් phone එක “✅ ඔක්කොම පැක් කළා” ඉබේම දානවා (PC packDone) → ලැයිස්තුවෙන් එවෙලේම අයින් වුණා (PC එකේ batch එක හරියට තියෙනවා).
+       දැන්: ඒ වර්ගයේ batch දවස් 14ක් ලැයිස්තුවේ (➕ තව පැක් කළා) + “✅ ලැයිස්තුවෙන් අයින්” (phone එකේ විතරයි — ගණන් / PC වෙනස් නැහැ) ·
+       අන්තිමට පැක් කළ දවස · 📤 / ❌ ලකුණු · “✅ මෑතදී ඉවර කළ” (දවස් 14 · ✏️) · batch 5+ නම් භාණ්ඩයෙන් තෝරන්න.
+   M1  🧾 “තොගයෙන් අඩු වෙන ද්‍රව්‍ය” — ✅ බොත්තමට උඩින් (➕ තව ඇතුළේ හොයන්න ඕනේ නැහැ): ද්‍රව්‍යය · ගණන (✍️ අතින් = කහ) · 🛍️ මලු. පේළිය ඔබුවම කොළය:
+       ගත්ත ගණන (= X kg · recipe එකට වඩා 5 ගුණයක් වෙනස් නම් ⚠️) · ඇරලා තියෙන හැම මල්ලක්ම (📂 ඇරපු ඒවා උඩින්) kg කොටුවක් එක්ක · ✅ මේ මල්ල ඉවරයි ·
+       🤖 පරණම මල්ලෙන් බෙදන්න · recipe එකෙන් වෙනස් නම් හේතුව · “අවශ්‍ය ප්‍රමාණයට” ද්‍රව්‍ය වලටත් ගණනක් (හිස් = අඩු නැහැ · කලින් දාපු ගණන chip එකක්).
+       → batch පණිවිඩයට lg [{n, l:[[lot, g]]}] + urs [[n, හේතුව]] — PC v5.5.73 (cfg m41) නම් විතරයි. කොළය අත නොතිබ්බොත් කලින් වගේම 🤖 පරණම මල්ල මුලින්. */
+(function(){
+  document.head.insertAdjacentHTML('beforeend',`<style>
+#m1c .m1r{display:grid;grid-template-columns:1fr auto;gap:2px 8px;width:100%;text-align:left;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:8px 10px;margin:4px 0;font:inherit;color:inherit;cursor:pointer;min-height:44px}
+#m1c .m1r.m1t{background:#fef9c3;border-color:#eab308}
+#m1c .m1n{font-weight:700;overflow-wrap:anywhere}
+#m1c .m1q{font-weight:700;text-align:right;white-space:nowrap}
+#m1c .m1b{grid-column:1/-1;color:#374151;overflow-wrap:anywhere}
+#sheetX .m1bag label{min-width:0}#sheetX .m1bag small{display:block;overflow-wrap:anywhere}
+.m0x{margin-top:4px}</style>`);
+  const D14=14;
+  /* ---------------- M0 ---------------- */
+  const X41=()=>{S.x41=S.x41&&typeof S.x41==='object'?S.x41:{};return S.x41;};
+  function W(fam){try{const w=S.cfg&&S.cfg.rw;return w&&typeof w==='object'&&w[fam]||'g';}catch(e){return 'g';}}
+  /* 📦 / 🧩: the phone ticks “✅ all packed” by itself (no loose powder) — so that tick never meant “no more packing on another day” */
+  window.m0Auto=function(b){const w=W(b&&b.fam);return w==='p'||w==='a';};
+  window.m0Hid=function(b){const x=b&&X41()[b.bid];return !!(x&&x.x);};
+  function tup(b){try{return b&&BT.get(b.no)||null;}catch(e){return null;}}
+  function lpOf(b){let d=String(b.pk||b.d||'').slice(0,10);const x=X41()[b.bid];if(x&&x.lp&&x.lp>d)d=x.lp;const t=tup(b);if(t&&t.lp&&t.lp>d)d=t.lp;return d;}
+  function agoT(d){const n=Math.round((new Date(workDay()+'T12:00:00Z')-new Date(d+'T12:00:00Z'))/864e5);return n<=0?'අද':n===1?'ඊයේ':'දවස් '+n+'කට කලින්';}
+  function trimX(){const X=X41(),ks=Object.keys(X);if(ks.length>300)ks.slice(0,ks.length-300).forEach(k=>delete X[k]);}
+  window.m0Hide=function(bid,on){const X=X41(),x=X[bid]||{};if(on)x.x=1;else delete x.x;X[bid]=x;trimX();save();toast(on?'✅ ලැයිස්තුවෙන් අයින් කළා (ගණන් / PC වෙනස් නැහැ)':'↩️ ආයේ ලැයිස්තුවට');render();};
+  window.m0F=function(f){window._m0f=window._m0f===f?'':f;render();};
+  /* the “➕ add to that batch?” question: 📦 / 🧩 batches the phone ticked itself stay out of it (as before 5.43) — a new soya batch is not interrupted */
+  {const _ho=window.h2Open;if(_ho)window.h2Open=function(fam,excl){const L=_ho.apply(this,arguments);try{return L.filter(b=>{if(!m0Auto(b))return true;const x=bxOf(b.bid),t=tup(b);return !((x&&x.pd)||(t&&t.pd));});}catch(e){h14E(e,350);return L;}};}
+  function bidOf(c){const b=c.querySelector('button[onclick^="bMore("],button[onclick^="bEdit("]');const m=b&&/\('([^']+)'\)/.exec(b.getAttribute('onclick')||'');return m?m[1]:'';}
+  function marks(b){let h='';try{if(outbox(b.uidLast))h+='<div class="small bad m0x">📤 තවම PC එකට ගියේ නැහැ</div>';const rj=rjMap().get(b.uidLast);if(rj!==undefined)h+=`<div class="small bad m0x">❌ PC එකේ ප්‍රතික්ෂේප කළා${rj?' — '+esc(String(rj)):''}</div>`;}catch(e){h14E(e,340)}return h;}
+  function doneCard(b){const tot=bTot(b),lp=lpOf(b),hid=m0Auto(b)&&m0Hid(b);
+    return `<div class="card m0d"><div class="bno">${esc(b.no)}</div><div><strong>${esc(b.fam)}</strong> · ${esc(dmy(b.d).slice(0,5))}${tot?' · පැකට් '+tot:''}${lp&&lp>b.d?' · 📦 අන්තිමට '+esc(dmy(lp).slice(0,5)):''}</div>${marks(b)}
+    <div class="hbtns">${hid?`<button class="btn sm light" onclick="m0Hide('${esc(b.bid)}',0)">↩️ ආයේ ලැයිස්තුවට</button>`:''}<button class="btn sm light" onclick="bEdit('${esc(b.bid)}')">✏️ වෙනස් කරන්න</button></div></div>`;}
+  const _rl=renderBatches;renderBatches=function(){const r=_rl.apply(this,arguments);try{const box=$('batchesBody');if(!box)return r;const d=workDay(),cut=addDays(d,-2),from=addDays(d,-D14),dt=$('h2old'),open=new Set();
+      if(dt){const cards=[...dt.querySelectorAll(':scope > .card')],fams=[];
+        cards.forEach(c=>{const bid=bidOf(c),b=bid&&myB().find(x=>x.bid===bid);if(!b)return;open.add(bid);c.dataset.fam=b.fam;if(!fams.includes(b.fam))fams.push(b.fam);
+          const lp=lpOf(b),inf=c.querySelector('.small.muted');if(lp&&lp>b.d&&inf)inf.insertAdjacentHTML('beforeend',` · 📦 අන්තිමට පැක් කළේ <b>${esc(dmy(lp).slice(0,5))}</b> (${esc(agoT(lp))})`);
+          const hb=c.querySelector('.hbtns');if(hb){hb.insertAdjacentHTML('beforebegin',marks(b));if(m0Auto(b))hb.insertAdjacentHTML('beforeend',`<button class="btn sm light" onclick="m0Hide('${esc(b.bid)}',1)">✅ ලැයිස්තුවෙන් අයින්</button>`);}});
+        const f=window._m0f&&fams.includes(window._m0f)?window._m0f:'';
+        if(cards.length>=5&&fams.length>1){const sm=dt.querySelector('summary'),hint=sm&&sm.nextElementSibling;(hint||sm).insertAdjacentHTML('afterend',`<div class="chips m0f" style="margin:0 0 8px">${fams.map(x=>`<button class="chip ${x===f?'ok':''}" onclick="m0F(${esc(JSON.stringify(x))})">${esc(x)}</button>`).join('')}</div>`);}
+        if(f)cards.forEach(c=>{if(c.dataset.fam&&c.dataset.fam!==f)c.style.display='none';});}
+      /* ✅ finished in the last 14 days — to see / change (a finished one is not lost any more) */
+      const fin=myB().filter(b=>b&&b.st!=='void'&&b.d<cut&&b.d>=from&&!open.has(b.bid)).sort((a,b)=>String(b.d).localeCompare(String(a.d))||String(b.at).localeCompare(String(a.at)));
+      if(fin.length){const h=`<details class="card" id="m0fin"${window._m0finOpen?' open':''}><summary style="cursor:pointer;font-weight:700;min-height:32px">✅ මෑතදී ඉවර කළ batch <b>${fin.length}</b> <span class="small muted">(දවස් ${D14} · බලන්න / වෙනස් කරන්න)</span></summary>${fin.slice(0,40).map(doneCard).join('')}</details>`;
+        const wa=box.querySelector('button[onclick="bWaAll()"]');if(dt)dt.insertAdjacentHTML('afterend',h);else if(wa)wa.insertAdjacentHTML('beforebegin',h);else box.insertAdjacentHTML('beforeend',h);
+        const x=$('m0fin');if(x)x.addEventListener('toggle',()=>{window._m0finOpen=x.open;});}}catch(e){h14E(e,341)}return r;};
+
+  /* ---------------- M1 ---------------- */
+  const M41=()=>!!(S.cfg&&S.cfg.m41),M42=()=>!!(S.cfg&&S.cfg.m42);
+  const LGX=()=>{S.lgx=S.lgx&&typeof S.lgx==='object'?S.lgx:{};return S.lgx;};
+  const RS={c:'🍳 මේ පාර වෙනස් කළා',w:'🗑️ නාස්ති වුණා',r:'⚖️ recipe ගණන වැරදියි'};
+  function mid(n){const m=mtByName(n);return m?m[0]:'N:'+norm(n);}
+  function uOf(n){const m=mtByName(n),u=m?m[3]:'kg';return {u,f:u==='ගණන'?1:1000};}
+  function q3(g,f){return Math.round(num(g)/f*1000)/1000;}
+  function qT(g,n){const U=uOf(n);return q3(g,U.f).toLocaleString('en-LK',{maximumFractionDigits:3})+' '+U.u;}
+  function mfdOf(no){try{const o=S.lmfd&&S.lmfd[no];if(o)return o;const r=((S.cfg&&S.cfg.rl)||[]).find(x=>x[0]===no);return (r&&r[10])||'';}catch(e){return '';}}
+  function opened(l){const b=faBase(l.q,l.u);return l.left!==null&&b!==null&&l.left<b-0.5;}
+  /* the sacks of one material that can be in this batch: open (not ✅ finished, something left), not received after the batch day — plus any already chosen */
+  function lotsOf(n,k){const id=mid(n),day=bd&&bd.d,keep=new Set(((bd&&bd.lg&&bd.lg[k])||[]).map(x=>x[0]));
+    return faLots().filter(l=>mid(l.mat)===id&&(keep.has(l.no)||(!l.done&&(l.left===null||l.left>0.5)))&&!(day&&l.d&&String(l.d).slice(0,10)>day&&!keep.has(l.no)));}
+  /* what this batch takes from stock: recipe lines (not our own powder — that is 🥣) · “as needed” lines · lines added by hand */
+  function rcNow(){try{return bd&&bd.fam?faCurRc():null;}catch(e){return null;}}
+  function lines(){if(!bd||!bd.fam)return [];const r=rcNow();if(!r)return [];const pk=Object.values(bd.sz||{}).reduce((s,v)=>s+Math.floor(num(v)),0),out=[],K=new Set();
+    rcLines(r,bd.kg,pk).forEach(l=>{if(!(l.g>0))return;if(l.fam){if(!M42())return;const k='F:'+l.fam;if(K.has(k)){const o=out.find(x=>x.k===k);if(o)o.a+=l.g;return;}K.add(k);out.push({k,n:l.n,a:l.g,fam:l.fam});return;}const k='N:'+norm(l.n);if(K.has(k)){const o=out.find(x=>x.k===k);if(o)o.a+=l.g;return;}K.add(k);out.push({k,n:l.n,a:l.g});});
+    (r.x||[]).forEach(([n,t])=>{const k='N:'+norm(n);if(K.has(k))return;K.add(k);out.push({k,n,a:0,x:t||'අවශ්‍ය ප්‍රමාණයට'});});
+    Object.entries(bd.u||{}).forEach(([k,t])=>{if(!t||t.fam||!t.n||K.has(k))return;K.add(k);out.push({k,n:t.n,a:0,add:1});});return out;}
+  function useOf(L){const t=bd.u&&bd.u[L.k];return t?num(t.g):L.a;}
+  function autoOf(L){const id=mid(L.n),FL=faLots();return (bd.autoL||[]).filter(o=>{const l=FL.find(x=>x.no===o.no);return l&&mid(l.mat)===id;});}
+  function bagTxt(L){if(L.fam)return m2Txt(L);const lg=bd.lg&&bd.lg[L.k],use=useOf(L);
+    if(lg&&lg.length){const s=lg.reduce((a,x)=>a+num(x[1]),0);return '🛍️ '+lg.map(([no,g])=>`<b>${esc(no)}</b> ${esc(qT(g,L.n))}`).join(' + ')+(use-s>0.5?` + 🤖 ${esc(qT(use-s,L.n))}`:'');}
+    const A=!bd.bid&&!bd.rawEd?autoOf(L):[];if(A.length)return '🤖 '+A.map(o=>`<b>${esc(o.no)}</b> ${esc(qT(o.g,L.n))}`).join(' + ');
+    const id=mid(L.n),FL=faLots(),R=(bd.raw||[]).filter(no=>{const l=FL.find(x=>x.no===no);return l&&mid(l.mat)===id;});if(R.length)return '🏷️ '+R.map(no=>`<b>${esc(no)}</b>`).join(', ');
+    return lotsOf(L.n,L.k).length?'<span class="muted">🛍️ මල්ල තෝරන්න</span>':'<span class="muted">මල්ලක් (lot) නැහැ</span>';}
+  function cardHtml(){const L=lines().filter(x=>x.a>0||x.x||x.add);if(!L.length)return '';
+    return `<h3>🧾 තොගයෙන් අඩු වෙන ද්‍රව්‍ය <span class="small muted">— පේළිය ඔබලා ගණන / මල්ල</span></h3>${L.map(x=>{const t=bd.u&&bd.u[x.k],use=useOf(x),zero=!(use>0),rs=bd.rs&&bd.rs[x.k];
+      return `<button type="button" class="m1r${t?' m1t':''}" data-k="${esc(x.k)}" onclick="m1Open(this.dataset.k)"><span class="m1n">${x.fam?'🏭 ':''}${esc(x.fam?x.n:l2Nm(x.n))}${t?' ✍️':''}${rs&&RS[rs]?' '+esc(RS[rs].split(' ')[0]):''}</span><span class="m1q">${zero?`<span class="muted">${x.x&&!t?'අඩු නැහැ':'0'}</span>`:esc(qT(use,x.n))}</span><span class="m1b small">${zero?(x.x&&!t?`<span class="muted">${esc(x.x)} — ගණනක් දාන්න පුළුවන්</span>`:''):bagTxt(x)}</span></button>`;}).join('')}
+      <div class="small muted" style="margin-top:4px">✍️ = අතින් වෙනස් කළා · 🛍️ = ඔයා තෝරපු මලු · 🤖 = පරණම මල්ල මුලින් (ඉබේම)</div>`;}
+  window.m1Paint=function(){try{const box=$('bnewBody');let el=$('m1c');if(!box||screen!=='bnew'||!bd||!bd.fam||!M41()||bd.hm){if(el)el.remove();return;}prune();
+      const h=roundsHtml()+cardHtml();if(!h){if(el)el.remove();return;}if(!el){el=document.createElement('div');el.id='m1c';el.className='card';}el.innerHTML=h;
+      const sum=$('v476sum'),btn=box.querySelector('button.btn.primary.block.big');
+      if(sum&&sum.parentNode===box){if(sum.nextElementSibling!==el)sum.insertAdjacentElement('afterend',el);}else if(btn&&btn.parentNode===box){if(btn.previousElementSibling!==el)btn.insertAdjacentElement('beforebegin',el);}else if(el.parentNode!==box)box.appendChild(el);
+      /* the one-line summary: the lots are the chosen sacks, not “oldest first” */
+      if(sum&&bd.lg&&Object.values(bd.lg).some(l=>l&&l.length))sum.innerHTML=sum.innerHTML.replace(/ <span class="muted">\(පරණම මුලින්\)<\/span>/,' <span class="muted">(🛍️ ඔයා තෝරපු මලු)</span>');}catch(e){h14E(e,342)}};
+  window.m1Open=function(k){if(!bd)return;const L=lines().find(x=>x.k===k);if(!L){toast('ද්‍රව්‍යය හමු වුණේ නැහැ','err');return;}if(L.fam){m2Open(L);return;}const U=uOf(L.n),use=useOf(L),t=bd.u&&bd.u[k];
+    const bags=lotsOf(L.n,k).map(l=>({l,op:opened(l)})).sort((a,b)=>(b.op-a.op)||faOld(a.l,b.l)),cur={},sug={},lg=bd.lg&&bd.lg[k];
+    if(lg&&lg.length)lg.forEach(([no,g])=>{cur[no]=(cur[no]||0)+num(g);});else(!bd.bid&&!bd.rawEd?autoOf(L):[]).forEach(o=>{sug[o.no]=(sug[o.no]||0)+num(o.g);});const hasSug=Object.keys(sug).length>0;
+    const last=num((S.m1last||{})[mid(L.n)]);window._m1={k,n:L.n,a:L.a,f:U.f,u:U.u,ed:0,rs:(bd.rs||{})[k]||''};
+    sheet(`<h3>🛍️ ${esc(l2Nm(L.n))}</h3>
+     <div class="field"><label>ගත්ත ගණන <span class="small muted">${L.a>0?'(recipe '+esc(qT(L.a,L.n))+')':esc(L.x||'')+' — හිස් = තොගයෙන් අඩු නැහැ'}</span></label>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input id="m1Q" type="number" inputmode="decimal" min="0" step="any" style="width:110px" value="${t?esc(String(q3(use,U.f))):''}" placeholder="${L.a>0?esc(String(q3(L.a,U.f))):last>0?esc(String(q3(last,U.f))):''}" oninput="m1Calc()"><b>${esc(U.u)}</b>${t&&L.a>0?`<button class="btn sm light" onclick="m1Back()">↩️ recipe ගණන</button>`:''}</div><div id="m1Eq" class="small"></div></div>
+     ${last>0&&!(L.a>0)&&!t?`<div class="chips"><button class="chip" onclick="m1Last(${q3(last,U.f)})">කලින් දාපු ගණන ${esc(qT(last,L.n))}</button></div>`:''}
+     ${bags.length?`<div class="small muted" style="margin:8px 0 2px">ඇත්තටම ගත්ත මලු — එක එක මල්ලෙන් ${esc(U.u)} <span class="muted">(හිස් = ඒ මල්ලෙන් නැහැ · 📂 = ඇරපු මල්ල)</span>${hasSug?'<br>අළු ඉලක්කම් = 🤖 ඉබේම යෝජනාව — ඔයා ගත්ත මලු වල ගණන ගහන්න':''}</div>${bags.map(({l,op})=>{const mf=mfdOf(l.no);return `<div class="irow m1bag"><label><strong>${op?'📂 ':''}${esc(l.no)}</strong><small class="muted">${mf?'MFD '+esc(dmy(mf))+' · ':''}ලැබුණේ ${esc(dmy(String(l.d||'').slice(0,10)))}${l.sn?' · '+esc(l.sn):''}</small><small class="muted">${l.left===null?'':'system එකේ ඉතුරු '+esc(qT(l.left,L.n))}${l.done?' · ✅ ඉවරයි':''}</small></label>
+       <div style="display:flex;gap:4px;align-items:center"><input class="m1g" data-no="${esc(l.no)}" data-left="${l.left===null?'':Math.round(l.left)}" type="number" inputmode="decimal" min="0" step="any" style="width:84px" value="${cur[l.no]?esc(String(q3(cur[l.no],U.f))):''}" placeholder="${sug[l.no]?esc(String(q3(sug[l.no],U.f))):''}" oninput="window._m1.ed=1;m1Calc()"><button class="btn sm light" title="මල්ලේ ඇත්තටම තියෙන ගණන" data-no="${esc(l.no)}" onclick="m1Adj(this.dataset.no)">✏️</button><button class="btn sm light" title="මේ මල්ල ඉවරයි" data-no="${esc(l.no)}" onclick="m1Done(this.dataset.no)">${l.done?'↩️':'✅'}</button></div></div>`;}).join('')}`:'<div class="small muted" style="margin-top:6px">මේ ද්‍රව්‍යයේ මලු (lot) phone එකේ නැහැ — ගණන විතරයි (🤖).</div>'}
+     <div id="m1Sum" class="small" style="margin:6px 0"></div>
+     ${bags.length>1?`<button class="btn sm light" onclick="m1Auto()">🤖 පරණම මල්ලෙන් ඉබේම බෙදන්න</button>`:''}
+     <div id="m1Rs"></div>
+     <button class="btn primary block" style="margin-top:8px" onclick="m1Ok()">✅ හරි</button><button class="btn light block" onclick="window._m1=null;sheet()">↩️ ආපහු</button>`);
+    m1Calc();};
+  function qNow(X){const i=$('m1Q'),v=i?i.value.trim():'';return v===''?(X.a>0?X.a:0):Math.max(0,num(v))*X.f;}
+  window.m1Calc=function(){const X=window._m1;if(!X)return;const q=qNow(X),eq=$('m1Eq');
+    if(eq){let h=q>0?`= <b>${esc(qT(q,X.n))}</b>${X.f===1000&&q<1000?' <span class="muted">('+Math.round(q)+' g)</span>':''}`:'';try{const hn=d11(X,q);if(hn)h+=hn;}catch(e){h14E(e,353)}if(X.a>0&&q>0&&(q>X.a*5||q<X.a/5))h+=` <span class="bad">⚠️ recipe ${esc(qT(X.a,X.n))} — ගණන හරිද? (g / kg)</span>`;eq.innerHTML=h;}
+    const G=[...document.querySelectorAll('#sheetX .m1g')];let s=0;const over=[];G.forEach(i=>{const g=Math.max(0,num(i.value))*X.f;s+=g;const lf=i.dataset.left;if(g>0&&lf!==''&&g>num(lf)+0.5)over.push(i.dataset.no);});
+    const el=$('m1Sum');if(el){if(!G.length)el.innerHTML='';else if(!(s>0))el.innerHTML='<span class="muted">මල්ලක ගණනක් ගහලා නැහැ → 🤖 ඉබේම (කලින් වගේම)</span>';
+      else{const d=s-q;el.innerHTML=`මලු එකතුව <b>${esc(qT(s,X.n))}</b> / ${esc(qT(q,X.n))} ${Math.abs(d)<=0.5?'✔':d>0?`<span class="warn">— මලු වලින් ${esc(qT(d,X.n))} වැඩියි → ✅ ඔබුවම ගත්ත ගණන ${esc(qT(s,X.n))}</span>`:`<span class="muted">— ඉතුරු ${esc(qT(-d,X.n))} 🤖 පරණම මල්ලෙන්</span>`}${over.length?`<div class="warn">⚠️ ${over.map(esc).join(', ')} — system එකේ ඉතුරු ගණනට වඩා වැඩියි (මල්ලේ ඇත්තටම තිබ්බා නම් කමක් නැහැ)</div>`:''}`;}}
+    const rs=$('m1Rs');if(rs){const w=X.ed&&s>q?s:q,ch=X.a>0&&Math.abs(w-X.a)>0.5;rs.innerHTML=ch?`<div class="small muted" style="margin-top:8px">recipe එකට වඩා වෙනස් ඇයි? <span class="muted">(ඕනේ නම්)</span></div><div class="chips">${Object.entries(RS).map(([c,t])=>`<button class="chip ${X.rs===c?'ok':''}" onclick="m1Rs('${c}')">${esc(t)}</button>`).join('')}</div>`:'';}};
+  window.m1Rs=function(c){const X=window._m1;if(!X)return;X.rs=X.rs===c?'':c;m1Calc();};
+  window.m1Back=function(){const X=window._m1;if(!X)return;const i=$('m1Q');if(i)i.value='';X.back=1;m1Calc();};
+  window.m1Last=function(v){const i=$('m1Q');if(i)i.value=String(v);m1Calc();};
+  window.m1Auto=function(){const X=window._m1;if(!X)return;let need=qNow(X);const FL=faLots();
+    [...document.querySelectorAll('#sheetX .m1g')].map(i=>({i,l:FL.find(x=>x.no===i.dataset.no)||{no:i.dataset.no,d:''}})).sort((a,b)=>{const ma=mfdOf(a.l.no),mb=mfdOf(b.l.no);return (ma?0:1)-(mb?0:1)||String(ma).localeCompare(String(mb))||faOld(a.l,b.l);}).forEach(({i,l})=>{const lf=l.left!==null&&l.left!==undefined?num(l.left):Infinity,t=Math.max(0,Math.min(need,lf));i.value=t>0.5?String(q3(t,X.f)):'';need-=t;});X.ed=1;m1Calc();};
+  window.m1Done=async function(no){const l=faLots().find(x=>x.no===no),on=!(l&&l.done);
+    if(on&&!confirm(`✅ ${no} මල්ල ඉවරයි කියලා දාන්නද?\n(system එකේ ගණන වෙනස් වෙන්නේ නැහැ — ඊළඟ batch වලට ඒ මල්ල ඉබේම තෝරන්නේ නැහැ)`))return;
+    await lotDone(no,on);if(on&&l&&l.left!==null&&num(l.left)>500&&M42()&&confirm(`${no} — system එකේ තාම ${qT(l.left,l.mat)} ඉතුරුයි.\nමල්ල ඇත්තටම හිස් නම් ඉතුරු 0 කරන්නද? (ඒ ටික නාස්තියක් ලෙස තොගයෙන් අඩු වෙනවා)`))await send('ladj',{no,q:0,d:workDay(),why:'✅ මල්ල ඉවරයි'},`✏️ ${no} → 0`);try{const i=[...document.querySelectorAll('#sheetX .m1g')].find(x=>x.dataset.no===no),row=i&&i.closest('.m1bag');if(row){const b=row.querySelector('button');if(b)b.textContent=on?'↩️':'✅';const sm=row.querySelectorAll('small')[1];if(sm)sm.innerHTML=sm.innerHTML.replace(' · ✅ ඉවරයි','')+(on?' · ✅ ඉවරයි':'');}}catch(e){h14E(e,343)}};
+  window.m1Ok=function(){const X=window._m1;if(!X||!bd)return;const k=X.k,i=$('m1Q'),v=i?i.value.trim():'';let q=v===''?null:Math.max(0,num(v))*X.f;
+    const L=[];[...document.querySelectorAll('#sheetX .m1g')].forEach(x=>{const g=Math.max(0,num(x.value))*X.f;if(g>0.5)L.push([x.dataset.no,Math.round(g)]);});const s=L.reduce((a,x)=>a+x[1],0);
+    if(X.ed&&s>0&&(q===null?X.a:q)<s-0.5)q=s;/* the sacks say more went in → that is what was taken */
+    bd.u=bd.u||{};const o=bd.u[k],p7=!!(o&&(o.x||o.sw));/* P7 ➕ / 🔁 lines keep their marks */
+    if(q===null||(X.a>0&&Math.abs(q-X.a)<0.5)||(!(X.a>0)&&!(q>0))){if(!p7)delete bd.u[k];else if(q!==null)bd.u[k]=Object.assign({},o,{g:q});}else bd.u[k]=Object.assign({},o||{},{n:(o&&o.n)||X.n,g:q,fam:''});
+    if(!(X.a>0)&&q>0){S.m1last=S.m1last&&typeof S.m1last==='object'?S.m1last:{};S.m1last[mid(X.n)]=q;const ks=Object.keys(S.m1last);if(ks.length>200)delete S.m1last[ks[0]];}
+    bd.lg=bd.lg||{};bd.lgN=bd.lgN||{};if(X.ed){if(L.length){bd.lg[k]=L;bd.lgN[k]=X.n;}else{delete bd.lg[k];delete bd.lgN[k];}}
+    bd.rs=bd.rs||{};if(X.rs&&bd.u[k])bd.rs[k]=X.rs;else delete bd.rs[k];
+    /* the chosen sacks are this batch's lots for that material (EXP from the sack MFD uses them too) */
+    if(X.ed&&L.length){const id=mid(X.n),FL=faLots(),u=bd.u[k]?num(bd.u[k].g):X.a,rm=remOf(X.n,k,u,L);bd.raw=[...new Set((bd.raw||[]).filter(no=>{const l=FL.find(x=>x.no===no);return !(l&&mid(l.mat)===id);}).concat(L.map(x=>x[0]),rm.map(x=>x.no)))];}
+    window._m1=null;save();sheet();render();toast('✅ '+l2Nm(X.n)+(L.length&&X.ed?' — මලු '+L.length:''));};
+  /* the part the chosen sacks do not cover → the same sacks the phone's 🤖 would take (sack MFD first, then oldest), less what was chosen */
+  function lotOrd(a,b){const ma=mfdOf(a.no),mb=mfdOf(b.no);return (ma?0:1)-(mb?0:1)||String(ma).localeCompare(String(mb))||faOld(a,b);}
+  function remOf(n,k,use,L){let need=num(use)-L.reduce((s,x)=>s+num(x[1]),0);const out=[];if(!(need>0.5))return out;const T={};L.forEach(([no,g])=>{T[no]=(T[no]||0)+num(g);});
+    lotsOf(n,k).filter(l=>!l.done).sort(lotOrd).forEach(l=>{if(need<=0.5)return;const av=(l.left===null?Infinity:num(l.left))-(T[l.no]||0);if(!(av>0.5))return;const g=Math.min(av,need);out.push({no:l.no,g});need-=g;});return out;}
+  /* chosen sacks belong to this product / recipe only: another product → gone · a material no longer in the recipe → gone */
+  function prune(){if(!bd)return;const sig=String(bd.fam||'');if(bd._m1f!==undefined&&bd._m1f!==sig){delete bd.lg;delete bd.lgN;delete bd.rs;delete bd.lb;delete bd.lbN;}bd._m1f=sig;
+    if(!bd.lg&&!bd.rs&&!bd.lb)return;const ks=new Set(lines().map(x=>x.k));if(!ks.size)return;const hasN=[...ks].some(k=>k.startsWith('N:')),hasF=[...ks].some(k=>k.startsWith('F:'));['lg','lgN','rs','lb','lbN'].forEach(f=>{if(bd[f])Object.keys(bd[f]).forEach(k=>{if(k.startsWith('F:')?!hasF:!hasN)return;if(!ks.has(k))delete bd[f][k];});});}
+  /* 🤖 oldest-first still runs for the other materials; the chosen sacks replace it for theirs */
+  function merge(){const ks=Object.keys(bd.lg||{}).filter(k=>Array.isArray(bd.lg[k])&&bd.lg[k].length);if(!ks.length)return;const FL=faLots(),ids=new Set(ks.map(k=>mid((bd.lgN&&bd.lgN[k])||k.slice(2))));
+    const keep=(bd.autoL||[]).filter(o=>{const l=FL.find(x=>x.no===o.no);return !(l&&ids.has(mid(l.mat)));}),add=[],LN=lines();ks.forEach(k=>{bd.lg[k].forEach(([no,g])=>add.push({no,g:num(g)}));const ln=LN.find(x=>x.k===k);if(ln)remOf(ln.n,k,useOf(ln),bd.lg[k]).forEach(o=>add.push(o));});
+    bd.autoL=keep.concat(add);bd.raw=[...new Set(bd.autoL.map(o=>o.no))];bd.autoM=(bd.autoM||[]).filter(n=>!ids.has(mid(n)));bd.autoS=(bd.autoS||[]).filter(([n])=>!ids.has(mid(n)));}
+  const _fa=faAuto;faAuto=function(){const r=_fa.apply(this,arguments);try{if(bd&&M41())prune();if(r&&bd&&!bd.hm&&bd.lg&&M41())merge();}catch(e){h14E(e,344)}return r;};
+  /* a sack un-ticked in the old lot chips is not a chosen sack any more */
+  {const _t=bToggleLot;bToggleLot=function(no){const r=_t.apply(this,arguments);try{if(bd&&bd.lg&&!(bd.raw||[]).includes(no))Object.keys(bd.lg).forEach(k=>{bd.lg[k]=(bd.lg[k]||[]).filter(x=>x[0]!==no);if(!bd.lg[k].length)delete bd.lg[k];});}catch(e){h14E(e,351)}return r;};}
+  const _e=bEdit;bEdit=function(bid){const r=_e.apply(this,arguments);try{if(bd&&bd.bid===bid){const G=LGX()[bid];if(G){bd.lg=JSON.parse(JSON.stringify(G.lg||{}));bd.lgN=Object.assign({},G.n||{});bd.rs=Object.assign({},G.rs||{});bd.lb=JSON.parse(JSON.stringify(G.lb||{}));bd.lbN=Object.assign({},G.bn||{});}else{delete bd.lg;delete bd.lgN;delete bd.rs;delete bd.lb;delete bd.lbN;}}}catch(e){h14E(e,345)}return r;};
+  {const _r=renderBNew;renderBNew=function(){const r=_r.apply(this,arguments);try{m1Paint();}catch(e){h14E(e,346)}return r;};}
+  {const _s=window.v476Sum;if(_s)window.v476Sum=function(){const r=_s.apply(this,arguments);try{m1Paint();}catch(e){h14E(e,347)}return r;};}
+
+  /* ---------- 042 M2 · 🏭 our own powder: which unpacked batch it came out of ---------- */
+  function pB(fam){try{const keep=new Set(Object.values((bd&&bd.lb)||{}).flat().map(x=>x&&x[0]));return [...BT.values()].filter(x=>x&&x.f===fam&&(num(x.kl)>0||keep.has(x.n))&&x.s!=='void'&&String(x.d||'')<=String((bd&&bd.d)||'9999')).sort((a,b)=>String(a.d).localeCompare(String(b.d))||String(a.n).localeCompare(String(b.n)));}catch(e){return [];}}
+  function m2Txt(L){const lb=bd.lb&&bd.lb[L.k],use=useOf(L);if(lb&&lb.length){const s=lb.reduce((a,x)=>a+num(x[1]),0);return '🏭 '+lb.map(([no,g])=>`<b>${esc(no)}</b> ${esc(gTxt(g))}`).join(' + ')+(use-s>50?` + 🤖 ${esc(gTxt(use-s))}`:'');}
+    const P=pB(L.fam);if(!P.length)return '<span class="muted">පැක් නොකළ කුඩු batch phone එකේ නැහැ (🤖 PC එක පරණම batch එකෙන්)</span>';return `🤖 පරණම batch මුලින් <span class="muted">(${P.slice(0,3).map(x=>esc(x.n)+' '+esc(gTxt(x.kl))).join(' · ')})</span>`;}
+  window.m2Open=function(L){const P=pB(L.fam),t=bd.u&&bd.u[L.k],use=useOf(L),lb=(bd.lb&&bd.lb[L.k])||[],cur={};lb.forEach(([no,g])=>{cur[no]=(cur[no]||0)+num(g);});
+    let need=use;const sug={};if(!lb.length)P.forEach(x=>{if(need<=50)return;const g=Math.min(num(x.kl),need);sug[x.n]=g;need-=g;});
+    window._m1={k:L.k,n:L.n,a:L.a,f:1000,u:'kg',ed:0,fam:L.fam,m2:1};
+    sheet(`<h3>🏭 ${esc(L.n)} <span class="small muted">— අපේ කුඩු</span></h3>
+     <div class="field"><label>ගත්ත ගණන <span class="small muted">(recipe ${esc(gTxt(L.a))})</span></label><div style="display:flex;gap:6px;align-items:center"><input id="m1Q" type="number" inputmode="decimal" min="0" step="any" style="width:110px" value="${t?esc(String(q3(use,1000))):''}" placeholder="${esc(String(q3(L.a,1000)))}" oninput="m2Calc()"><b>kg</b></div><div id="m1Eq" class="small"></div></div>
+     ${P.length?`<div class="small muted" style="margin:8px 0 2px">ගත්තේ මොන batch එකෙන්ද — පැක් නොකළ කුඩු තියෙන ඒවා <span class="muted">(හිස් = ඒකෙන් නැහැ · අළු = 🤖 යෝජනාව)</span></div>${P.map(x=>`<div class="irow m2b"><label><strong>${esc(x.n)}</strong><small class="muted">${esc(dmy(String(x.d||'')).slice(0,5))} · ඉතුරු ${esc(gTxt(x.kl))}</small></label><input class="m2g" data-no="${esc(x.n)}" data-left="${num(x.kl)}" type="number" inputmode="decimal" min="0" step="any" style="width:84px" value="${cur[x.n]?esc(String(q3(cur[x.n],1000))):''}" placeholder="${sug[x.n]?esc(String(q3(sug[x.n],1000))):''}" oninput="window._m1.ed=1;m2Calc()"></div>`).join('')}`:'<div class="small muted" style="margin-top:6px">පැක් නොකළ කුඩු තියෙන batch එකක් phone ලැයිස්තුවේ නැහැ — 🤖 PC එක පරණම batch එකෙන්.</div>'}
+     <div id="m1Sum" class="small" style="margin:6px 0"></div>
+     <button class="btn primary block" style="margin-top:8px" onclick="m2Ok()">✅ හරි</button><button class="btn light block" onclick="window._m1=null;sheet()">↩️ ආපහු</button>`);m2Calc();};
+  window.m2Calc=function(){const X=window._m1;if(!X)return;const q=qNow(X),eq=$('m1Eq');if(eq)eq.innerHTML=q>0?'= <b>'+esc(gTxt(q))+'</b>':'';const G=[...document.querySelectorAll('#sheetX .m2g')];let s=0;const over=[];G.forEach(i=>{const g=Math.max(0,num(i.value))*1000;s+=g;if(g>num(i.dataset.left)+50)over.push(i.dataset.no);});
+    const el=$('m1Sum');if(el)el.innerHTML=!G.length?'':!(s>0)?'<span class="muted">batch එකක ගණනක් ගහලා නැහැ → 🤖 පරණම batch මුලින් (කලින් වගේම)</span>':`batch එකතුව <b>${esc(gTxt(s))}</b> / ${esc(gTxt(q))} ${Math.abs(s-q)<=50?'✔':s>q?'<span class="warn">— වැඩියි → ✅ ඔබුවම ගත්ත ගණන '+esc(gTxt(s))+'</span>':'<span class="muted">— ඉතුරු '+esc(gTxt(q-s))+' 🤖 පරණම batch එකෙන්</span>'}${over.length?`<div class="warn">⚠️ ${over.map(esc).join(', ')} — ඉතුරු කුඩු වලට වඩා වැඩියි</div>`:''}`;};
+  window.m2Ok=function(){const X=window._m1;if(!X||!bd)return;const k=X.k,i=$('m1Q'),v=i?i.value.trim():'';let q=v===''?null:Math.max(0,num(v))*1000;const L=[];[...document.querySelectorAll('#sheetX .m2g')].forEach(x=>{const g=Math.max(0,num(x.value))*1000;if(g>0.5)L.push([x.dataset.no,Math.round(g)]);});const s=L.reduce((a,x)=>a+x[1],0);
+    if(X.ed&&s>0&&(q===null?X.a:q)<s-50)q=s;bd.u=bd.u||{};const o=bd.u[k];if(q===null||Math.abs(q-X.a)<0.5){if(!(o&&o.pu))delete bd.u[k];}else bd.u[k]=Object.assign({},o||{},{n:(o&&o.n)||X.n,g:q,fam:X.fam});
+    bd.lb=bd.lb||{};bd.lbN=bd.lbN||{};if(X.ed){if(L.length){bd.lb[k]=L;bd.lbN[k]=X.fam;}else{delete bd.lb[k];delete bd.lbN[k];}}window._m1=null;save();sheet();render();toast('✅ '+X.n);};
+  /* ---------- 042 A3/A4 ✏️ what the sack really has now ---------- */
+  window.m1Adj=async function(no){if(!M42()){toast('PC එක අලුත් කරන්න (v5.5.74)','err');return;}const l=faLots().find(x=>x.no===no);if(!l){toast(no+' මල්ල phone ලැයිස්තුවේ නැහැ','err');return;}const n=l.mat,U=uOf(n);const v=prompt(`✏️ ${no} (${l2Nm(n)}) මල්ලේ දැන් ඇත්තටම ${U.u} කීයද?${l.left!==null?'\n(system එකේ: '+qT(l.left,n)+')':''}`,'');if(v===null||String(v).trim()==='')return;const vv=Number(String(v).trim().replace(',','.'));if(!Number.isFinite(vv)||vv<0){toast('ඉලක්කමක් දාන්න (උදා: 12.5)','err');return;}const q=vv*U.f;
+    if(l.left!==null&&!confirm(`✏️ ${no}: system ${qT(l.left,n)} → ඇත්තටම ${qT(q,n)}\nහරිද?`))return;
+    if(!(await send('ladj',{no,q:Math.round(q),d:workDay()},`✏️ ${no} → ${qT(q,n)}`)))return;toast(`✏️ ${no} → ${qT(q,n)} — PC එකට යැව්වා`);};
+  /* ---------- 042 M3 🍳 “වට කීයද?” (recipe one round = r.b) for kitchen products ---------- */
+  function roundsHtml(){try{if(!bd||!bd.fam||bd.hm||W(bd.fam)!=='k')return '';const r=rcNow();if(!r||r.m==='p'||!(num(r.b)>0))return '';const one=num(r.b)/1000,kg=num(bd.kg),n=kg>0?Math.round(kg/one*100)/100:0;
+    return `<div class="m3r"><b>🍳 වට කීයද?</b> <span class="small muted">(වටයක් = ${esc(String(Math.round(one*1000)/1000))} kg)</span><div class="chips" style="margin-top:4px">${[1,1.5,2,2.5,3].map(x=>`<button type="button" class="chip ${Math.abs(n-x)<0.005?'ok':''}" onclick="m3Rounds(${x})">${x===1.5?'1½':x===2.5?'2½':x}</button>`).join('')}</div>${kg>0&&![1,1.5,2,2.5,3].some(x=>Math.abs(n-x)<0.005)?`<div class="small muted">දැන් ${esc(String(kg))} kg ≈ වට ${esc(String(n))}</div>`:''}</div>`;}catch(e){return '';}}
+  window.m3Rounds=function(x){const r=rcNow();if(!bd||!r||!(num(r.b)>0))return;bd.kg=String(Math.round(x*num(r.b))/1000);bd.kgM=1;bd.kgA=0;save();render();toast('🍳 වට '+x+' → '+bd.kg+' kg');};
+  /* ---------- 042 D11 the same change 3 batches in a row → 📖 change the recipe? ---------- */
+  function d11(X,q){if(!bd||!X||X.m2||!(X.a>0)||!(q>0))return '';const now=q/X.a;if(Math.abs(now-1)<0.03)return '';const rid=(rcNow()||{}).i||'';const G=LGX(),R=[];
+    for(const b of myB()){if(!b||b.st==='void'||b.fam!==bd.fam||b.bid===bd.bid)continue;const g=G[b.bid],x=S.b5x&&S.b5x[b.bid];if(!g||!g.ra||!(num(g.ra[X.k])>0)||!x||!x.u||!x.u[X.k])break;R.push(num(x.u[X.k].g)/num(g.ra[X.k]));if(R.length>=2)break;}
+    if(R.length<2||!R.every(v=>Math.abs(v-now)<=0.03))return '';const pc=Math.round((now-1)*100);
+    return `<div class="small warn" style="margin-top:4px">📖 අන්තිම batch 3ම recipe එකට වඩා ${pc>0?'+':''}${pc}% — recipe එකම මේ ගණනට හදන්නද? ${window.rceOpen&&rid?`<button type="button" class="btn sm light" onclick="sheet();rceOpen('${esc(rid)}')">✏️ Recipe</button>`:'(📖 Recipe පොතෙන්)'}</div>`;}
+  /* the batch message: lg / urs (PC v5.5.73) · the day packets were added (M0 “අන්තිමට පැක් කළේ”) */
+  const _sd=send;send=async function(k,body,label,quiet){
+    if(k!=='batch'||!body||!body.bid)return _sd.apply(this,arguments);
+    let was=0,now=0,mine=false;
+    try{const o=myB().find(x=>x.bid===body.bid);was=o?bTot(o):0;now=(body.sz||[]).reduce((s,x)=>s+num(x[1]),0);mine=!!bd&&(bd.bid===body.bid||!bd.bid);
+      if(mine&&M41()){try{prune();}catch(e){h14E(e,352)}const G=LGX()[body.bid],L=(!bd.hm&&bd.lg)?Object.entries(bd.lg).filter(([,l])=>Array.isArray(l)&&l.length):[];
+        if(L.length){body.lg=L.map(([kk,l])=>({n:(bd.lgN&&bd.lgN[kk])||kk.slice(2),l:l.map(([no,g])=>[no,Math.round(num(g))])}));const set=new Set(body.raw||[]);L.forEach(([,l])=>l.forEach(([no])=>set.add(no)));body.raw=[...set];}
+        else if(G&&G.lg&&Object.keys(G.lg).length)body.lg=[];
+        if(M42()){const B=(!bd.hm&&bd.lb)?Object.entries(bd.lb).filter(([,l])=>Array.isArray(l)&&l.length):[];if(B.length)body.lb=B.map(([kk,l])=>({f:(bd.lbN&&bd.lbN[kk])||kk.slice(2),l:l.map(([no,g])=>[no,Math.round(num(g))])}));else if(G&&G.lb&&Object.keys(G.lb).length)body.lb=[];}
+        const R=Object.entries(bd.rs||{}).filter(([kk,c])=>c&&RS[c]&&bd.u&&bd.u[kk]&&bd.u[kk].n);if(R.length)body.urs=R.map(([kk,c])=>[bd.u[kk].n,c]);else if(G&&G.rs&&Object.keys(G.rs).length)body.urs=[];}}catch(e){h14E(e,348)}
+    const ok=await _sd.apply(this,arguments);
+    try{if(ok){if(now>was){const X=X41(),x=X[body.bid]||{};x.lp=String(body.pdy||workDay()).slice(0,10);X[body.bid]=x;trimX();}
+        if(mine&&M41()){const G=LGX();if(body.lg!==undefined||body.urs!==undefined||body.lb!==undefined||G[body.bid]||Object.keys(bd.u||{}).length){const ra={};lines().forEach(x=>{if(bd.u&&bd.u[x.k]&&x.a>0)ra[x.k]=Math.round(x.a);});G[body.bid]={lg:JSON.parse(JSON.stringify((!bd.hm&&bd.lg)||{})),n:Object.assign({},bd.lgN||{}),rs:Object.assign({},bd.rs||{}),lb:JSON.parse(JSON.stringify((!bd.hm&&bd.lb)||{})),bn:Object.assign({},bd.lbN||{}),ra,rc:(rcNow()||{}).i||'',fam:bd.fam};const ks=Object.keys(G);if(ks.length>300)ks.slice(0,ks.length-300).forEach(i=>delete G[i]);}}
+        save();}}catch(e){h14E(e,349)}
+    return ok;};
+})();
+/* ================= app 5.44 (PC v5.5.74) · 042 — 041 ඉතුරු ඔක්කොම (owner 25 Nov 21:56 “m eva okkoma ivara karanna”) =================
+   (5.43 block එකේම: 🏭 අපේ කුඩු පේළිය → batch තෝරන්න (lb) · ✏️ මල්ලේ ඇත්ත ගණන · ✅ මල්ල ඉවරයි → 0 · 🍳 වට කීයද? · 📖 batch 3ක් එකම වෙනස → recipe?)
+   මෙතන: ➖ batch නැතුව ගිය අමු ද්‍රව්‍ය (🧂 තොගය) · ➖ කුඩු ගියා · ⏰ දවස් 14 පැන්නා — තාම කුඩු ඉතුරු · 🥣 ඉතුරු කුඩු කාඩ් එකේ ·
+   🥞 පපඩම්: “පිටි kg” → “⚖️ වේළුණු kg” · ☀️ වේලෙන දවස් ගණන · 🕒 සටහන · lot කාඩ් එකේ ✏️. ඔක්කොම PC v5.5.74 (cfg m42) නම් විතරයි. */
+(function(){
+  document.head.insertAdjacentHTML('beforeend',`<style>#m1c .m3r{background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:8px 10px;margin:4px 0 8px}#sheetX .m9w .chip{margin:2px}</style>`);
+  const M42=()=>!!(S.cfg&&S.cfg.m42);
+  const WHY=[['sell','🛒 විකුණුවා'],['home','🏠 ගෙදරට'],['staff','👷 සේවකයෙක්ට'],['waste','🗑️ නාස්ති / කුණු'],['spill','💧 හැලුණා'],['other','📝 වෙනත්']];
+  function tupOf(no){try{return BT.get(no)||null;}catch(e){return null;}}
+  function whyChips(id){return `<div class="chips m9w" id="${id}">${WHY.map(([k,t])=>`<button type="button" class="chip" data-w="${k}" onclick="[...this.parentNode.children].forEach(c=>c.classList.remove('ok'));this.classList.add('ok')">${t}</button>`).join('')}</div>`;}
+  function whyOf(id){const c=document.querySelector('#'+id+' .chip.ok');return c?c.dataset.w:'';}
+  function dayChips(id){const d=workDay();return `<div class="chips" id="${id}">${[[d,'අද'],[addDays(d,-1),'ඊයේ'],[addDays(d,-2),'පෙරේදා']].map(([v,t],i)=>`<button type="button" class="chip ${i?'':'ok'}" data-d="${v}" onclick="[...this.parentNode.children].forEach(c=>c.classList.remove('ok'));this.classList.add('ok')">${t}</button>`).join('')}</div>`;}
+  function dayOf(id){const c=document.querySelector('#'+id+' .chip.ok');return c?c.dataset.d:workDay();}
+  /* ---------- ➖ raw material gone without a batch (🧂 තොගය) ---------- */
+  window.m9Open=function(pre){if(!M42()){toast('PC එක අලුත් කරන්න (v5.5.74)','err');return;}const L=MT().filter(m=>m&&m[2]!=='p').map(m=>m[1]);
+    sheet(`<h3>➖ batch නැතුව ගිය අමු ද්‍රව්‍ය</h3><div class="small muted">විකුණුවා · ගෙදරට · සේවකයෙක්ට · නාස්ති / කුණු · හැලුණා — තොගයෙන් අඩු වෙනවා (PC එකේ ✅ කළාම).</div>
+     <div class="field"><label>ද්‍රව්‍යය</label><select id="m9N" onchange="m9Lots()"><option value="">— තෝරන්න —</option>${L.map(n=>`<option ${pre&&norm(pre)===norm(n)?'selected':''}>${esc(n)}</option>`).join('')}</select></div>
+     <div class="field"><label>ගණන <span id="m9U" class="small muted"></span></label><input id="m9Q" type="number" inputmode="decimal" min="0" step="any" oninput="m9Eq()"><div id="m9E" class="small"></div></div>
+     <div class="field"><label>හේතුව</label>${whyChips('m9W')}</div>
+     <div class="field"><label>මල්ල <span class="small muted">(දන්නවා නම් — නැත්නම් 🤖 පරණම මල්ලෙන්)</span></label><select id="m9L"><option value="">🤖 පරණම මල්ලෙන්</option></select></div>
+     <div class="field"><label>දිනය</label>${dayChips('m9D')}</div><div class="field"><label>සටහන <span class="small muted">(ඕනේ නම්)</span></label><input id="m9T" maxlength="80"></div>
+     <button class="btn primary block" onclick="m9Send()">➖ PC එකට යවන්න</button><button class="btn light block" onclick="sheet()">↩️ ආපහු</button>`);m9Lots();};
+  function m9Unit(n){const m=mtByName(n),u=m?m[3]:'kg';return {u,f:u==='ගණන'?1:1000};}
+  window.m9Lots=function(){const n=($('m9N')||{}).value||'',U=m9Unit(n),u=$('m9U');if(u)u.textContent=n?'('+U.u+')':'';const s=$('m9L');if(!s)return;const id=(mtByName(n)||[])[0];
+    s.innerHTML='<option value="">🤖 පරණම මල්ලෙන්</option>'+(n?faLots().filter(l=>{const m=mtByName(l.mat);return m&&m[0]===id&&!l.done&&(l.left===null||l.left>0.5);}).sort(faOld).map(l=>`<option value="${esc(l.no)}">${esc(l.no)} · ${esc(dmy(String(l.d||'')).slice(0,5))}${l.left!==null?' · ඉතුරු '+esc(String(Math.round(l.left/U.f*1000)/1000))+' '+esc(U.u):''}</option>`).join(''):'');m9Eq();};
+  window.m9Eq=function(){const n=($('m9N')||{}).value||'',U=m9Unit(n),q=num(($('m9Q')||{}).value),e=$('m9E');if(e)e.innerHTML=q>0&&n?`= <b>${esc(String(q))} ${esc(U.u)}</b>${U.f===1000&&q<1?' ('+Math.round(q*1000)+' g)':''}`:'';};
+  window.m9Send=async function(){const n=($('m9N')||{}).value||'',U=m9Unit(n),q=num(($('m9Q')||{}).value)*U.f,w=whyOf('m9W'),lot=($('m9L')||{}).value||'',d=dayOf('m9D'),nt=(($('m9T')||{}).value||'').trim();
+    if(!n){toast('ද්‍රව්‍යය තෝරන්න','err');return;}if(!(q>0)){toast('ගණන දාන්න','err');return;}if(!w){toast('හේතුව තෝරන්න','err');return;}
+    if(!(await send('mout',{n,q:Math.round(q),why:w,lot,d,nt},`➖ ${n} ${num(($('m9Q')||{}).value)} ${U.u}`)))return;sheet();toast('➖ '+n+' — PC එකට යැව්වා');render();};
+  {const _r=render;render=function(){const r=_r.apply(this,arguments);try{if(screen==='mats'&&M42()&&!(typeof mtCount!=='undefined'&&mtCount)){const box=$('matsBody');if(box&&!$('m9Go'))box.insertAdjacentHTML('afterbegin','<button id="m9Go" class="btn light block" onclick="m9Open()">➖ batch නැතුව ගියා (විකුණුවා / ගෙදරට / නාස්ති …)</button>');}}catch(e){h14E(e,360)}return r;};}
+  /* lot buttons (scan / lot card): ✏️ what the sack really has */
+  {const _b=lotBtns;lotBtns=function(no){const h=_b.apply(this,arguments);try{if(M42()&&window.m1Adj)return h+`<button class="btn sm light" title="මල්ලේ ඇත්තටම තියෙන ගණන" onclick="m1Adj('${esc(no)}')">✏️</button>`;}catch(e){h14E(e,361)}return h;};}
+  /* ---------- ➖ powder gone (not packed) ---------- */
+  window.m5Open=function(no){if(!M42()){toast('PC එක අලුත් කරන්න (v5.5.74)','err');return;}const t=tupOf(no),kl=t?num(t.kl):0;
+    sheet(`<h3>➖ කුඩු ගියා — ${esc(no)}</h3><div class="small muted">${esc(t?t.f:'')} · පැක් නොකළ කුඩු ${kl>0?'ඉතුරු '+esc(gTxt(kl)):'(ඉතුරු දන්නේ නැහැ)'} — පැක් නොකර ගිය ටික (විකුණුවා · ගෙදරට · නාස්ති …)</div>
+     <div class="field"><label>kg</label><input id="m5Q" type="number" inputmode="decimal" min="0" step="any"></div><div class="field"><label>හේතුව</label>${whyChips('m5W')}</div>
+     <div class="field"><label>දිනය</label>${dayChips('m5D')}</div><div class="field"><label>සටහන <span class="small muted">(ඕනේ නම්)</span></label><input id="m5T" maxlength="80"></div>
+     <button class="btn primary block" onclick="m5Send('${esc(no)}')">➖ PC එකට යවන්න</button><button class="btn light block" onclick="sheet()">↩️ ආපහු</button>`);};
+  window.m5Send=async function(no){const g=num(($('m5Q')||{}).value)*1000,w=whyOf('m5W'),d=dayOf('m5D'),nt=(($('m5T')||{}).value||'').trim(),t=tupOf(no);if(!(g>0)){toast('kg දාන්න','err');return;}if(!w){toast('හේතුව තෝරන්න','err');return;}
+    if(t&&num(t.kl)>0&&g>num(t.kl)+500&&!confirm(`ඉතුරු ${gTxt(t.kl)} — ${gTxt(g)} දාන්නද?`))return;
+    if(!(await send('kgone',{no,g:Math.round(g),why:w,d,nt},`➖ ${no} කුඩු ${gTxt(g)}`)))return;sheet();toast('➖ '+no+' — PC එකට යැව්වා');render();};
+  /* ---------- the batch lists: 🥣 powder left · ➖ · ⏰ over 14 days with powder left ---------- */
+  {const _rl=renderBatches;renderBatches=function(){const r=_rl.apply(this,arguments);try{if(!M42())return r;const box=$('batchesBody');if(!box)return r;const d=workDay(),from=addDays(d,-14),far=addDays(d,-90);
+      box.querySelectorAll('#h2old > .card').forEach(c=>{const no=(c.querySelector('.bno')||{}).textContent||'',t=tupOf(no);if(!t||!(num(t.kl)>0))return;const inf=c.querySelector('.small.muted');if(inf&&!c.querySelector('.m5k'))inf.insertAdjacentHTML('beforeend',` · <span class="m5k">🥣 කුඩු ඉතුරු <b>${esc(gTxt(t.kl))}</b></span>`);const hb=c.querySelector('.hbtns');if(hb&&!hb.querySelector('.m5b'))hb.insertAdjacentHTML('beforeend',`<button class="btn sm light m5b" onclick="m5Open('${esc(no)}')">➖ කුඩු</button>`);});
+      const L=[...BT.values()].filter(t=>t&&t.n&&num(t.kl)>0&&t.s!=='void'&&String(t.d)<from&&String(t.d)>=far).sort((a,b)=>String(a.d).localeCompare(String(b.d)));
+      if(L.length&&!$('m5over')){const h=`<details class="card" id="m5over"${window._m5o?' open':''}><summary style="cursor:pointer;font-weight:700;min-height:32px">⏰ දවස් 14 පැන්නා — තාම පැක් නොකළ කුඩු ඉතුරු <b>${L.length}</b></summary><div class="small muted" style="margin:4px 0 8px">පැක් කරලා / ගිහින් ඉවර නම් ✏️ → “✅ … ඔක්කොම පැක් කළා”, නැත්නම් ➖ කුඩු ගියා.</div>${L.map(t=>{const b=myB().find(x=>x.no===t.n);return `<div class="card"><div class="bno">${esc(t.n)}</div><div><strong>${esc(t.f)}</strong> · ${esc(dmy(String(t.d)).slice(0,5))} · 🥣 ඉතුරු <b>${esc(gTxt(t.kl))}</b></div><div class="hbtns"><button class="btn sm light" onclick="m5Open('${esc(t.n)}')">➖ කුඩු ගියා</button>${b?`<button class="btn sm light" onclick="bEdit('${esc(b.bid)}')">✏️ වෙනස් කරන්න</button>`:''}</div></div>`;}).join('')}</details>`;
+        const at=$('m0fin')||$('h2old'),wa=box.querySelector('button[onclick="bWaAll()"]');if(at)at.insertAdjacentHTML('afterend',h);else if(wa)wa.insertAdjacentHTML('beforebegin',h);else box.insertAdjacentHTML('beforeend',h);const x=$('m5over');if(x)x.addEventListener('toggle',()=>{window._m5o=x.open;});}}catch(e){h14E(e,362)}return r;};}
+  /* ---------- 🥞 papadam: flour kg in · ⚖️ dried kg out · ☀️ days drying ---------- */
+  function isPap(b){return !!b&&/පපඩම්/.test(String(b.fam||''));}
+  {const _o=window.stpOpen;if(_o)window.stpOpen=function(bid,k){const r=_o.apply(this,arguments);try{if(k!=='P')return r;const b=myB().find(x=>x.bid===bid);if(!isPap(b))return r;const i=$('stpI'),o=$('stpO');
+      const li=i&&i.closest('.field')&&i.closest('.field').querySelector('label'),lo=o&&o.closest('.field')&&o.closest('.field').querySelector('label');if(li&&li.firstChild&&li.firstChild.nodeType===3)li.firstChild.textContent='🥞 පිටි kg (දාපු) ';if(lo&&lo.firstChild&&lo.firstChild.nodeType===3)lo.firstChild.textContent='⚖️ වේළුණු kg (කිරුවාම) ';
+      const st=S.sp&&S.sp[bid]&&S.sp[bid].P,sd=st&&st.sd;if(sd&&o&&!(num(st.o)>0)&&!$('m3dry')){const n=Math.max(0,Math.round((new Date(workDay()+'T12:00:00Z')-new Date(sd+'T12:00:00Z'))/864e5));o.closest('.field').insertAdjacentHTML('afterend',`<div id="m3dry" class="small muted">☀️ වේලෙනවා — පටන් ගත්තාට දවස් <b>${n}</b> · වේළුණාම කිරලා ⚖️ කොටුවට දාලා ✅ (තාම නම් හිස්ව තියන්න — දවස් ගණනක් බලාගෙන නැහැ)</div>`);}}catch(e){h14E(e,363)}return r;};}
+  {const _r=render;render=function(){const r=_r.apply(this,arguments);try{if(screen!=='stp')return r;document.querySelectorAll('#stpBody .stp-r').forEach(row=>{if(row.dataset.m3)return;const btn=row.querySelector('button');const m=btn&&/stpOpen\('([^']*)','P'\)/.exec(btn.getAttribute('onclick')||'');if(!m)return;row.dataset.m3='1';
+      const b=myB().find(x=>x.bid===m[1]),st=S.sp&&S.sp[m[1]]&&S.sp[m[1]].P;if(!isPap(b)||!st||!st.sd||num(st.o)>0)return;const n=Math.max(0,Math.round((new Date(workDay()+'T12:00:00Z')-new Date(st.sd+'T12:00:00Z'))/864e5)),inf=row.querySelector('.small.muted');if(inf)inf.insertAdjacentHTML('beforeend',` · ☀️ දවස් ${n}`);});}catch(e){h14E(e,364)}return r;};}
 })();
 </script>
 </body>
