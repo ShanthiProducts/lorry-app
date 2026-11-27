@@ -1247,7 +1247,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='5.48';
+const FA_VER='5.49';
 /* v4.64 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v4.64.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuF',A='f',_f=window.fetch.bind(window);
@@ -1765,7 +1765,7 @@ function v463DebtList(){const all=C().filter(c=>!c[11]&&v463Now(c)>0.004);if(!al
    <div class="v463ag">${['0–30','31–60','61–90','90+'].map((t,i)=>`<div class="${i===3&&ag[3]>0?'bad':i>=1&&ag[i]>0?'warn':''}"><small>දින ${t}</small><b>${Math.round(ag[i]).toLocaleString('en-US')}</b></div>`).join('')}</div>
    <div class="row2"><input type="search" placeholder="🔎 නම / 📞" value="${esc(V463.q)}" oninput="V463.q=this.value;v463Redraw()"><select onchange="V463.r=this.value;v463Redraw()"><option value="">සියලු Route</option>${routes.map(r=>`<option ${r===V463.r?'selected':''}>${esc(r)}</option>`).join('')}</select></div>
    <div class="seg">${[['amt','💰 වැඩිම'],['old','⏳ පරණම'],['name','🔤 නම']].map(([k,t])=>`<button class="${V463.sort===k?'on':''}" onclick="V463.sort='${k}';v463Redraw()">${t}</button>`).join('')}</div>
-   ${l.slice(0,80).map(c=>{const now=v463Now(c),od=v463Oldest(c[0]),over=c[4]>0&&now>c[4]+0.004,wa=v463Wa(c);return `<div class="hist v463d"><div class="grow" onclick="setCust('pay','${esc(c[0])}')"><b>${esc(c[1])}</b>${over?' <span class="badge bad">⚠️ සීමාව</span>':''} ${v463AgeTag(od)}<div class="small muted">${esc(c[2]||'Route නැහැ')}${c[7]?' · 📞 '+esc(c[7]):''}</div></div><div style="text-align:right"><b>${money(now)}</b><div class="v463b">${c[7]?`<a class="btn sm light" href="tel:${esc(digits(c[7]))}">📞</a>`:''}${wa?`<a class="btn sm light" target="_blank" rel="noopener" href="${esc(wa)}">💬</a>`:''}<button class="btn sm primary" onclick="setCust('pay','${esc(c[0])}')">💰</button></div></div></div>`;}).join('')||'<div class="small muted">හමු වුණේ නැහැ</div>'}</div>`;}
+   ${l.slice(0,(V463.q||V463.r||V463.all)?80:15).map(c=>{const now=v463Now(c),od=v463Oldest(c[0]),over=c[4]>0&&now>c[4]+0.004,wa=v463Wa(c);return `<div class="hist v463d"><div class="grow" onclick="setCust('pay','${esc(c[0])}')"><b>${esc(c[1])}</b>${over?' <span class="badge bad">⚠️ සීමාව</span>':''} ${v463AgeTag(od)}<div class="small muted">${esc(c[2]||'Route නැහැ')}${c[7]?' · 📞 '+esc(c[7]):''}</div></div><div style="text-align:right"><b>${money(now)}</b><div class="v463b">${c[7]?`<a class="btn sm light" href="tel:${esc(digits(c[7]))}">📞</a>`:''}${wa?`<a class="btn sm light" target="_blank" rel="noopener" href="${esc(wa)}">💬</a>`:''}<button class="btn sm primary" onclick="setCust('pay','${esc(c[0])}')">💰</button></div></div></div>`;}).join('')||'<div class="small muted">හමු වුණේ නැහැ</div>'}${!(V463.q||V463.r||V463.all)&&l.length>15?`<button class="btn light block" onclick="V463.all=1;v463Redraw()">තව ${l.length-15} ›</button>`:''}</div>`;}
 function v463Redraw(){const el=$('v463list');if(!el)return;const a=document.activeElement,id=a&&a.matches('#v463list input[type=search]');el.innerHTML=v463DebtList();if(id){const i=el.querySelector('input[type=search]');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}}}
 /* allocation: ✨ oldest first (like the PC) or 🎯 amounts per bill */
 function v463Alloc(d,c,amt){const ob=v463Ob(c[0]).filter(x=>x[0]);if(d.pick){return ob.map(x=>({x,pay:r2(Math.max(0,num((d.al||{})[x[0]])))}));}let left=r2(Math.min(amt,ob.reduce((s,x)=>s+num(x[3]),0)));return ob.map(x=>{const p=r2(Math.max(0,Math.min(left,num(x[3]))));left=r2(left-p);return {x,pay:p};});}
@@ -1947,7 +1947,11 @@ function ftFind(q){q=String(q||'').trim().toLowerCase();const box=$('homeBody');
     if(T!=='today'){[...box.children].forEach(c=>{if(c!==wrap&&!c.classList.contains('cloudline'))c.style.display='none';});wrap.insertAdjacentHTML('afterbegin',`<div class="ftHead">${hd[1]} ${hd[2]}</div>`);}else{const od=(S.cfg.o||[]).length;if(od)wrap.insertAdjacentHTML('afterbegin',`<button class="btn light block" onclick="go('orders')">📋 දෙන්න තියෙන ඇණවුම් ${od}ක්</button>`);}}}catch(e){console.warn('tabs',e);}return r;};
   const _rd=render;render=function(){const x=_rd.apply(this,arguments);try{ftNavDraw();}catch(e){h14E(e,72)}return x;};
   /* Android back: inner screen → home, never out of the app from an inner screen */
-  let pushed=false;const _g=go;go=function(n){const r=_g.apply(this,arguments);try{if(n!=='home'&&!pushed){history.pushState({fa:1},'','#'+n);pushed=true;}}catch(e){h14E(e,73)}return r;};window.addEventListener('popstate',()=>{pushed=false;if(screen!=='home')_g('home');});})();
+  /* 5.49 (049): a sheet (🥣 / 🏭 / 🥡 …) gets its own Back step · going to another screen closes it */
+  let pushed=false,shP=false,ign=0;const _g=go,_sh=sheet,shOn=()=>{const e=$('sheetX');return !!(e&&e.classList.contains('show'));};
+  sheet=function(html){const was=shOn(),r=_sh.apply(this,arguments);try{const now=shOn();if(now&&!was&&!shP){history.pushState({fa:1,sh:1},'','#sheet');shP=true;}else if(!now&&was&&shP){shP=false;ign++;history.back();}}catch(e){h14E(e,73)}return r;};
+  go=function(n){try{if(shOn()){shP=false;_sh();}}catch(e){h14E(e,73)}const r=_g.apply(this,arguments);try{if(n!=='home'&&!pushed){history.pushState({fa:1},'','#'+n);pushed=true;}}catch(e){h14E(e,73)}return r;};
+  window.addEventListener('popstate',()=>{if(ign>0){ign--;return;}if(shOn()){shP=false;_sh();return;}pushed=false;if(screen!=='home')_g('home');});})();
 
 
 /* EAN — EAN-13 barcodes: check digit · draw (PNG / SVG, print quality) · read from a camera frame (pure JavaScript; BarcodeDetector is used first when the phone has it). */
@@ -3266,7 +3270,7 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
         ${r.e?r.e.bills.map(b=>`<div class="sdl"><span>${esc(dmy(b.d))}${b.no?' · '+esc(b.no):''} <span class="warn">⏳</span></span><strong>${money(b.due)}</strong></div>`).join(''):''}
         ${!ob.length&&!(r.e&&r.e.bills.length)?'<div class="small muted">බිල් අනුව ලැයිස්තුව PC එකෙන් තවම ආවේ නැහැ.</div>':''}${lp?`<div class="small muted" style="margin-top:4px">අන්තිම ගෙවීම ${esc(dmy(lp[0]))} · ${money(lp[1])} (දින ${v463Age(lp[0])}කට කලින්)</div>`:''}
         <button class="btn light block" style="margin-top:8px" onclick="cdPay(${K})">💰 මේ කඩෙන් ගෙවීමක් දාන්න</button></div>`:''}</div>`;}
-  function listHtml(R){const l=pick(R);return `<div class="small muted" id="cdCount" style="margin:0 2px 6px">${l.length===R.length?'කඩ '+R.length:`කඩ ${R.length}න් ${l.length}ක් · ≈ ${money(r2(l.reduce((t,r)=>t+r.now,0)))}`}</div>${l.slice(0,80).map(card).join('')||'<div class="card small muted">හමු වුණේ නැහැ</div>'}${l.length>80?`<div class="small muted" style="margin:4px 2px">තව ${l.length-80}ක් — නමින් සොයන්න</div>`:''}`;}
+  function listHtml(R){const l=pick(R);return `<div class="small muted" id="cdCount" style="margin:0 2px 6px">${l.length===R.length?'කඩ '+R.length:`කඩ ${R.length}න් ${l.length}ක් · ≈ ${money(r2(l.reduce((t,r)=>t+r.now,0)))}`}</div>${l.slice(0,(CD.q||CD.r||CD.f||CD.all)?80:15).map(card).join('')||'<div class="card small muted">හමු වුණේ නැහැ</div>'}${!(CD.q||CD.r||CD.f||CD.all)&&l.length>15?`<button class="btn light block" onclick="f3CD.all=1;cdRedraw()">තව ${l.length-15} ›</button>`:''}${l.length>80?`<div class="small muted" style="margin:4px 2px">තව ${l.length-80}ක් — නමින් සොයන්න</div>`:''}`;}
   function renderCdue(){const box=$('cdueBody');if(!box)return;const R=rows(),tot=r2(R.reduce((t,r)=>t+r.now,0)),n30=R.filter(r=>r.od>30).length,ag=[0,0,0,0];
     let pl=0,mi=0;live().M.forEach(e=>{pl=r2(pl+e.plus);mi=r2(mi+e.minus+e.old);});C().forEach(c=>{if(!c[11])v463Ages(c[0]).forEach((v,i)=>ag[i]+=v);});
     const routes=[...new Set(R.map(r=>r.route).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'si'));
@@ -3274,7 +3278,7 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
     box.innerHTML=`<div class="card"><div class="small muted">කඩ වලින් ලැබෙන්න තියෙන ණය</div><div id="cdTot" style="font-size:24px;font-weight:800">≈ ${money(tot)}</div>
         <div class="small muted">කඩ ${R.length}${n30?` · 🟡 දින 30+ <b>${n30}</b>`:''}</div>${pl>0||mi>0?`<div class="small" id="cdPend" style="color:#b45309">⏳ ඒකේ PC එකට තාම නොගිය: ${pl>0?'🧾 +'+money(pl):''}${pl>0&&mi>0?' · ':''}${mi>0?'💰 −'+money(mi):''}</div>`:''}
         <div class="v463ag">${['0–30','31–60','61–90','90+'].map((t,i)=>`<div class="${i===3&&ag[3]>0?'bad':i>=1&&ag[i]>0?'warn':''}"><small>දින ${t}</small><b>${Math.round(ag[i]).toLocaleString('en-US')}</b></div>`).join('')}</div>
-        <div class="row2"><input type="search" id="cdQ" placeholder="🔎 නම / 📞" value="${esc(CD.q)}" oninput="CD.q=this.value;cdRedraw()"><select id="cdR" onchange="CD.r=this.value;cdRedraw()"><option value="">සියලු Route</option><option value="__none" ${CD.r==='__none'?'selected':''}>🏭 Route නැති (කම්හලට එන)</option>${routes.map(x=>`<option ${x===CD.r?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
+        <div class="row2"><input type="search" id="cdQ" placeholder="🔎 නම / 📞" value="${esc(CD.q)}" oninput="f3CD.q=this.value;cdRedraw()"><select id="cdR" onchange="f3CD.r=this.value;cdRedraw()"><option value="">සියලු Route</option><option value="__none" ${CD.r==='__none'?'selected':''}>🏭 Route නැති (කම්හලට එන)</option>${routes.map(x=>`<option ${x===CD.r?'selected':''}>${esc(x)}</option>`).join('')}</select></div>
         <div class="seg">${seg('f','','සියල්ල')}${seg('f','30','🟡 දින 30+')}</div><div class="seg" style="margin-top:6px">${seg('sort','amt','💰 ලොකුම')}${seg('sort','old','⏳ පරණම')}${seg('sort','name','🔤 නම')}</div>
         <div class="small muted" style="margin-top:4px">≈ = PC ගණන + මේ phone එකෙන් යැව්ව ⏳. ලොකුම / පරණම උඩින් — කම්හලට එන කඩ වලින් ඉල්ලන්න.</div></div>
       <div id="cdList">${listHtml(R)}</div>
@@ -4673,7 +4677,7 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
           if(b&&R.l){b.ok=num(s.pok);if(S.bx&&S.bx[b.bid])S.bx[b.bid].okg=num(s.pokg);}save();render();}}return r;}}catch(e){h14E(e,311)}return _v.apply(this,arguments);};}
   /* screen · tile · the batch cards */
   const main=document.querySelector('main');if(main&&!$('s-stp'))main.insertAdjacentHTML('beforeend','<section class="screen" id="s-stp"><div id="stpBody"></div></section>');
-  TITLES.stp='🪜 අංශ අනුව වැඩ';
+  TITLES.stp='🏭 අංශ';
   {const _r=render;render=function(){if(screen==='stp'){try{$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'';renderStp();}catch(e){h14E(e,307)}return;}return _r.apply(this,arguments);};}
   try{const _g=v455Grp;v455Grp=function(k){return /go\('stp'\)/.test(String(k))?_g.call(this,"go('batches')"):_g.apply(this,arguments);};FT_RULE.unshift([/go\('stp'\)/,'prod']);FT_WORDS.push([/go\('stp'\)/,'ansha piyawara kussiya ambarum papadam pack kg']);}catch(e){h14E(e,308)}
   {const _t=batchTiles;batchTiles=function(){const h=_t.apply(this,arguments);try{if(!on()||!h||/go\('stp'\)/.test(h))return h;const C=counts(),n=Object.values(C).reduce((a,x)=>a+x,0);
@@ -5063,11 +5067,13 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
   const OLD={buy:'stock',more:'today'};if(S&&S.fTab&&OLD[S.fTab]){S.fTab=OLD[S.fTab];try{save();}catch(e){}}
   /* where every tile lives, and its place inside the tab (first match wins) */
   const PLACE=[
-    ['sale',[/v455Bill\('shop'\)/,/'pay'/,/'cdue'/,/'ret'/,/'order'\)/,/'orders'/,/v455Bill\('staff'\)/,/v455Bill\('raw'\)/,/'move'/,/'take'/,/go\('rp46'\)/]],
-    ['prod',[/'batches'|'bnew'/,/'stp'/,/s4Open/,/'rcalc'/,/'scan'/,/'loadl'|'ld'/]],
-    ['stock',[/'stock'|'fcount'/,/mcGoToday|'mats'/,/'pks'/,/s3Open/,/s7Open/,/'buy'|buyNew|'raw'/,/g47Go\('oth'\)/]],
-    ['money',[/fxGo\('exp'\)/,/fxGo\('spay'\)/,/'sdue'/,/'chq'/,/fxGo\('att'\)/,/g47Go\('st'\)/,/'bm'/,/g47Go\('dad'\)/]],
-    ['more',[/'history'/,/'iss'/,/'bc'/,/'price'/,/fxGo\('cmp'\)/,/fxGo\('asset'\)/,/fxGo\('add'\)/,/'notes'/,/'rpt'/,/'setup'/]]];
+    ['sale',[/v455Bill\('shop'\)/,/'pay'/,/'cdue'/,/'ret'/,/'order'\)/,/'orders'/,/v455Bill\('staff'\)/,/v455Bill\('raw'\)/,/'move'/,/'take'/,/go\('rp46'\)/,/'loadl'|'ld'/,/go\('price'\)/]],
+    ['prod',[/'batches'|'bnew'/,/'stp'/,/'rcalc'/,/'scan'/]],
+    ['stock',[/'stock'|'fcount'/,/s3Open/,/s7Open/,/'buy'|buyNew|'raw'/]],
+    ['money',[/fxGo\('exp'\)/,/fxGo\('spay'\)/,/'sdue'/,/'chq'/,/fxGo\('att'\)/,/'bm'/,/g47Go\('dad'\)/]],
+    /* 5.49 (049): no tile of their own — opened from inside: 🏭 අංශ (⚖️ ආවා · ගියා) · 📦 තොගය (🌶️ / 📦 tabs) · 📤 (👷 / 📦 chips) */
+    ['none',[/s4Open/,/mcGoToday|'mats'/,/'pks'/,/g47Go\('st'\)/,/g47Go\('oth'\)/]],
+    ['more',[/'history'/,/'iss'/,/'bc'/,/fxGo\('cmp'\)/,/fxGo\('asset'\)/,/fxGo\('add'\)/,/'notes'/,/'rpt'/,/'setup'/]]];
   function place(k){for(const [t,L] of PLACE){const i=L.findIndex(re=>re.test(k));if(i>=0)return [t,i];}return ['more',99];}
   window.ftTab=k=>place(k)[0];
   const ALL=new Map();/* key → {ic,t} for every tile ever drawn (hidden ones too) */
@@ -5077,11 +5083,13 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
   function arrange(){const box=$('homeBody'),g=box&&box.querySelector('.ftGrid');if(!g||!S.cfg)return;try{if(window.fa47Tiles)fa47Tiles(g);}catch(e){h14E(e,370)}/* 5.47 · 047 tiles */try{if(window.fa46Tiles)fa46Tiles(g);}catch(e){h14E(e,381)}/* 5.48 · 046 */const T=S.fTab||'today',H=v455HC();
     (window._v455Tiles||[]).forEach(x=>{if(!ALL.has(x.k))ALL.set(x.k,{ic:x.ic,t:x.t});});
     const tiles=[...g.querySelectorAll('button.tile')];
+    /* 5.49 (049): one name per tile = the screen's name */
+    tiles.forEach(b=>{const k=v455Key(b);if(k==="go('stp')")b.innerHTML='<span>🏭</span>අංශ<small>🪜 වැඩ · ⚖️ ආවා / ගියා kg</small>';else if(k==="g47Go('dad')")b.innerHTML='<span>📤</span>සල්ලි නැතුව ගිය බඩු<small>👤 තාත්තාට · 👷 සේවකයා · 📦 වෙනත්</small>';});
     tiles.forEach(b=>{const k=v455Key(b);ALL.set(k,info(b));if(H.hide.includes(k)){b.remove();return;}const [t,i]=place(k);b.dataset.ft=t;b.dataset.o=String(i);});
     if(g.querySelector('[data-bm]')){const b=g.querySelector('[data-bm]');b.innerHTML='<span>👤</span>තාත්තාගේ ගිණුම<small>සල්ලි · කඩේට · ගෙව්වා · ඉතුරු</small>';}
     const tabI=t=>NEW.findIndex(x=>x[0]===t),live=[...g.querySelectorAll('button.tile')].sort((a,b)=>(tabI(a.dataset.ft)<0?9:tabI(a.dataset.ft))-(tabI(b.dataset.ft)<0?9:tabI(b.dataset.ft))||num(a.dataset.o)-num(b.dataset.o));live.forEach(b=>g.appendChild(b));
-    let more=null;if(T==='today'){const M=live.filter(b=>b.dataset.ft==='more'&&b.dataset.q!=='1');if(M.length){more=document.createElement('details');more.className='fa45more';more.innerHTML=`<summary>☰ තව (${M.length}) — සැකසුම් · Barcode · මිල · වැරදි · යැව්ව ඒවා …</summary>`;const g2=document.createElement('div');g2.className='grid2 ftGrid';M.forEach(b=>{b.style.display='';g2.appendChild(b);});more.appendChild(g2);g.after(more);}}
-    live.forEach(b=>{if(b.parentNode!==g)return;b.style.display=b.dataset.ft===T||(T==='today'&&b.dataset.q==='1')?'':'none';});
+    let more=null;if(T==='today'){const M=live.filter(b=>b.dataset.ft==='more');if(M.length){more=document.createElement('details');more.className='fa45more';more.innerHTML=`<summary>☰ තව (${M.length}) — සැකසුම් · Barcode · වැරදි · යැව්ව ඒවා · පැමිණිලි …</summary>`;const g2=document.createElement('div');g2.className='grid2 ftGrid';M.forEach(b=>{b.style.display='';g2.appendChild(b);});more.appendChild(g2);g.after(more);}}
+    live.forEach(b=>{if(b.parentNode!==g)return;b.style.display=b.dataset.ft===T?'':'none';});
     /* 📉 low stock → only on 📦 තොගය (it showed on every tab before) · 🧺 Product button (was on the old ☰ tab) → 📦 · 🔎 search (was on the old ☰ tab) → 🏠 අද, above ☰ තව */
     const lo=$('v471home');if(lo&&T!=='today')lo.style.display=T==='stock'?'':'none';
     const wrap=box.querySelector('.v455home');if(T==='stock'&&wrap&&!$('prodGoH')){const hd=wrap.querySelector('.ftHead');(hd||wrap.firstChild).insertAdjacentHTML(hd?'afterend':'beforebegin','<button id="prodGoH" class="btn light block" onclick="prodOpen()">🧺 Product එකක් බලන්න</button>');}
@@ -5095,7 +5103,7 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
   window.fa45T=function(i){const k=(window._fa45L||[])[i];if(!k)return;const H=v455HC(),j=H.hide.indexOf(k);if(j>=0)H.hide.splice(j,1);else H.hide.push(k);save();render();fa45Ed();};
   {const _h=renderHome0;renderHome0=function(){const r=_h.apply(this,arguments);try{arrange();}catch(e){console.warn('5.45 tabs',e);}return r;};}
   window.ftFind=function(q){q=String(q||'').trim().toLowerCase();const box=$('homeBody');if(!box)return;const T=S.fTab||'today',md=box.querySelector('.fa45more');let hit=0;
-    box.querySelectorAll('.ftGrid button.tile').forEach(b=>{const k=b.dataset.ft,inM=md&&md.contains(b);if(q){const ok=ftWords(b).includes(q);b.style.display=ok?'':'none';if(ok&&inM)hit++;}else b.style.display=inM||k===T||(T==='today'&&b.dataset.q==='1')?'':'none';});
+    box.querySelectorAll('.ftGrid button.tile').forEach(b=>{const k=b.dataset.ft,inM=md&&md.contains(b);if(q){const ok=ftWords(b).includes(q);b.style.display=ok?'':'none';if(ok&&inM)hit++;}else b.style.display=inM||k===T?'':'none';});
     if(md)md.open=q?hit>0:md.open;};
   {const _s=ftSet;window.ftSet=ftSet=function(k){if(OLD[k])k=OLD[k];return _s.call(this,k);};}
   try{FT_WORDS.push([/'bm'/,'thaththa ginum ginuma dad father kade']);}catch(e){}
@@ -5167,6 +5175,9 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
   function val(x,to){if(x.t==='p'){const p=prod(x.id),q=num(x.q);if(!p||!(q>0))return null;if(to==='staff')return r2(spOf(x.id).v*q);if(to==='dshop')return r2(num(p[3])*q);return null;}
     const m=mtOf(x.id),q=num(x.q);if(!m||!(q>0))return null;if(to==='staff')return r2(rawSp(m).v*q);if(to==='dshop'||to==='home')return num(m[6])>0?r2(num(m[6])*q):null;return null;}
   window.g47Go=function(m){if(!on()){toast('PC එක අලුත් කරන්න (v5.5.79)','err');return;}const d=G();if(d.m!==m){newDraft('g47');const n=G();n.m=m;}else d.m=m;save();go('g47');};
+  /* 5.49 (049): one 📤 tile — 👤 / 👷 / 📦 chips on the screen (a list with goods asks before it is cleared) */
+  window.g49Mode=function(k){const d=G();if(d.m===k)return;if(Array.isArray(d.L)&&d.L.length&&!confirm(`📋 ලැයිස්තුවේ බඩු ${d.L.length}ක් තියෙනවා — මාරු කළොත් ඒවා මැකෙනවා. මාරු කරන්නද?`))return;g47Go(k);};
+  function g49ModeHtml(d){return `<div class="chips g49m">${[['dad','👤 තාත්තාට'],['st','👷 සේවකයා'],['oth','📦 වෙනත්']].map(([k,t])=>`<button type="button" class="chip ${d.m===k?'ok':''}" onclick="g49Mode('${k}')">${t}</button>`).join('')}</div>`;}
   window.g47Set=function(k,v){const d=G();d[k]=v;save();render();};
   window.g47Pick=function(t,id){const d=G();let i=d.L.findIndex(x=>x.t===t&&x.id===id);if(i<0){d.L.push({t,id,q:t==='p'?1:'',lot:''});i=d.L.length-1;}save();render();setTimeout(()=>{const e=$('g47q_'+i);if(e){e.focus();try{e.select();}catch(x){}}},40);};
   window.g47Q=function(i,v){const d=G(),x=d.L[i];if(!x)return;const m=x.t==='r'?mtOf(x.id):null;x.q=x.t==='p'||isCnt(m)?Math.max(0,Math.floor(num(v))):Math.max(0,Math.round(num(v)*1000)/1000);save();
@@ -5183,13 +5194,14 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
       return `<button class="pick" onclick="g47Pick('${x.t}','${esc(x.id)}')"><span>${x.t==='p'?'🧾':'🌶️'} ${x.c?`<em>${esc(x.c)}</em> `:''}${esc(x.t==='r'?l2Nm(x.n):x.n)}</span><b class="small">${s}</b></button>`;}).join('')||'<div class="small muted">හමු වුණේ නැහැ</div>';}
   function lotsOf(id){return faLots().filter(l=>{const m=mtByName(l.mat);return m&&m[0]===id&&!l.done&&(l.left===null||l.left>0.5);}).sort(faOld);}
   function draw(){const box=$('g47Body');if(!box)return;if(!on()){box.innerHTML='<div class="card empty">PC එක v5.5.79 ට අලුත් කරලා 🔄 කරන්න.</div>';return;}
-    const d=G(),to=toOf(d),H=MODE[d.m]||MODE.dad;document.querySelector('header h1').textContent=H[0]+' '+H[1];
+    const d=G(),to=toOf(d),H=MODE[d.m]||MODE.dad;document.querySelector('header h1').textContent='📤 සල්ලි නැතුව ගිය බඩු';
     const ch=(k,cur,L)=>`<div class="chips">${L.map(([v,t])=>`<button type="button" class="chip ${cur===v?'ok':''}" onclick="g47Set('${k}','${v}')">${t}</button>`).join('')}</div>`;
     let top='';
     if(d.m==='dad')top=`${ch('to',d.to,[['dshop','🏪 කඩේට'],['home','🏠 ගෙදරට']])}${ch('src',d.src,[['factory','🏭 කම්හලෙන්'],['lorry','🚚 ලොරියෙන්']])}<div class="small muted">${d.to==='dshop'?'🏪 කඩේට = තොග මිලට (සල්ලි නැතුව)':'🏠 ගෙදරට = cost මිලට'} · 👤 තාත්තාගේ ගිණුමේ ② ට යනවා${d.src==='lorry'?' · 🚚 නිමි බඩු ලොරි තොගයෙන් අඩු වෙනවා':''}</div>`;
     else if(d.m==='st'){const L=staffList(),inL=n=>L.some(x=>norm(x)===norm(n));top=`<label class="small"><b>👷 සේවකයා</b> — නම ඔබන්න</label><div class="chips">${L.map(n=>`<button type="button" class="chip ${norm(d.staff)===norm(n)?'ok':''}" onclick="g47Set('staff',${esc(JSON.stringify(n))})">👷 ${esc(n)}</button>`).join('')||'<span class="small muted">PC එකෙන් සේවක ලැයිස්තුව තවම ආවේ නැහැ</span>'}</div>
       ${d.staff&&!inL(d.staff)?'<div class="warnbox small">⚠️ මේ නම PC සේවක ලැයිස්තුවේ නැහැ — පඩියෙන් අඩු වෙන්නේ නැහැ.</div>':''}${ch('pay',d.pay,[['pay','🧾 පඩියෙන් අඩු'],['cash','💵 Cash දුන්නා']])}<div class="small muted">${d.pay==='cash'?'💵 Cash දුන්නා — පඩියෙන් අඩු වෙන්නේ නැහැ':'🧾 පඩියෙන් අඩු වෙනවා (👷 සේවක මිලට)'}</div>`;}
     else top=`${ch('oth',d.oth,[['sample','🎁 නියැදි / තෑගි'],['fdamage','⚠️ Damage / කල් ඉකුත්'],['waste','🗑️ නාස්ති / කුණු'],['spill','💧 හැලුණා']])}<button type="button" class="btn sm light" onclick="newDraft('move');D('move').kind='exchange';save();go('move')">🔄 කඩේට මාරු කර දුන්නා (Damage → අලුත්)</button><div class="small muted" style="margin-top:4px">නිමි බඩු cost මිලට වියදමක් · අමු ද්‍රව්‍ය තොගයෙන් අඩු වෙනවා</div>`;
+    top=g49ModeHtml(d)+top;/* 5.49 (049) */
     let tot=0,any=0;const rows=d.L.map((x,i)=>{const isP=x.t==='p',p=isP?prod(x.id):null,m=isP?null:mtOf(x.id),v=val(x,to);if(v!==null){tot+=v;any=1;}
       const lots=!isP?lotsOf(x.id):[];
       return `<div class="g47r"><div class="grow"><b>${isP?'🧾':'🌶️'} ${esc(isP?(p?p[1]:'?'):(m?l2Nm(m[1]):'?'))}</b> <span class="small muted" id="g47v_${i}">${v!==null?'≈ '+money(v):''}</span>
@@ -5252,6 +5264,28 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
   /* 🏠 අද කරන්න: one line at most */
   {const _a=a3Rows;a3Rows=function(){const R=_a.apply(this,arguments);try{const P=RP();if(P&&P.best&&fresh(P)&&!S.rp46off&&!a3Hide().k.includes('rp46'))R.push({k:'rp46',t:`⭐ හෙට: ${P.best.n} — කඩ ${num(P.best.due)}`,go:"go('rp46')"});}catch(e){h14E(e,380)}return R;};}
   if(!$('fa48css'))document.head.insertAdjacentHTML('beforeend',`<style id="fa48css">.rp46r,.rp46s{display:flex;align-items:center;gap:8px;border-bottom:1px solid #eef2f7;padding:9px 0}.rp46r .grow,.rp46s .grow{min-width:0;flex:1}.rp46b{font-size:15px;border:1px solid #fcd34d;background:#fffbeb}</style>`);
+})();
+</script>
+<script>
+/* ================= app 5.49 (PC v5.5.81) · 049 — tiles / තිර පිළිවෙළ (owner 27 Nov 20:12 · tap 20:5x · 20:38 “hadanna”) =================
+   Where things are, not what they do — nothing sent to the PC changes.
+   · 🏠 අද: ⭐ කෙටිමං gone (the 4 big buttons are the same) · 📜 යැව්ව ඒවා → ☰ තව
+   · 🧾 විකුණුම්: + 🚚 අද ලොරිය · + 🏷️ මිල · 🏭: 🪜 + 🏭 අංශ → one “🏭 අංශ” (⚖️ ආවා · ගියා inside)
+   · 📦: 🧂 / 🛍️ tiles → inside 📦 තොගය (🌶️ / 📦 tabs + 🔢 අද ගණන් කරන්න) · 💰: 👤 / 👷 / 📦 → one “📤 සල්ලි නැතුව ගිය බඩු”
+   · a tile opens a screen with the same name (no “➕ තව දත්ත” row of 6 forms) · Back closes a sheet · long debt lists: 15 + “තව” */
+(function(){
+  const FXT={exp:'💸 වියදම',spay:'🏪 සැපයුම්කරුට ගෙවීම',att:'👷 පැමිණීම / advance',asset:'🏗️ වත්කම්',add:'➕ අලුත් සැපයුම්කරු / ද්‍රව්‍ය',cmp:'📢 පැමිණිලි'};
+  try{Object.assign(TITLES,{fx2:'➕ තව දත්ත'});}catch(e){}
+  {const _f=renderFx2;renderFx2=function(){const r=_f.apply(this,arguments);try{const b=$('fx2Body'),c=b&&b.firstElementChild;if(c&&c.classList.contains('card')&&c.querySelector(':scope > .chips')&&c.children.length===1)c.remove();const h=document.querySelector('header h1');if(h&&FXT[fxTab])h.textContent=FXT[fxTab];}catch(e){h14E(e,390)}return r;};}
+  {const _r=render;render=function(){const x=_r.apply(this,arguments);try{
+      if(screen==='home'){const box=$('homeBody'),sub=box&&box.querySelector('.a3sub'),g=sub&&sub.nextElementSibling;if(sub)sub.style.display=g&&[...g.querySelectorAll('button.tile')].some(b=>b.style.display!=='none')?'':'none';
+        /* the old “🏠 මුල් තිරය සකසන්න (… ⭐)” — ⭐ is gone, ✏️ under each tab hides / shows tiles */if(box)box.querySelectorAll('button').forEach(b=>{if(/^🏠 මුල් තිරය සකසන්න/.test(b.textContent.trim()))b.style.display='none';});}
+      if(screen==='stp'){const b=$('stpBody');if(b&&!$('g49s4'))b.insertAdjacentHTML('afterbegin','<button id="g49s4" class="btn light block" style="margin-bottom:10px" onclick="s4Open()">⚖️ අංශ — ආවා · ගියා kg (මේ සතිය / මාසය) ›</button>');}
+      if(screen==='stock')g49Mc();
+    }catch(e){h14E(e,391)}return x;};}
+  function g49Mc(){const b=$('stockBody');if(!b||$('g49mc'))return;const bar=b.querySelector('.t3bar'),h='<button id="g49mc" class="btn light block" style="margin:0 0 10px" onclick="mcGoToday()">🔢 අමු ද්‍රව්‍ය / ඇසුරුම් — අද ගණන් කරන්න ›</button>';if(bar)bar.insertAdjacentHTML('afterend',h);else b.insertAdjacentHTML('afterbegin',h);}
+  {const _rs=renderStock;renderStock=function(){const r=_rs.apply(this,arguments);try{if(screen==='stock')g49Mc();}catch(e){h14E(e,392)}return r;};}
+  try{FT_WORDS.push([/'stp'/,'ansha anshaya kotas ava giya kg s4 section']);FT_WORDS.push([/g47Go\('dad'\)/,'salli nathuva giya badu thaththa sevaka sewaka wenath venath free']);}catch(e){}
 })();
 </script>
 </body>
