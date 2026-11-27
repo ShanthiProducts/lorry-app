@@ -1247,7 +1247,7 @@ window.addEventListener('unhandledrejection',e=>{try{S.cloudErr='Sync වැර�
 
 
 /* ---------- v4.5.1 · 🔔 PC says a newer factory-app version exists → tell the user how to get it ---------- */
-const FA_VER='5.45';
+const FA_VER='5.48';
 /* v4.64 · 📈 Firebase use of THIS phone today (reads / writes) — rides along on the messages it already sends (field "fu"), never its own write
    v4.64.1 · if Firestore rules reject the "fu" field (400/403) → resend once without it + no "fu" from this phone for the rest of the day */
 (function(){const K='sbpFuF',A='f',_f=window.fetch.bind(window);
@@ -3541,6 +3541,7 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
         /* ✏️ / ❌ of a bill the PC figure already has: + the old bill back − the new one */
         if(!inPc(ref,X))return;const o=(S.sent||[]).find(y=>y&&y.uid===ref&&y.k==='bill');if(!o||!o.rec||o.gone)return;bill(o.rec,o,-1);nb(f);});
       ['move','odel'].forEach(k=>k4Msgs(k,14,X).forEach(x=>{const r=x.rec;if(skip(r,x,k==='odel'))return;(r.it||[]).forEach(i=>out(i[0],num(i[1])));}));
+      k4Msgs('g47',14,X).forEach(x=>{const r=x.rec;if(!r||r.src==='lorry'||skip(r,x,false))return;(r.it||[]).forEach(i=>out(i[0],num(i[1])));});/* 5.47 · 📤 factory goods out wait too */
       Object.keys(D).forEach(pid=>{const e=D[pid];e.b=Math.round(e.b*1000)/1000;e.s=Math.round(e.s*1000)/1000;});}catch(e){console.warn('5.09 stock',e);}return D;};}
 
   /* ---------- ⏳ on the 📦 තොගය rows that still wait for the PC ---------- */
@@ -3553,6 +3554,7 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
   const val=it=>r2((it||[]).reduce((t,i)=>{const p=prod(i[0]);return t+num(i[1])*num(p&&p[3]);},0));
   const nm=it=>(it||[]).map(i=>{const p=prod(i[0]);return (p&&p[1]?p[1]:String(i[0]))+' × '+num(i[1]);}).join(', ');
   function shopPend(){const L=[];pendSent('move',21).forEach(x=>{const r=x.rec;if(r.kind!=='dshop')return;L.push({d:r.d,v:val(r.it),t:nm(r.it),at:x.at});});
+    pendSent('g47',21).forEach(x=>{const r=x.rec;if(!r||r.to!=='dshop'||!(r.it||[]).length)return;L.push({d:r.d,v:val(r.it),t:nm(r.it),at:x.at});});/* 5.47 */
     pendSent('buy',21).forEach(x=>{const r=x.rec;if(num(r.sh)>0)L.push({d:r.d,v:r2(num(r.sh)),t:'🛒 සැපයුම්කරු බිලෙන්',at:x.at});});return L.sort((a,b)=>String(b.at).localeCompare(String(a.at)));}
   function shopTot(){const P=S.cfg&&Array.isArray(S.cfg.ds)?S.cfg.ds:null,T=workDay(),mo=T.slice(0,7);let day=0,mon=0,all=0;
     if(P){all=num(P[3]);if(P[0]===T)day=num(P[1]);if(String(P[0]).slice(0,7)===mo)mon=num(P[2]);}
@@ -5061,10 +5063,10 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
   const OLD={buy:'stock',more:'today'};if(S&&S.fTab&&OLD[S.fTab]){S.fTab=OLD[S.fTab];try{save();}catch(e){}}
   /* where every tile lives, and its place inside the tab (first match wins) */
   const PLACE=[
-    ['sale',[/v455Bill\('shop'\)/,/'pay'/,/'cdue'/,/'ret'/,/'order'\)/,/'orders'/,/v455Bill\('staff'\)/,/v455Bill\('raw'\)/,/'move'/,/'take'/]],
+    ['sale',[/v455Bill\('shop'\)/,/'pay'/,/'cdue'/,/'ret'/,/'order'\)/,/'orders'/,/v455Bill\('staff'\)/,/v455Bill\('raw'\)/,/'move'/,/'take'/,/go\('rp46'\)/]],
     ['prod',[/'batches'|'bnew'/,/'stp'/,/s4Open/,/'rcalc'/,/'scan'/,/'loadl'|'ld'/]],
-    ['stock',[/'stock'|'fcount'/,/mcGoToday|'mats'/,/'pks'/,/s3Open/,/s7Open/,/'buy'|buyNew|'raw'/]],
-    ['money',[/fxGo\('exp'\)/,/fxGo\('spay'\)/,/'sdue'/,/'chq'/,/fxGo\('att'\)/,/'bm'/]],
+    ['stock',[/'stock'|'fcount'/,/mcGoToday|'mats'/,/'pks'/,/s3Open/,/s7Open/,/'buy'|buyNew|'raw'/,/g47Go\('oth'\)/]],
+    ['money',[/fxGo\('exp'\)/,/fxGo\('spay'\)/,/'sdue'/,/'chq'/,/fxGo\('att'\)/,/g47Go\('st'\)/,/'bm'/,/g47Go\('dad'\)/]],
     ['more',[/'history'/,/'iss'/,/'bc'/,/'price'/,/fxGo\('cmp'\)/,/fxGo\('asset'\)/,/fxGo\('add'\)/,/'notes'/,/'rpt'/,/'setup'/]]];
   function place(k){for(const [t,L] of PLACE){const i=L.findIndex(re=>re.test(k));if(i>=0)return [t,i];}return ['more',99];}
   window.ftTab=k=>place(k)[0];
@@ -5072,7 +5074,7 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
   const info=b=>({ic:(b.querySelector('span')||{}).textContent||'',t:(b.childNodes[1]&&b.childNodes[1].textContent||b.textContent).trim().slice(0,40)});
   if(!$('fa45css'))document.head.insertAdjacentHTML('beforeend',`<style id="fa45css">.fa45more{margin:10px 0 4px;border:1px solid #e2e8f0;border-radius:12px;padding:0 8px}.fa45more>summary{padding:11px 4px;font-weight:700;cursor:pointer;list-style:none}.fa45more>summary::-webkit-details-marker{display:none}.fa45more>summary::after{content:' ▾';opacity:.6}.fa45more[open]>summary::after{content:' ▴'}.fa45more .grid2{margin-bottom:8px}.fa45ed{margin-top:10px}.fa45r{display:flex;align-items:center;gap:8px;border-bottom:1px solid #eef2f7;padding:8px 0}.fa45r .grow{min-width:0}.fa45r.off .grow{opacity:.5}
   .dgr{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:6px;align-items:start;border-top:1px solid #e5e7eb;padding:10px 0}.dgr .n{font-size:18px}.dgr .v{font-weight:800;font-size:16px;white-space:nowrap;text-align:right}.dgr.tot{background:#fffbeb;border-radius:8px;padding:10px 4px}.dgd{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:4px 8px;font-size:12.5px}.dgd b{font-size:12px}.dgd span:nth-child(4n+2),.dgd span:nth-child(4n+3),.dgd span:nth-child(4n),.dgd b:nth-child(n+2){text-align:right}</style>`);
-  function arrange(){const box=$('homeBody'),g=box&&box.querySelector('.ftGrid');if(!g||!S.cfg)return;const T=S.fTab||'today',H=v455HC();
+  function arrange(){const box=$('homeBody'),g=box&&box.querySelector('.ftGrid');if(!g||!S.cfg)return;try{if(window.fa47Tiles)fa47Tiles(g);}catch(e){h14E(e,370)}/* 5.47 · 047 tiles */try{if(window.fa46Tiles)fa46Tiles(g);}catch(e){h14E(e,381)}/* 5.48 · 046 */const T=S.fTab||'today',H=v455HC();
     (window._v455Tiles||[]).forEach(x=>{if(!ALL.has(x.k))ALL.set(x.k,{ic:x.ic,t:x.t});});
     const tiles=[...g.querySelectorAll('button.tile')];
     tiles.forEach(b=>{const k=v455Key(b);ALL.set(k,info(b));if(H.hide.includes(k)){b.remove();return;}const [t,i]=place(k);b.dataset.ft=t;b.dataset.o=String(i);});
@@ -5118,6 +5120,138 @@ function payNewHtml(d){const m=(d.pay&&d.pay.m)||'cash',seg=(v,l)=>`<button clas
      ${cur&&((B.sup||[]).length||(B.chq||[]).length)?`<div class="card"><details><summary><b>⑤ ගෙවන්න තියෙන ලැයිස්තුව</b></summary>${(B.sup||[]).map(s=>`<div class="bml"><span>🏪 ${esc(s[0])}</span><b>≈ ${money(s[1])}</b></div>`).join('')}${(B.chq||[]).map(q=>`<div class="bml"><span>✍️ ${q[0]?'#'+esc(q[0])+' ':''}${esc(q[1])} · ${esc(dmy(q[2]))}</span><b>${money(q[3])}</b></div>`).join('')}</details></div>`:''}
      <div class="small muted" style="margin:4px 2px 12px">📊 ලාභය ≈ ${X.pl===null||X.pl===undefined?'—':money(X.pl)}${X.est?' (ඇස්තමේන්තු)':''} · 🔄 PC ගණන් ${esc(S.cfg.at?fmtAt(S.cfg.at,true):'—')} · බලන්න විතරයි · තාත්තා ගෙව්වා කිව්වම: 💰 සල්ලි tab → 🏪 සැපයුම්කරුට ගෙවීම / 💸 වියදම්.</div>`;return true;}
   {const _r=render;render=function(){const x=_r.apply(this,arguments);try{if(screen==='bm'){document.querySelector('header h1').textContent=TITLES.bm;dgDraw();try{ftNavDraw();}catch(e){}}}catch(e){console.warn('5.45 dg',e);}return x;};}
+})();
+/* ================= 5.46 (PC v5.5.78) · 048 — owner 27 Nov “deparak thun parak save karalath kamhal app eke enne palaveni parata save karapu deta” =================
+   ① PC එකෙන් දවස් කීපයක වාර්තා එකපාර ආවත් (fcfg `rps`) ඔක්කොම ගන්නවා — කලින් අන්තිම එක විතරයි.
+   ② 📥 save කරපු PDF එකට පස්සේ වාර්තාව අලුත් වුණොත් “⚠️ save කරපු PDF එක පරණයි” + දවස් බොත්තමේ ⚠️.
+   ③ iPhone: කොටුවක් tap කරද්දී තිරය zoom වෙන්නේ නැහැ (ඇඟිලි 2කින් zoom කරන්න පුළුවන්) · 📅 දින කොටු Android වගේ.
+   ④ sw.js: GitHub error පිටුවක් / redirect එකක් offline copy එක විදිහට save වෙන්නේ නැහැ. ගණන් / යවන දේ වෙනස් නැහැ. */
+(function(){try{const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);if(!ios)return;document.documentElement.classList.add('ios');
+  const m=document.querySelector('meta[name=viewport]');if(m&&!/maximum-scale/.test(m.content))m.content+=',maximum-scale=1';
+  document.head.insertAdjacentHTML('beforeend','<style id="fa546ios">.ios input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-height:46px;line-height:1.3;text-align:left}.ios input[type=date]::-webkit-date-and-time-value{text-align:left;margin:0}.ios input[type=search]{-webkit-appearance:none;appearance:none}</style>');}catch(e){h14E(e,546)}})();
+(function(){
+  const _rs=rpStore;rpStore=function(){let any=false;try{const L=S.cfg&&Array.isArray(S.cfg.rps)?S.cfg.rps:[];if(L.length){S.reps=Array.isArray(S.reps)?S.reps:[];
+      L.forEach(r=>{if(!r||!r.d||!r.s||!/^\d{4}-\d{2}-\d{2}$/.test(String(r.d)))return;const i=S.reps.findIndex(x=>x.d===r.d);if(i>=0&&S.reps[i].at>=r.at)return;if(i>=0)S.reps[i]=r;else S.reps.push(r);any=true;S.rpNew=r.d;});
+      S.reps.sort((a,b)=>b.d.localeCompare(a.d));S.reps=S.reps.slice(0,30);delete S.cfg.rps;save();}}catch(e){h14E(e,547)}
+    const r=_rs.apply(this,arguments);return r||any;};
+  /* ② remember which version of the report the PDF was made from */
+  const _pdf=rpPdf;rpPdf=async function(){const r=(S.reps||[]).find(x=>x.d===rpSel),d=rpSel,at=r&&r.at,b4=(S.rpSaved||{})[d];const x=await _pdf.apply(this,arguments);
+    try{if(at&&S.rpSaved&&S.rpSaved[d]&&S.rpSaved[d]!==b4){S.rpSavedAt=S.rpSavedAt||{};S.rpSavedAt[d]=at;save();renderRpt();}}catch(e){h14E(e,548)}return x;};
+  const old=d=>{const sv=(S.rpSaved||{})[d];if(!sv)return false;const r=(S.reps||[]).find(x=>x.d===d);if(!r)return false;const base=(S.rpSavedAt||{})[d]||sv;return String(r.at)>String(base);};
+  const _rr=renderRpt;renderRpt=function(){const x=_rr.apply(this,arguments);try{
+      document.querySelectorAll('#rptBody .rp-days .chip-btn').forEach(b=>{const m=/rpSel='([^']+)'/.exec(b.getAttribute('onclick')||'');if(m&&old(m[1]))b.innerHTML=b.innerHTML.replace(/ ✓$/,' ⚠️');});
+      const info=$('rpSaveInfo'),d=rpSel;if(info&&old(d)){const r=(S.reps||[]).find(x=>x.d===d);info.innerHTML=`<b style="color:#b91c1c">⚠️ save කරපු PDF එක පරණයි</b> — මේ වාර්තාව ${esc(fmtAt(r.at))} ට අලුත් වුණා. උඩ “📥 Phone එකේ save කරන්න” ආයේ ඔබන්න.`;}}catch(e){h14E(e,549)}return x;};
+})();
+/* ================= app 5.47 (PC v5.5.79) · 047 — 📤 සල්ලි නැතුව ගිය බඩු: 👤 තාත්තාට බඩු · 👷 සේවකයා ගත්තා · 📦 වෙනත් විදිහට ගිය බඩු (owner 27 Nov) =================
+   tiles 3 (පරණ “📦 විකුණුමක් නැතුව” + “🧾 👷 සේවකයෝ ගත්තා” හංගනවා — මකන්නේ නැහැ, ✏️ එකෙන් ආයේ 👁 කරන්න පුළුවන්):
+   · 👤 තාත්තාට බඩු (💰 සල්ලි — 👤 තාත්තාගේ ගිණුම ළඟ): 🏪 කඩේට | 🏠 ගෙදරට · 🏭 කම්හලෙන් | 🚚 ලොරියෙන් · නිමි බඩු + 🌶️ අමු ද්‍රව්‍ය එක ලැයිස්තුවක.
+   · 👷 සේවකයා ගත්තා (💰 සල්ලි — පැමිණීම ළඟ): නම ලැයිස්තුවෙන් · නිමි + අමු · 👷 සේවක මිල ඉබේම · 🧾 පඩියෙන් අඩු (ඉබේම) | 💵 Cash දුන්නා.
+   · 📦 වෙනත් විදිහට ගිය බඩු (📦 තොගය): 🎁 නියැදි · ⚠️ Damage · 🗑️ නාස්ති · 💧 හැලුණා · 🔄 කඩේට මාරු (පරණ තිරය).
+   එක පණිවිඩයක් 'g47' → PC ⏳ අනුමත කරන්න. 🧂 “➖ batch නැතුව ගියා” එකෙන් 🏠 / 👷 අයින් (ඒ දෙක උඩ tiles වලට). PC v5.5.79 (cfg.g47) නැත්නම් කිසිවක් වෙනස් නැහැ. */
+(function(){
+  const on=()=>!!(S&&S.cfg&&S.cfg.g47);
+  const main=document.querySelector('main');if(main&&!$('s-g47'))main.insertAdjacentHTML('beforeend','<section class="screen" id="s-g47"><div id="g47Body"></div></section>');
+  const MODE={dad:['👤','තාත්තාට බඩු'],st:['👷','සේවකයා ගත්තා'],oth:['📦','වෙනත් විදිහට ගිය බඩු']};
+  const TO={dshop:'🏪 කඩේට',home:'🏠 ගෙදරට',sample:'🎁 නියැදි / තෑගි',fdamage:'⚠️ Damage / කල් ඉකුත්',waste:'🗑️ නාස්ති / කුණු',spill:'💧 හැලුණා'};
+  TITLES.g47='📤 බඩු';
+  const KEYS_OLD=["newDraft('move');go('move')","v455Bill('staff')"];
+  const G=()=>{const d=D('g47');if(!d.m)d.m='dad';if(!d.to)d.to='dshop';if(!d.src)d.src='factory';if(typeof d.pay!=='string'||!d.pay)d.pay='pay';/* newDraft makes pay an object */if(!d.oth)d.oth='sample';if(!Array.isArray(d.L))d.L=[];if(d.f===undefined)d.f='';return d;};
+  const toOf=d=>d.m==='dad'?d.to:d.m==='st'?'staff':d.oth;
+  const staffList=()=>{const C=S.cfg||{};return [...new Set(((C.se&&C.se.length?C.se:C.st)||[]).filter(Boolean))];};
+  const mtOf=id=>MT().find(m=>m[0]===id)||null;
+  const fOf=m=>m&&m[3]==='ගණන'?1:1000,isCnt=m=>!!m&&m[3]==='ගණන';
+  const pList=()=>P().filter(p=>!isW(p)&&!p[8]);
+  const rList=()=>MT().filter(m=>m&&m[2]!=='p');
+  function spOf(pid){const sp=S.cfg&&S.cfg.ssp;if(sp&&num(sp[pid])>0)return {v:num(sp[pid]),s:1};const p=prod(pid);return {v:p?num(p[3]):0,s:0};}
+  function rawSp(m){const g=(S.cfg&&S.cfg.g47)||{},r=g.r||{};if(num(r[m[0]])>0)return {v:num(r[m[0]]),s:1};const c=num(m[6]);return {v:c>0?r2(c*(1+num(g.pct)/100)):0,s:0};}
+  function val(x,to){if(x.t==='p'){const p=prod(x.id),q=num(x.q);if(!p||!(q>0))return null;if(to==='staff')return r2(spOf(x.id).v*q);if(to==='dshop')return r2(num(p[3])*q);return null;}
+    const m=mtOf(x.id),q=num(x.q);if(!m||!(q>0))return null;if(to==='staff')return r2(rawSp(m).v*q);if(to==='dshop'||to==='home')return num(m[6])>0?r2(num(m[6])*q):null;return null;}
+  window.g47Go=function(m){if(!on()){toast('PC එක අලුත් කරන්න (v5.5.79)','err');return;}const d=G();if(d.m!==m){newDraft('g47');const n=G();n.m=m;}else d.m=m;save();go('g47');};
+  window.g47Set=function(k,v){const d=G();d[k]=v;save();render();};
+  window.g47Pick=function(t,id){const d=G();let i=d.L.findIndex(x=>x.t===t&&x.id===id);if(i<0){d.L.push({t,id,q:t==='p'?1:'',lot:''});i=d.L.length-1;}save();render();setTimeout(()=>{const e=$('g47q_'+i);if(e){e.focus();try{e.select();}catch(x){}}},40);};
+  window.g47Q=function(i,v){const d=G(),x=d.L[i];if(!x)return;const m=x.t==='r'?mtOf(x.id):null;x.q=x.t==='p'||isCnt(m)?Math.max(0,Math.floor(num(v))):Math.max(0,Math.round(num(v)*1000)/1000);save();
+    /* no redraw (keyboard / the next tap stay) — only the ≈ values */try{const to=toOf(d);let tot=0,any=0;d.L.forEach((y,j)=>{const w=val(y,to);if(w!==null){tot+=w;any=1;}const e=$('g47v_'+j);if(e)e.textContent=w!==null?'≈ '+money(w):'';});const T=$('g47T');if(T)T.innerHTML=any?'එකතුව ≈ <b>'+money(r2(tot))+'</b>':'';}catch(e){h14E(e,373)}};
+  window.g47Lot=function(i,v){const d=G(),x=d.L[i];if(!x)return;x.lot=v;save();};
+  window.g47Del=function(i){const d=G();d.L.splice(i,1);save();render();};
+  window.g47Find=function(q){const d=G();d.q=q;results();};
+  function freq(){const c={};(S.sent||[]).forEach(x=>{if(x&&x.k==='g47'&&x.rec){(x.rec.it||[]).forEach(i=>{c['p:'+i[0]]=(c['p:'+i[0]]||0)+1;});(x.rec.rw||[]).forEach(r=>{const m=mtByName(r[0]);if(m)c['r:'+m[0]]=(c['r:'+m[0]]||0)+1;});}});return c;}
+  function results(){const box=$('g47Res');if(!box)return;const d=G(),q=norm(d.q||''),f=d.f,to=toOf(d),cnt=freq();
+    let L=[];if(f!=='r')pList().forEach(p=>{if(!q||norm(p[1]).includes(q)||(p[2]&&norm(p[2])===q))L.push({t:'p',id:p[0],n:p[1],c:p[2]||'',k:cnt['p:'+p[0]]||0});});
+    if(f!=='p')rList().forEach(m=>{if(!q||norm(m[1]).includes(q)||(m[8]||[]).some(a=>norm(a).includes(q)))L.push({t:'r',id:m[0],n:m[1],c:'',k:cnt['r:'+m[0]]||0,m});});
+    if(!q)L=L.sort((a,b)=>b.k-a.k).slice(0,14);else L=L.slice(0,30);
+    box.innerHTML=L.map(x=>{let s='';if(x.t==='p'){const p=prod(x.id);s=to==='staff'?money(spOf(x.id).v):to==='dshop'?money(p?p[3]:0):'';}else{s=(to==='staff'?(rawSp(x.m).v>0?money(rawSp(x.m).v):''):num(x.m[6])>0?'≈ '+money(x.m[6]):'')+(s?'':'')+' / '+esc(x.m[3]);}
+      return `<button class="pick" onclick="g47Pick('${x.t}','${esc(x.id)}')"><span>${x.t==='p'?'🧾':'🌶️'} ${x.c?`<em>${esc(x.c)}</em> `:''}${esc(x.t==='r'?l2Nm(x.n):x.n)}</span><b class="small">${s}</b></button>`;}).join('')||'<div class="small muted">හමු වුණේ නැහැ</div>';}
+  function lotsOf(id){return faLots().filter(l=>{const m=mtByName(l.mat);return m&&m[0]===id&&!l.done&&(l.left===null||l.left>0.5);}).sort(faOld);}
+  function draw(){const box=$('g47Body');if(!box)return;if(!on()){box.innerHTML='<div class="card empty">PC එක v5.5.79 ට අලුත් කරලා 🔄 කරන්න.</div>';return;}
+    const d=G(),to=toOf(d),H=MODE[d.m]||MODE.dad;document.querySelector('header h1').textContent=H[0]+' '+H[1];
+    const ch=(k,cur,L)=>`<div class="chips">${L.map(([v,t])=>`<button type="button" class="chip ${cur===v?'ok':''}" onclick="g47Set('${k}','${v}')">${t}</button>`).join('')}</div>`;
+    let top='';
+    if(d.m==='dad')top=`${ch('to',d.to,[['dshop','🏪 කඩේට'],['home','🏠 ගෙදරට']])}${ch('src',d.src,[['factory','🏭 කම්හලෙන්'],['lorry','🚚 ලොරියෙන්']])}<div class="small muted">${d.to==='dshop'?'🏪 කඩේට = තොග මිලට (සල්ලි නැතුව)':'🏠 ගෙදරට = cost මිලට'} · 👤 තාත්තාගේ ගිණුමේ ② ට යනවා${d.src==='lorry'?' · 🚚 නිමි බඩු ලොරි තොගයෙන් අඩු වෙනවා':''}</div>`;
+    else if(d.m==='st'){const L=staffList(),inL=n=>L.some(x=>norm(x)===norm(n));top=`<label class="small"><b>👷 සේවකයා</b> — නම ඔබන්න</label><div class="chips">${L.map(n=>`<button type="button" class="chip ${norm(d.staff)===norm(n)?'ok':''}" onclick="g47Set('staff',${esc(JSON.stringify(n))})">👷 ${esc(n)}</button>`).join('')||'<span class="small muted">PC එකෙන් සේවක ලැයිස්තුව තවම ආවේ නැහැ</span>'}</div>
+      ${d.staff&&!inL(d.staff)?'<div class="warnbox small">⚠️ මේ නම PC සේවක ලැයිස්තුවේ නැහැ — පඩියෙන් අඩු වෙන්නේ නැහැ.</div>':''}${ch('pay',d.pay,[['pay','🧾 පඩියෙන් අඩු'],['cash','💵 Cash දුන්නා']])}<div class="small muted">${d.pay==='cash'?'💵 Cash දුන්නා — පඩියෙන් අඩු වෙන්නේ නැහැ':'🧾 පඩියෙන් අඩු වෙනවා (👷 සේවක මිලට)'}</div>`;}
+    else top=`${ch('oth',d.oth,[['sample','🎁 නියැදි / තෑගි'],['fdamage','⚠️ Damage / කල් ඉකුත්'],['waste','🗑️ නාස්ති / කුණු'],['spill','💧 හැලුණා']])}<button type="button" class="btn sm light" onclick="newDraft('move');D('move').kind='exchange';save();go('move')">🔄 කඩේට මාරු කර දුන්නා (Damage → අලුත්)</button><div class="small muted" style="margin-top:4px">නිමි බඩු cost මිලට වියදමක් · අමු ද්‍රව්‍ය තොගයෙන් අඩු වෙනවා</div>`;
+    let tot=0,any=0;const rows=d.L.map((x,i)=>{const isP=x.t==='p',p=isP?prod(x.id):null,m=isP?null:mtOf(x.id),v=val(x,to);if(v!==null){tot+=v;any=1;}
+      const lots=!isP?lotsOf(x.id):[];
+      return `<div class="g47r"><div class="grow"><b>${isP?'🧾':'🌶️'} ${esc(isP?(p?p[1]:'?'):(m?l2Nm(m[1]):'?'))}</b> <span class="small muted" id="g47v_${i}">${v!==null?'≈ '+money(v):''}</span>
+        ${!isP&&lots.length?`<select class="small" onchange="g47Lot(${i},this.value)"><option value="">🤖 පරණම මල්ලෙන්</option>${lots.map(l=>`<option value="${esc(l.no)}" ${x.lot===l.no?'selected':''}>${esc(l.no)} · ${esc(dmy(String(l.d||'')).slice(0,5))}${l.left!==null?' · ඉතුරු '+esc(String(Math.round(l.left/fOf(m)*1000)/1000)):''}</option>`).join('')}</select>`:''}</div>
+        <input id="g47q_${i}" type="number" inputmode="${isP||isCnt(m)?'numeric':'decimal'}" min="0" step="${isP||isCnt(m)?1:'any'}" value="${esc(String(x.q))}" onchange="g47Q(${i},this.value)" style="width:78px"><span class="small muted" style="width:40px">${isP?'පැකට්':esc(m?m[3]:'')}</span><button class="btn sm light" onclick="g47Del(${i})">✕</button></div>`;}).join('');
+    let pend=0;try{pend=pendSent('g47',14).length;}catch(e){}
+    box.innerHTML=`${dateBanner(d)}<div class="card">${top}${dateField('g47')}</div>
+      <div class="card"><h3>📋 බඩු <span class="small muted">(${d.L.length})</span></h3>${rows||'<div class="small muted">පහළින් හොයලා ඔබන්න — 🧾 නිමි බඩු · 🌶️ අමු ද්‍රව්‍ය</div>'}<div class="g47t" id="g47T">${any?`එකතුව ≈ <b>${money(r2(tot))}</b>`:''}</div>${to==='home'&&d.L.some(x=>x.t==='p')?'<div class="small muted">🏠 නිමි බඩු cost මිලට — PC එකේ ගණන් වෙනවා</div>':''}</div>
+      <div class="card"><input type="search" id="g47S" placeholder="🔎 භාණ්ඩය / අමු ද්‍රව්‍යය" value="${esc(d.q||'')}" oninput="g47Find(this.value)" autocomplete="off">
+        ${ch('f',d.f,[['','ඔක්කොම'],['p','🧾 නිමි බඩු'],['r','🌶️ අමු ද්‍රව්‍ය']])}<div id="g47Res"></div></div>
+      <div class="card field"><label>සටහන <span class="small muted">(ඕනේ නම්)</span></label><input maxlength="200" value="${esc(d.note||'')}" onchange="D('g47').note=this.value;save()"></div>
+      <button class="btn primary block big" onclick="g47Send()">📤 PC එකට යවන්න</button>${pend?`<div class="small warn" style="margin:8px 2px">⏳ මේ phone එකෙන් යැව්ව ${pend}ක් PC එකේ තාම අනුමත කරලා නැහැ</div>`:''}`;
+    results();}
+  window.g47Send=async function(){const d=G(),to=toOf(d),L=d.L.filter(x=>num(x.q)>0);if(!L.length){toast('බඩු දාන්න (ගණන එක්ක)','err');return;}
+    if(d.L.length!==L.length&&!confirm('ගණන නැති පේළි '+(d.L.length-L.length)+'ක් යන්නේ නැහැ — යවන්නද?'))return;
+    if(d.m==='st'){const n=String(d.staff||'').trim();if(n.length<2){toast('👷 සේවකයා තෝරන්න','err');return;}const SL=staffList();if(SL.length&&!SL.some(x=>norm(x)===norm(n))&&!confirm(`“${n}” PC සේවක ලැයිස්තුවේ නැහැ — පඩියෙන් අඩු වෙන්නේ නැහැ. මෙහෙමම යවන්නද?`))return;}
+    const it=L.filter(x=>x.t==='p').map(x=>[x.id,Math.floor(num(x.q))]),rw=L.filter(x=>x.t==='r').map(x=>{const m=mtOf(x.id);return [m?m[1]:x.id,Math.round(num(x.q)*fOf(m)),x.lot||'',x.id];});
+    const H=d.m==='st'?'👷 '+d.staff+(d.pay==='cash'?' 💵':''):d.m==='dad'?TO[d.to]:TO[d.oth];
+    if(await send('g47',{d:d.d,to,src:d.m==='dad'?d.src:'factory',it,rw,staff:d.m==='st'?String(d.staff||'').trim():'',pay:d.m==='st'?d.pay:'',note:String(d.note||'').trim()},`📤 ${H} — ${L.length}ක්`)){const m=d.m,k={to:d.to,oth:d.oth};newDraft('g47');Object.assign(G(),{m},k);/* 💵 / 🚚 never carry over */save();toast('✅ යැව්වා — PC එකේ අනුමත කළාම යනවා');go('home');}};
+  {const _r=render;render=function(){if(screen==='g47'){$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'';try{draw();}catch(e){console.warn('5.47 draw',e);}try{ftNavDraw();}catch(e){}return;}return _r.apply(this,arguments);};}
+  /* tiles (put in place by the 5.45 arrange) + the old two hidden once (✏️ can show them again) */
+  window.fa47Tiles=function(g){if(!g)return;if(!on()){if(S.g47h&&S.cfg){const Hh=v455HC();Hh.hide=Hh.hide.filter(k=>!KEYS_OLD.includes(k));S.g47h=0;try{save();}catch(e){}}return;}/* an old PC → the old tiles back */const mk=(k,ic,t,s)=>{if(g.querySelector(`[onclick="${k}"]`))return;g.appendChild(ftMk(k,ic,t,s));};
+    mk("g47Go('dad')",'👤','තාත්තාට බඩු','🏪 කඩේට · 🏠 ගෙදරට · නිමි + අමු');mk("g47Go('st')",'👷','සේවකයා ගත්තා','බඩු / අමු ද්‍රව්‍ය · පඩියෙන් / Cash');mk("g47Go('oth')",'📦','වෙනත් විදිහට ගිය බඩු','නියැදි · Damage · නාස්ති · හැලුණා');
+    if(!S.g47h){const Hh=v455HC();KEYS_OLD.forEach(k=>{if(!Hh.hide.includes(k))Hh.hide.push(k);});S.g47h=1;try{save();}catch(e){}}};
+  try{FT_WORDS.push([/g47Go\('dad'\)/,'thaththa thatha kade kadeta gedara gedarata badu dad']);FT_WORDS.push([/g47Go\('st'\)/,'sevaka savakaya savakayo staff padi']);FT_WORDS.push([/g47Go\('oth'\)/,'nidahas sample damage nasthi halena maru']);}catch(e){}
+  /* 🧂 ➖ batch නැතුව ගියා: 🏠 / 👷 → the tiles */
+  {const _o=window.m9Open;if(typeof _o==='function')window.m9Open=function(){const r=_o.apply(this,arguments);try{if(on()){const W=$('m9W');if(W){W.querySelectorAll('[data-w="home"],[data-w="staff"]').forEach(b=>b.remove());if(!$('m9g47'))W.insertAdjacentHTML('afterend',`<div id="m9g47" class="small muted" style="margin-top:4px">🏠 ගෙදරට / 🏪 කඩේට → <button type="button" class="btn sm light" onclick="sheet();g47Go('dad')">👤 තාත්තාට බඩු</button> · 👷 → <button type="button" class="btn sm light" onclick="sheet();g47Go('st')">👷 සේවකයා ගත්තා</button></div>`);}}}catch(e){h14E(e,371)}return r;};}
+  /* 👤 තාත්තාගේ ගිණුම: ② = 🏪 + 🏠 */
+  {const _r=render;render=function(){const x=_r.apply(this,arguments);try{if(screen==='bm'&&on()){const G2=S.cfg&&S.cfg.dg,i=Math.max(0,S.bmI||0),g=G2&&Array.isArray(G2.m)?G2.m[Math.min(i,G2.m.length-1)]:null,sp=g&&Array.isArray(g[6])?g[6]:null;
+      document.querySelectorAll('#bmBody .dgr').forEach(r=>{const b=r.querySelector('b');if(b&&b.textContent==='🏪 කඩේට ගිය බඩු'){b.textContent='🏪🏠 තාත්තාට ගිය බඩු';const s=r.querySelector('.small');if(s)s.textContent=sp?`🏪 කඩේට ${money(sp[0])} (තොග මිලට) · 🏠 ගෙදරට ${money(sp[1])} (cost මිලට)`:'කඩේට + ගෙදරට — සල්ලි වෙනුවට බඩු';}});
+      const hd=[...document.querySelectorAll('#bmBody .dgd b')].find(b=>b.textContent==='② කඩේට');if(hd)hd.textContent='② තාත්තාට';
+      const stc=g?num(g[7]):0;if(stc>0.004){const r1=[...document.querySelectorAll('#bmBody .dgr')].find(r=>{const b=r.querySelector('b');return b&&b.textContent==='💵 තාත්තාට ගිය සල්ලි';}),s1=r1&&r1.querySelector('.small');if(s1&&!/සේවක බඩු Cash/.test(s1.textContent))s1.textContent+=` · 👷 සේවක බඩු Cash ${money(stc)}`;}}}catch(e){h14E(e,372)}return x;};}
+  if(!$('fa47css'))document.head.insertAdjacentHTML('beforeend',`<style id="fa47css">.g47r{display:flex;align-items:center;gap:6px;border-bottom:1px solid #eef2f7;padding:8px 0}.g47r .grow{min-width:0;flex:1}.g47r select{display:block;max-width:100%;margin-top:4px}.g47t{margin-top:8px;font-size:15px}#g47Res .pick b{white-space:nowrap}</style>`);
+})();
+/* ================= app 5.48 (PC v5.5.80) · 046 — 🗓️ Route සැලැස්ම (owner 26 Nov · 27 Nov “hadanna”) =================
+   🧾 විකුණුම් tab එකේ “🗓️ Route සැලැස්ම” tile → tabs 2: 🗓️ සැලැස්ම (⭐ හෙට · Route · ඊළඟට · තත්ත්වය) · 🏪 කඩ දෙන්න ඕනේ (Route අනුව · 📞).
+   🏠 “අද කරන්න” එකේ උපරිම එක පේළියක් “⭐ හෙට: ඕවිස්ස — කඩ 9” (✕ = අද හංගන්න · තිරයේ ✏️ = කවදාවත් පෙන්නන්න එපා). ගණන් PC එකෙන් (fcfg rp46 — rp = 📒 වාර්තාව) — බලන්න විතරයි, phone එකෙන් කිසිවක් යවන්නේ නැහැ. */
+(function(){
+  const RP=()=>(S&&S.cfg&&S.cfg.rp46)||null,fresh=P=>!!P&&String(P.d||'')>=today();/* PC off for a day → no “tomorrow” line */
+  const MN=['ජන','පෙබ','මාර්තු','අප්‍රේල්','මැයි','ජූනි','ජූලි','අගෝ','සැප්','ඔක්','නොවැ','දෙසැ'],dt=d=>{const p=String(d||'').split('-');return p.length===3?`${MN[(+p[1]||1)-1]} ${+p[2]}`:'—';};
+  const rng=(a,b)=>{if(!a)return '—';if(!b||a===b)return dt(a);const p=a.split('-'),q=b.split('-');return p[1]===q[1]?`${MN[(+p[1]||1)-1]} ${+p[2]}–${+q[2]}`:`${dt(a)} – ${dt(b)}`;};
+  const st=(s,n)=>s==='g'?`🟢 තව දවස් ${n}`:s==='o'?'🟠 මේ දවස් වල':s==='r'?`🔴 දවස් ${n}ක් පහු වුණා`:s==='p'?'🔁 යන පාරේ':'⚪ කාලයක් නැහැ';
+  const main=document.querySelector('main');if(main&&!$('s-rp46'))main.insertAdjacentHTML('beforeend','<section class="screen" id="s-rp46"><div id="rp46Body"></div></section>');
+  TITLES.rp46='🗓️ Route සැලැස්ම';let TAB='plan',RF='';
+  window.rp46Tab=function(t,r){TAB=t;RF=r||'';render();window.scrollTo(0,0);};
+  window.rp46Off=function(){S.rp46off=S.rp46off?0:1;save();render();};
+  function bestTxt(b,nx){if(!b)return nx?`⭐ හෙට විශේෂයෙන් Route එකක් නැහැ · ඊළඟට: <b>${esc(nx.n)}</b> — ${esc(rng(nx.f,nx.t))} (තව දවස් ${num(nx.dd)})${num(nx.due)?' · කඩ '+num(nx.due):''}`:'⭐ හෙට විශේෂයෙන් යන්න ඕනේ Route එකක් නැහැ';const rd=(b.ride||[]).map(x=>x[0]+' '+x[1]).join(' · ');return `⭐ හෙට යන්න හොඳම: <b>${esc(b.n)}</b> — due කඩ ${num(b.due)}${rd?' · 🔀 යන පාරේ '+esc(rd):''}`;}
+  function draw(){const box=$('rp46Body');if(!box)return;const P=RP();if(!P){box.innerHTML='<div class="card empty">PC එක v5.5.80 ට අලුත් කරලා 🔄 කරන්න.</div>';return;}const stale=!fresh(P);
+    const tabs=`<div class="chips" style="margin-bottom:8px"><button class="chip ${TAB==='plan'?'ok':''}" onclick="rp46Tab('plan')">🗓️ සැලැස්ම</button><button class="chip ${TAB==='shops'?'ok':''}" onclick="rp46Tab('shops')">🏪 කඩ දෙන්න ඕනේ (${num(P.nd)||(P.s||[]).length})</button></div>`;
+    let h='';
+    if(TAB==='plan'){h=`<div class="card rp46b">${stale?`<div class="small warn">PC ගණන් ${esc(dt(P.d))} — PC එක on කළාම අලුත් වෙනවා</div>`:bestTxt(P.best,P.nx)}</div><div class="card">${(P.r||[]).map(r=>`<div class="rp46r"><div class="grow"><b>${esc(r[0])}</b><div class="small muted">අන්තිමට ${esc(dt(r[1]))} · ඊළඟට ${esc(rng(r[2],r[3]))}${num(r[7])?' · 🔀 '+num(r[7]):''}</div><div class="small">${st(r[4],num(r[5]))}</div></div>${num(r[6])?`<button class="btn sm light" onclick="rp46Tab('shops',${esc(JSON.stringify(r[0]))})">කඩ ${num(r[6])}</button>`:''}</div>`).join('')||'<div class="small muted">ලොරි බිල් තවම මදි</div>'}</div>
+      <div class="small muted" style="margin:4px 2px 10px">අන්තිම ලොරි බිල ${esc(dt(P.last))} · Route කාලය වෙනස් කරන්න PC එකෙන් (👥 කඩ / ණය › 🗓️) · මතක් කිරීමක් විතරයි.</div>`;}
+    else{const L=(P.s||[]).filter(s=>!RF||s[1]===RF||(Array.isArray(s[8])?s[8]:String(s[8]||'').split(', ')).includes(RF)),G=new Map();L.forEach(s=>{if(!G.has(s[1]))G.set(s[1],[]);G.get(s[1]).push(s);});
+      h=`${RF?`<div class="small" style="margin:0 2px 6px">🛣️ ${esc(RF)} විතරයි · <a href="#" onclick="rp46Tab('shops');return false">ඔක්කොම</a></div>`:''}${[...G.entries()].map(([rt,S2])=>`<div class="card"><h3 style="margin:0 0 4px">🛣️ ${esc(rt)} <span class="small muted">${S2.length}</span></h3>${S2.map(s=>`<div class="rp46s"><div class="grow"><b>${esc(s[0])}</b><div class="small muted">අන්තිම ${esc(dt(s[2]))} · ${esc(s[3])}${(Array.isArray(s[8])?s[8].length:s[8])?' · 🔀 '+esc(Array.isArray(s[8])?s[8].join(', '):s[8]):''}</div><div class="small">ඊළඟ ≈ ${esc(dt(s[4]))} ${num(s[5])<0?`<span class="warn">(දවස් ${-num(s[5])}ක් පහු වුණා)</span>`:num(s[5])===0?'(අද)':`(තව ${num(s[5])})`}${num(s[6])>0?' · ණය '+money(s[6]):''}</div></div>${(()=>{const m=String(s[7]||'').match(/\+?\d[\d\s-]{7,}\d/),n=m?m[0].replace(/[^0-9+]/g,''):'';return n.length>=9?`<a class="btn sm light" href="tel:${esc(n)}">📞</a>`:'';})()}</div>`).join('')}</div>`).join('')||'<div class="card empty">⚪ දැන් දෙන්න ඕනේ කඩ නැහැ</div>'}
+      ${num(P.nd)>(P.s||[]).length?`<div class="small muted" style="margin:2px">+ තව ${num(P.nd)-(P.s||[]).length}ක් — PC එකේ</div>`:''}<div class="small muted" style="margin:4px 2px 10px">ඉදිරි දවස් ${num(P.n)||3} ඇතුළත + පහු වුණ ඒවා · කඩ නැති (නාඳුනන) බිල් ගණන් නැහැ · 🛑 නැවතුණු කඩ මෙතන නැහැ.</div>`;}
+    box.innerHTML=tabs+h+`<button class="btn ghost block small" onclick="rp46Off()">✏️ 🏠 “අද කරන්න” එකේ ⭐ පේළිය: ${S.rp46off?'🙈 පෙන්නන්නේ නැහැ — පෙන්නන්න':'👁 පේනවා — හංගන්න'}</button>`;}
+  {const _r=render;render=function(){if(screen==='rp46'){$('hdrSub').textContent=S.cfg?(S.cfg.biz||'Shanthi Food Products'):'';try{draw();}catch(e){console.warn('5.48 draw',e);}try{ftNavDraw();}catch(e){}return;}return _r.apply(this,arguments);};}
+  window.fa46Tiles=function(g){if(!g||!RP())return;const k="go('rp46')";if(g.querySelector(`[onclick="${k}"]`))return;const b=RP().best;g.appendChild(ftMk(k,'🗓️','Route සැලැස්ම',b&&fresh(RP())?`⭐ හෙට: ${esc(b.n)} — කඩ ${num(b.due)}`:'කඩේ ඊළඟ බිල · Route කාලය'));};
+  try{FT_WORDS.push([/'rp46'/,'route salasma sellasma kalaya kada next ilaga bila haddanna']);}catch(e){}
+  /* 🏠 අද කරන්න: one line at most */
+  {const _a=a3Rows;a3Rows=function(){const R=_a.apply(this,arguments);try{const P=RP();if(P&&P.best&&fresh(P)&&!S.rp46off&&!a3Hide().k.includes('rp46'))R.push({k:'rp46',t:`⭐ හෙට: ${P.best.n} — කඩ ${num(P.best.due)}`,go:"go('rp46')"});}catch(e){h14E(e,380)}return R;};}
+  if(!$('fa48css'))document.head.insertAdjacentHTML('beforeend',`<style id="fa48css">.rp46r,.rp46s{display:flex;align-items:center;gap:8px;border-bottom:1px solid #eef2f7;padding:9px 0}.rp46r .grow,.rp46s .grow{min-width:0;flex:1}.rp46b{font-size:15px;border:1px solid #fcd34d;background:#fffbeb}</style>`);
 })();
 </script>
 </body>

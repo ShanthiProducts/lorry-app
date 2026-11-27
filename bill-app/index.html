@@ -147,7 +147,7 @@ if(SW_OK)try{navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}
    Offline first (v1.8: the offline helper starts first and ⚙️ / the footer say whether this phone can open it without internet). The product list + wholesale prices come from the PC through Firebase (boxes/<box>/out/cfg · out/rep — the same
    messages the lorry app reads; the PC v4.7.3 sends a new one whenever a price changes). Also accepts a pasted WhatsApp message,
    and the lorry app's saved list on the same phone (read only). Nothing is ever sent anywhere. */
-const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.10',QMAX=9999;
+const KEY='sbpBillApp_v1',LORRY_KEY='sbpLorryApp_v1',VER='1.11',QMAX=9999;
 const FS='https://firestore.googleapis.com/v1/projects/';
 const SIZE_RE=/^(\d+(?:\.\d+)?(?:g|kg|ml|l|P)|Card|Packet)$/i;
 const $=id=>document.getElementById(id);
@@ -420,6 +420,8 @@ if(SW_OK)try{navigator.serviceWorker.addEventListener('controllerchange',()=>off
 window.addEventListener('storage',e=>{if(e.key===LORRY_KEY&&syncLorry())softRender();});
 go(S.p.length?'items':'setup');verBar();cloudPull(false);offCheck();
 setInterval(fpTick,60000);/* 🏭 while the app is open: the factory phone's prices once a minute (1 read) */
+/* ---- 1.11 (PC v5.5.78) · 048: iPhone — tapping a box (price 14px) no longer zooms the page (two fingers still zoom) ---- */
+(function(){try{const ios=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);if(!ios)return;document.documentElement.classList.add('ios');const m=document.querySelector('meta[name=viewport]');if(m&&!/maximum-scale/.test(m.content))m.content+=',maximum-scale=1';}catch(e){}})();
 </script>
 </body>
 </html>
